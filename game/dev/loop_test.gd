@@ -7,34 +7,56 @@ extends Node
 ## Và kiểm cả lời hứa gốc của thiết kế — KHÔNG CÓ TRẠNG THÁI SAI: bấm nhầm phím
 ## thì không mất gì, chuỗi đứng yên chờ tiếp, cây vẫn cao thêm, tiếng vẫn hay.
 ##
+## Tuần 3 thêm: khoá giữ 2 giây, bản đồ chương, Chơi Tự Do.
+##
 ## Chạy:  Godot --path . res://game/dev/loop_test.tscn
 ## (phải có cửa sổ — headless không định tuyến InputEventScreenTouch)
 
 var _keyboard: PianoKeyboard
 var _tree: MagicTree
 var _cr: CallResponse
+var _menu: HoldButton
+var _map: ChapterMap
 var _points: Array[Vector2] = []
 var _fails: int = 0
 
 
 func _ready() -> void:
+	# Bản đồ chương dừng cả cây. Máy đo phải chạy tiếp lúc đó mới đo được rằng
+	# ván chơi bên dưới đã thật sự đứng yên.
+	process_mode = Node.PROCESS_MODE_ALWAYS
+
+	# Ngắt file lưu: phép đo không được phụ thuộc vào những gì máy này đã chơi
+	# lần trước, và cũng không được ghi đè tiến độ thật của bé.
+	SaveStore.reset_for_test()
+
+	# main.tscn phải treo THẲNG vào root, KHÔNG phải làm con của máy đo.
+	# process_mode lan xuống con: máy đo là ALWAYS, nên nếu game nằm dưới nó thì
+	# cả game cũng thành ALWAYS và get_tree().paused hoá ra vô nghĩa — phép đo
+	# "bàn phím câm khi bản đồ mở" sẽ trượt vì lý do hoàn toàn không có thật.
 	var main: Node = load("res://game/main.tscn").instantiate()
-	add_child(main)
-	for i in 4:
+	get_tree().root.add_child.call_deferred(main)
+	for i in 6:
 		await get_tree().process_frame
 
 	_keyboard = main.get_node("UI/PianoKeyboard")
 	_tree = main.get_node("UI/MagicTree")
 	_cr = main.get_node("CallResponse")
+	_menu = main.get_node("HUD/Menu")
+	_map = main.get_node("ChapterMap")
 
 	var xf := _keyboard.get_global_transform()
 	var w: float = _keyboard.size.x / float(Notes.count())
 	for i in Notes.count():
 		_points.append(xf * Vector2(i * w + w * 0.5, _keyboard.size.y * 0.5))
 
-	print("=== Tuần 2 · vòng gọi–đáp ===\n")
+	print("=== Tuần 2 · vòng gọi–đáp · Tuần 3 · menu, bản đồ, tự do ===\n")
 	await _run()
 	await _run_visibility()
+	await _run_menu_lock()
+	await _run_chapter_map()
+	await _run_free_play()
+	await _run_backgrounded_mid_hold()
 	print("\n=== %s ===" % ("ĐẠT" if _fails == 0 else "TRƯỢT (%d lỗi)" % _fails))
 	get_tree().quit()
 
@@ -131,3 +153,226 @@ func _run_visibility() -> void:
 	_tree.sing_leaf(2)
 	await get_tree().process_frame
 	_check("lá đang hát đổi trạng thái", _tree.leaf_state_of(2) == MagicTree.LeafState.SINGING)
+
+
+# ============================================================ Tuần 3 · khoá nhẹ --
+
+func _menu_centre() -> Vector2:
+	return _menu.get_global_transform() * (_menu.size * 0.5)
+
+
+## Giữ một (hoặc hai) ngón trên một điểm trong `seconds` giây thực rồi nhả.
+func _hold(p: Vector2, seconds: float, second_finger: bool = false) -> void:
+	var d := InputEventScreenTouch.new()
+	d.index = 0
+	d.pressed = true
+	d.position = p
+	Input.parse_input_event(d)
+	if second_finger:
+		var palm := InputEventScreenTouch.new()
+		palm.index = 1
+		palm.pressed = true
+		palm.position = p + Vector2(140.0, 30.0)
+		Input.parse_input_event(palm)
+
+	var t := 0.0
+	while t < seconds:
+		await get_tree().process_frame
+		t += get_process_delta_time()
+
+	var u := InputEventScreenTouch.new()
+	u.index = 0
+	u.pressed = false
+	u.position = p
+	Input.parse_input_event(u)
+	if second_finger:
+		var palm_up := InputEventScreenTouch.new()
+		palm_up.index = 1
+		palm_up.pressed = false
+		palm_up.position = p + Vector2(140.0, 30.0)
+		Input.parse_input_event(palm_up)
+	await get_tree().process_frame
+
+
+## Quyết định 03: "giữ 2 giây, đủ để bé không thoát nhầm, không cản người lớn".
+func _run_menu_lock() -> void:
+	print("\n⑥ Nút Menu phải GIỮ mới mở")
+	GameState.free_play = false
+
+	# Chốt chặn của chính phép đo: nếu sự kiện chạm tổng hợp không tới được nút
+	# thì mọi kết quả "không mở" bên dưới đều đúng một cách vô nghĩa.
+	var d := InputEventScreenTouch.new()
+	d.index = 0
+	d.pressed = true
+	d.position = _menu_centre()
+	Input.parse_input_event(d)
+	await get_tree().process_frame
+	_check("chạm có tới được nút Menu (chốt chặn phép đo)", _menu.is_holding())
+	var u := InputEventScreenTouch.new()
+	u.index = 0
+	u.pressed = false
+	u.position = _menu_centre()
+	Input.parse_input_event(u)
+	await get_tree().process_frame
+
+	await _hold(_menu_centre(), 1.2)
+	_check("nhả trước 2 giây thì KHÔNG mở bản đồ", not _map.is_open())
+
+	# Bàn tay trẻ con úp lên màn hình là nhiều điểm chạm cùng lúc.
+	await _hold(_menu_centre(), 2.5, true)
+	_check("giữ bằng hai ngón thì KHÔNG mở (lòng bàn tay)", not _map.is_open())
+	_menu.cancel()
+
+	await _hold(_menu_centre(), 2.4)
+	_check("giữ đủ 2 giây thì mở bản đồ", _map.is_open())
+	_check("ván chơi bên dưới đã dừng", get_tree().paused)
+
+
+func _run_chapter_map() -> void:
+	print("\n⑦ Bản đồ chương")
+	if not _map.is_open():
+		_map.open_map()
+		await get_tree().process_frame
+
+	# Ván chơi phải ĐỨNG YÊN, và bàn phím phải câm.
+	#
+	# Điểm chạm của phím đàn nằm ở cạnh dưới màn hình — mà nút đóng của bản đồ
+	# cũng ở giữa cạnh dưới. Chạm trúng nó thì bản đồ ĐÓNG, đúng như thiết kế,
+	# và những lượt chạm sau đó rơi vào lúc đã hết dừng. Nên phải dừng vòng lặp
+	# ngay khi bản đồ đóng, rồi đòi có đủ số lượt chạm THẬT SỰ diễn ra lúc bản đồ
+	# còn mở — không thì một phép đo rỗng sẽ đội lốt một lần đạt.
+	var page_before := GameState.page_index
+	var state_before := _cr.state_name()
+	var notes_before := GameState.notes_played_this_session
+	var keyboard_blocked := not _keyboard.can_process()
+	var pressed_under_map := 0
+
+	for i in Notes.count():
+		if not _map.is_open():
+			break
+		var t := InputEventScreenTouch.new()
+		t.index = 0
+		t.pressed = true
+		t.position = _points[i]
+		Input.parse_input_event(t)
+		await get_tree().process_frame
+		var r := InputEventScreenTouch.new()
+		r.index = 0
+		r.pressed = false
+		r.position = _points[i]
+		Input.parse_input_event(r)
+		await get_tree().process_frame
+		pressed_under_map += 1
+
+	_check("có đo thật — đủ lượt chạm lúc bản đồ mở (chốt chặn phép đo)",
+		pressed_under_map >= 3, "%d lượt" % pressed_under_map)
+	_check("bàn phím bị chặn ngay ở tầng process", keyboard_blocked)
+	_check("bàn phím câm khi bản đồ mở",
+		GameState.notes_played_this_session == notes_before,
+		"thêm %d nốt" % (GameState.notes_played_this_session - notes_before))
+	_check("trang không đổi", GameState.page_index == page_before)
+	_check("vòng chơi đứng yên", _cr.state_name() == state_before, _cr.state_name())
+
+	# Nhạc nền KHÔNG được tắt: im bặt khi mở menu là khoảng lặng khó chịu với trẻ.
+	await get_tree().process_frame
+	var music := AudioServer.get_bus_index("Music")
+	var peak := AudioServer.get_bus_peak_volume_left_db(music, 0)
+	_check("pad nền vẫn kêu lúc dừng", peak > -60.0, "%.1f dB" % peak)
+
+	# Save mới tinh: mới đi hết 1 trang nên chương 2, 3 còn khoá.
+	_check("chương 1 luôn mở", GameState.chapter_unlocked(0))
+	_check("chương 2 còn khoá", not GameState.chapter_unlocked(1),
+		"max_page = %d" % GameState.max_page_reached)
+	_check("chương 3 còn khoá", not GameState.chapter_unlocked(2))
+
+	# Mở khoá rồi chọn chương 2 → nhảy đúng trang đầu chương đó.
+	GameState.max_page_reached = Chapters.first_page_of(1)
+	_check("đi hết chương 1 thì chương 2 mở", GameState.chapter_unlocked(1))
+	GameState.select_chapter(1)
+	await get_tree().process_frame
+	_check("chọn chương 2 nhảy đúng trang", GameState.page_index == 5,
+		"trang %d" % GameState.page_index)
+	_check("vòng chơi dựng lại trang mới", _cr.step() == 0)
+
+	if not _map.is_open():
+		_map.open_map()
+		await get_tree().process_frame
+	_map.close_map()
+	await get_tree().process_frame
+	_check("đóng bản đồ thì ván chơi chạy lại", not get_tree().paused)
+	_check("bản đồ đã ẩn", not _map.is_open())
+	_check("nút Menu sẵn sàng cho lượt giữ mới", not _menu.is_holding())
+
+
+## Quyết định 03: "không gợi ý, không chuỗi — chỉ đàn, con vật và cây mọc theo mỗi nốt".
+func _run_free_play() -> void:
+	print("\n⑧ Chơi Tự Do")
+	_check("vào lại được trạng thái chờ đáp", await _await_state("WAITING"), _cr.state_name())
+
+	GameState.free_play = true
+	await get_tree().process_frame
+	_check("vòng chơi chuyển sang FREE", _cr.state_name() == "FREE", _cr.state_name())
+	_check("không còn gợi ý nốt nào", _cr.expected_note() == -1)
+
+	_tree.reset_page()
+	await get_tree().process_frame
+	var stars_before := GameState.stars
+	var growth_before := _tree.growth()
+	for i in 20:
+		await _press(i % Notes.count())
+	_check("bấm 20 phím không được hạt sao nào", GameState.stars == stars_before,
+		"thêm %d sao" % (GameState.stars - stars_before))
+	_check("vẫn không có gợi ý", _cr.expected_note() == -1)
+	_check("cây vẫn cao thêm mỗi nốt", _tree.growth() > growth_before,
+		"%.3f -> %.3f" % [growth_before, _tree.growth()])
+	_check("không có lá nào nhấp nháy gợi ý", _tree.leaf_state_of(_tree_hint_leaf()) != MagicTree.LeafState.HINT)
+
+	# Bé 4 tuổi sẽ bấm nút đó hai lần liên tiếp. Đường quay về phải dẫn tới một
+	# trạng thái sạch chứ không phải chỗ dở dang mà không ai giải thích.
+	GameState.free_play = false
+	_check("tắt tự do thì hát lại trang từ đầu", await _await_state("WAITING"), _cr.state_name())
+	_check("chuỗi về lại vạch xuất phát", _cr.step() == 0, "bước %d" % _cr.step())
+	_check("gợi ý trở lại hợp lệ", _cr.expected_note() >= 0, "nốt %d" % _cr.expected_note())
+
+
+## Lá đầu tiên của chuỗi — nơi gợi ý sẽ xuất hiện nếu nó bị rò vào chế độ tự do.
+func _tree_hint_leaf() -> int:
+	return Melodies.for_page(GameState.page_index)[0]
+
+
+## Hồi quy cho một lỗi khoá cứng: app xuống nền GIỮA LÚC đang giữ nút Menu thì
+## sự kiện nhả ngón không bao giờ tới. Nếu nút không tự dọn, bộ đếm ngón kẹt ở 1
+## và mọi lượt giữ sau đó đều bị coi là ngón thứ hai rồi bỏ — nút Menu chết câm,
+## cả bé lẫn người lớn mất đường vào bản đồ. Bấm nút rồi bị phân tâm là việc một
+## đứa 4 tuổi làm suốt.
+func _run_backgrounded_mid_hold() -> void:
+	print("")
+	print("⑨ App xuống nền giữa lúc đang giữ nút Menu")
+	if _map.is_open():
+		_map.close_map()
+		await get_tree().process_frame
+	_menu.cancel()
+
+	var p := _menu_centre()
+	var d := InputEventScreenTouch.new()
+	d.index = 0
+	d.pressed = true
+	d.position = p
+	Input.parse_input_event(d)
+	var t := 0.0
+	while t < 0.8:
+		await get_tree().process_frame
+		t += get_process_delta_time()
+	_check("đang giữ dở nút Menu (chốt chặn phép đo)", _menu.is_holding())
+
+	# Ngón này KHÔNG bao giờ được nhả — app nuốt mất sự kiện đó.
+	_menu.notification(NOTIFICATION_APPLICATION_PAUSED)
+	_menu.notification(NOTIFICATION_APPLICATION_RESUMED)
+	await get_tree().process_frame
+	_check("mở lại app thì lượt giữ dở bị bỏ", not _menu.is_holding())
+
+	await _hold(p, 2.4)
+	_check("vẫn mở được bản đồ bằng lượt giữ mới", _map.is_open())
+	_map.close_map()
+	await get_tree().process_frame
+	_menu.cancel()

@@ -13,7 +13,10 @@ extends Node
 
 signal page_completed(page_index: int)
 
-enum State { LEAD_IN, SINGING, WAITING, FRUITING, PAGE_TURN }
+## FREE là Chơi Tự Do: không hát gọi, không gợi ý, không chuỗi — chỉ đàn, con
+## vật và cây mọc theo mỗi nốt (Quyết định 03). Nó là một TRẠNG THÁI chứ không
+## phải một lá cờ rải rác, để chỉ có đúng một chỗ quyết định vòng chơi đang làm gì.
+enum State { LEAD_IN, SINGING, WAITING, FRUITING, PAGE_TURN, FREE }
 
 const SING_LEAD_IN := 0.6
 const SING_INTERVAL := 0.55      ## 3 nốt ~1,6 s · 7 nốt ~3,9 s → đúng "2–4 giây"
@@ -33,6 +36,9 @@ var _step: int = 0            ## vị trí trong chuỗi mà bé cần chạm ti
 var _sing_index: int = 0
 var _idle: float = 0.0
 var _replay_index: int = 0
+## Trang mà vòng chơi ĐANG chơi. Khác GameState.page_index thì phải dựng lại
+## trang — bản đồ chương đổi trang từ bên ngoài, không đi qua đây.
+var _page: int = -1
 
 
 func _ready() -> void:
@@ -49,6 +55,9 @@ func setup(tree: MagicTree, keyboard: PianoKeyboard) -> void:
 		push_error("CallResponse: thiếu MagicTree hoặc PianoKeyboard")
 		return
 	_keyboard.note_played.connect(_on_note_played)
+	GameState.free_play_changed.connect(_on_free_play_changed)
+	# Bé chọn chương trên bản đồ thì trang đổi mà không ai báo cho vòng chơi.
+	GameState.page_changed.connect(_on_page_changed)
 	_begin_page()
 	set_process(true)
 
@@ -56,13 +65,30 @@ func setup(tree: MagicTree, keyboard: PianoKeyboard) -> void:
 # ------------------------------------------------------------------ vòng đời --
 
 func _begin_page() -> void:
-	_sequence = Melodies.for_page(GameState.page_index)
+	_page = GameState.page_index
+	_sequence = Melodies.for_page(_page)
 	_step = 0
 	_sing_index = 0
 	_idle = 0.0
 	_tree.reset_page()
 	_tree.set_sequence(_sequence)
-	_enter(State.LEAD_IN)
+	_enter(State.FREE if GameState.free_play else State.LEAD_IN)
+
+
+func _on_page_changed(page_index: int) -> void:
+	if page_index != _page:
+		_begin_page()
+
+
+## Bật tự do: giữ nguyên cây bé đang trồng, chỉ tắt phần gợi ý và chuỗi.
+## Tắt tự do: dựng lại trang từ đầu — cây hát lại câu gọi. Bé 4 tuổi sẽ bấm nút
+## đó hai lần liên tiếp, nên đường quay về phải luôn dẫn tới một trạng thái sạch
+## chứ không phải chỗ dở dang mà không ai giải thích.
+func _on_free_play_changed(enabled: bool) -> void:
+	if enabled:
+		_enter(State.FREE)
+	else:
+		_begin_page()
 
 
 func _enter(next: State) -> void:
@@ -80,6 +106,10 @@ func _enter(next: State) -> void:
 			_tree.fruit()
 		State.PAGE_TURN:
 			pass
+		State.FREE:
+			_tree.clear_singing()
+			_tree.clear_hint()
+			_step = 0
 
 
 func _process(delta: float) -> void:
@@ -96,8 +126,11 @@ func _process(delta: float) -> void:
 			_tick_fruiting()
 		State.PAGE_TURN:
 			if _timer >= PAGE_TURN_SECONDS:
+				# advance_page() phát page_changed, và _on_page_changed dựng lại
+				# trang. Một đường duy nhất, dùng chung với bản đồ chương.
 				GameState.advance_page()
-				_begin_page()
+		State.FREE:
+			pass
 
 
 ## Bước 1 — Cây hát: cây tự sáng các lá theo thứ tự, mỗi lá phát nốt của nó.
@@ -190,7 +223,7 @@ func step() -> int:
 ## mỗi khung hình, nên dùng bảng hằng thay vì tra ngược enum.
 ## Chỉ literal mới là biểu thức hằng — bọc PackedStringArray(...) vào là lời gọi
 ## constructor và const sẽ không biên dịch. Đúng cái bẫy đã ghi ở notes.gd.
-const STATE_NAMES := ["LEAD_IN", "SINGING", "WAITING", "FRUITING", "PAGE_TURN"]
+const STATE_NAMES := ["LEAD_IN", "SINGING", "WAITING", "FRUITING", "PAGE_TURN", "FREE"]
 
 
 func state_name() -> String:

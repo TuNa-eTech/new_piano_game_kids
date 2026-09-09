@@ -160,5 +160,16 @@ func _key_at(viewport_position: Vector2) -> int:
 	return -1
 
 
+## Buông mọi ngón đang giữ. Khi lớp phủ bản đồ mở, cây bị dừng và bàn phím sẽ
+## KHÔNG nhận được sự kiện nhả nào nữa — ngón đang giữ lúc đó sẽ kẹt lại trong
+## _finger_to_key mãi mãi, và phím tương ứng kẹt ở trạng thái đang nhấn.
+func release_all() -> void:
+	for finger in _finger_to_key.keys():
+		var key: int = _finger_to_key[finger]
+		_keys[key].release()
+		note_released.emit(key)
+	_finger_to_key.clear()
+
+
 func fingers_down() -> int:
 	return _finger_to_key.size()

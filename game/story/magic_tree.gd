@@ -86,6 +86,16 @@ func set_hint(note_index: int) -> void:
 	queue_redraw()
 
 
+## Bỏ mọi gợi ý. Chơi Tự Do chốt rõ "không gợi ý" — mà set_hint(-1) chỉ xoá con
+## trỏ chứ để nguyên chiếc lá đang ở trạng thái HINT, nên nó vẫn nhấp nháy tiếp.
+func clear_hint() -> void:
+	_hint_step = -1
+	for i in _leaf_state.size():
+		if _leaf_state[i] == LeafState.HINT:
+			_leaf_state[i] = LeafState.DORMANT
+	queue_redraw()
+
+
 ## Nốt đúng: lá nở thành nốt vàng và thân cây vươn lên một đoạn lớn.
 func bloom(note_index: int, sequence_length: int) -> void:
 	if not Notes.is_valid(note_index):

@@ -23,6 +23,11 @@ var _points: Array[Vector2] = []
 
 
 func _ready() -> void:
+	# Ngắt file lưu: mỗi lần chuyển trang SaveStore sẽ ghi ra đĩa, và chi phí đó
+	# là của DỤNG CỤ ĐO chứ không phải của đường chạm. Nó cũng sẽ ghi đè tiến độ
+	# thật của bé nếu để nguyên.
+	SaveStore.reset_for_test()
+
 	var main: Node = load("res://game/main.tscn").instantiate()
 	add_child(main)
 	await get_tree().process_frame
