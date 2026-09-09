@@ -148,6 +148,16 @@ ul.check li{position:relative;padding-left:30px;color:var(--ink-2)}
 ul.check li::before{content:"";position:absolute;left:0;top:.42em;width:14px;height:14px;
   border:1.5px solid var(--rule-strong);border-radius:3px;background:var(--surface)}
 ul.check li b,ul.check li strong{color:var(--ink)}
+ul.check li.done{color:var(--ink-3)}
+ul.check li.done b,ul.check li.done strong{color:var(--ink-3);font-weight:600}
+ul.check li.done::before{background:var(--magic);border-color:var(--magic)}
+ul.check li.done::after{content:"";position:absolute;left:4.5px;top:.72em;width:5px;height:9px;
+  border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg)}
+ul.check li .st{font-family:"IBM Plex Mono",monospace;font-size:.68rem;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--magic);margin-left:8px;white-space:nowrap}
+ul.check li.done .st{color:var(--ink-3)}
+td.st-ok{color:var(--magic);font-weight:600;white-space:nowrap}
+td.st-wait{color:var(--ink-3);white-space:nowrap}
 .spike{background:var(--surface);border:1px solid var(--rule);border-left:4px solid var(--magic);
   border-radius:4px;padding:20px 22px;display:flex;flex-direction:column;gap:12px;box-shadow:var(--shadow)}
 .spike .tag{font-family:"IBM Plex Mono",monospace;font-size:.7rem;letter-spacing:.13em;
@@ -173,6 +183,24 @@ header .note{font-size:.95rem}
   <h1>Rừng Nhạc<br>Quy trình sản xuất</h1>
   <p class="lede">Từ máy trống đến game nằm trên Google Play. Tài liệu này là <b>danh sách việc phải làm theo thứ tự</b>, không phải bàn về thiết kế — phần thiết kế gameplay nằm ở <a href="gameplay-design.html">gameplay-design.html</a>. Trọng tâm: <b>mỹ thuật</b> và <b>âm thanh</b>, hai thứ chiếm phần lớn thời gian của một người làm một mình.</p>
   <div class="note" style="max-width:68ch"><b>Thứ tự trong tài liệu này quan trọng hơn nội dung.</b> Ba việc rủi ro nhất được đẩy lên Tuần 0, trước khi vẽ một pixel nào. Lý do đơn giản: nếu một trong ba việc đó bất khả thi, thiết kế phải đổi — và bạn muốn biết điều đó vào ngày thứ ba, không phải tuần thứ tư.</div>
+
+  <div class="spike" style="margin-top:28px;max-width:68ch">
+    <div class="tag">Tiến độ · cập nhật 09/09/2026</div>
+    <h3>Đang ở: cuối Bước 0 → chuẩn bị vào Tuần 0</h3>
+    <div class="tw" style="margin:4px 0">
+      <table class="mini">
+        <tbody>
+          <tr><td>Bước 0 · chuẩn bị</td><td class="st-ok">Gần xong</td><td class="small">Tài khoản, SDK, JDK, git + LFS, package name đã chốt. Còn thiếu máy Android thật và export templates</td></tr>
+          <tr><td>Tuần 0 · Spike A (xuất MP4)</td><td class="st-wait">Chưa bắt đầu</td><td class="small">Rủi ro cao nhất — làm trước</td></tr>
+          <tr><td>Tuần 0 · Spike B (độ trễ)</td><td class="st-wait">Bị chặn</td><td class="small">Cần máy Android rẻ, đời cũ</td></tr>
+          <tr><td>Tuần 0 · Spike C (đường ống phát hành)</td><td class="st-wait">Bị chặn</td><td class="small">Cần export templates + máy thật</td></tr>
+          <tr><td>Bước 1 → 6</td><td class="st-wait">Chưa bắt đầu</td><td class="small">—</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p><b>Việc kế tiếp, theo thứ tự:</b> ① tải export templates 4.7.2 trong Godot · ② cắm máy Android rẻ qua USB và bật USB debugging · ③ chạy Spike A.</p>
+    <p class="small">Hai thứ đang chặn đều nằm ngoài code: một là gói tải về, một là phần cứng. Cả Spike B lẫn Spike C đều vô nghĩa trên máy ảo hoặc máy cao cấp — độ trễ âm thanh chính là thứ cần đo, và máy tốt sẽ nói dối bạn.</p>
+  </div>
 </header>
 
 <section id="chuanbi">
@@ -182,18 +210,18 @@ header .note{font-size:.95rem}
   </div>
   <div class="tw">
     <table>
-      <thead><tr><th>Hạng mục</th><th>Chi phí</th><th>Bắt buộc?</th><th>Ghi chú</th></tr></thead>
+      <thead><tr><th>Hạng mục</th><th>Chi phí</th><th>Bắt buộc?</th><th>Trạng thái</th><th>Ghi chú</th></tr></thead>
       <tbody>
-        <tr><td>Google Play Developer</td><td class="num">25 USD · một lần</td><td class="yes">Có</td><td>Duyệt tài khoản có thể mất vài ngày — <strong>đăng ký ngay hôm nay</strong>, đừng đợi đến lúc ship</td></tr>
-        <tr><td>Apple Developer</td><td class="num">99 USD / năm</td><td class="no">Để sau</td><td>Cần thêm máy Mac. Không làm ở v1</td></tr>
-        <tr><td>Máy Android thật, đời rẻ</td><td class="num">~2–3 tr</td><td class="yes">Có</td><td>Máy Android tầm thấp 2–3 năm tuổi. Đây là máy đo độ trễ âm thanh — máy cao cấp sẽ nói dối bạn</td></tr>
-        <tr><td>Godot 4.7 (bản standard)</td><td class="num">0</td><td class="yes">Có</td><td>GDScript, không cần bản .NET</td></tr>
-        <tr><td>Android SDK + JDK</td><td class="num">0</td><td class="yes">Có</td><td>Cài qua Android Studio hoặc chỉ command-line tools</td></tr>
-        <tr><td>Audacity <i>hoặc</i> Reaper</td><td class="num">0 · hoặc 60 USD</td><td class="yes">Có</td><td>Audacity đủ dùng cho toàn bộ v1</td></tr>
-        <tr><td>Krita hoặc Photoshop</td><td class="num">0 · hoặc thuê bao</td><td class="yes">Có</td><td>Để tách nền, chỉnh màu, cắt sprite. Krita miễn phí là đủ</td></tr>
-        <tr><td>Công cụ sinh ảnh AI</td><td class="num">~10–25 USD / tháng</td><td class="yes">Có<sup>*</sup></td><td>Xem mục 3 — kiểm tra điều khoản cho phép dùng thương mại</td></tr>
-        <tr><td>Thư viện âm mẫu</td><td class="num">0–30 USD</td><td class="no">Tùy</td><td>Xem mục 4 — ưu tiên CC0</td></tr>
-        <tr><td>Git + Git LFS</td><td class="num">0</td><td class="yes">Có</td><td>File ảnh/âm thanh đi qua LFS. Repo này chưa có git — <code>git init</code> trước tiên</td></tr>
+        <tr><td>Google Play Developer</td><td class="num">25 USD · một lần</td><td class="yes">Có</td><td class="st-ok">Đã có</td><td>Tài khoản đã sẵn sàng — bỏ được toàn bộ rủi ro chờ duyệt</td></tr>
+        <tr><td>Apple Developer</td><td class="num">99 USD / năm</td><td class="no">Để sau</td><td class="st-ok">Đã có</td><td>Đã có tài khoản và máy Mac. Vẫn <strong>để sau v1</strong> — lý do bây giờ là tuân thủ, không phải tiền: App Store có bộ quy định trẻ em riêng, khác Google Play</td></tr>
+        <tr><td>Máy Android thật, đời rẻ</td><td class="num">~2–3 tr</td><td class="yes">Có</td><td class="st-wait">Chưa thấy máy</td><td>Máy Android tầm thấp 2–3 năm tuổi. Đây là máy đo độ trễ âm thanh — máy cao cấp sẽ nói dối bạn. <code>adb devices</code> đang trống → Spike B và Spike C bị chặn</td></tr>
+        <tr><td>Godot 4.7 (bản standard)</td><td class="num">0</td><td class="yes">Có</td><td class="st-ok">4.7.2 stable</td><td>GDScript, không cần bản .NET. <strong>Export templates chưa cài</strong> — xem Bước 1</td></tr>
+        <tr><td>Android SDK + JDK</td><td class="num">0</td><td class="yes">Có</td><td class="st-ok">Đã cài</td><td>SDK ở <code>~/Library/Android/sdk</code>, JDK 17.0.8 Temurin — đúng bản Godot 4.7 yêu cầu. Một vài gói lệch phiên bản, xem Bước 1</td></tr>
+        <tr><td>Audacity <i>hoặc</i> Reaper</td><td class="num">0 · hoặc 60 USD</td><td class="yes">Có</td><td class="st-wait">Chưa kiểm tra</td><td>Audacity đủ dùng cho toàn bộ v1</td></tr>
+        <tr><td>Krita hoặc Photoshop</td><td class="num">0 · hoặc thuê bao</td><td class="yes">Có</td><td class="st-wait">Chưa kiểm tra</td><td>Để tách nền, chỉnh màu, cắt sprite. Krita miễn phí là đủ</td></tr>
+        <tr><td>Công cụ sinh ảnh AI</td><td class="num">~10–25 USD / tháng</td><td class="yes">Có<sup>*</sup></td><td class="st-wait">Chưa chốt</td><td>Xem mục 3 — kiểm tra điều khoản cho phép dùng thương mại</td></tr>
+        <tr><td>Thư viện âm mẫu</td><td class="num">0–30 USD</td><td class="no">Tùy</td><td class="st-wait">Chưa chốt</td><td>Xem mục 4 — ưu tiên CC0</td></tr>
+        <tr><td>Git + Git LFS</td><td class="num">0</td><td class="yes">Có</td><td class="st-ok">Xong</td><td>LFS đã bật cho <code>png jpg jpeg wav ogg mp3</code>; commit đầu tiên đã tạo trên nhánh <code>main</code>. <code>.gitignore</code> đã chặn <code>*.keystore</code> và <code>*.jks</code></td></tr>
       </tbody>
     </table>
   </div>
@@ -201,11 +229,19 @@ header .note{font-size:.95rem}
 
   <h3>Việc làm ngay trong ngày đầu</h3>
   <ul class="check">
-    <li>Đăng ký tài khoản Google Play Developer (chờ duyệt chạy nền trong lúc bạn code)</li>
-    <li><code>git init</code> + <code>git lfs track "*.png" "*.wav" "*.ogg"</code> + commit đầu tiên</li>
-    <li>Chọn <strong>package name</strong> vĩnh viễn, ví dụ <code>com.tenban.rungnhac</code> — đổi sau khi phát hành là không thể</li>
-    <li>Cài Android SDK và chạy thử một build rỗng lên máy thật (xem Spike C)</li>
+    <li class="done">Đăng ký tài khoản Google Play Developer <span class="st">đã có sẵn</span></li>
+    <li class="done"><code>git init</code> + <code>git lfs track</code> + commit đầu tiên <span class="st">xong</span></li>
+    <li class="done">Chốt <strong>package name</strong>: <code>com.anhtu.rungnhac</code> <span class="st">xong</span></li>
+    <li>Cài <strong>export templates</strong> của Godot 4.7.2, rồi chạy thử một build rỗng lên máy thật (xem Spike C)</li>
   </ul>
+
+  <div class="spike" style="margin-top:26px;border-left-color:var(--gold)">
+    <div class="tag" style="color:var(--gold)">Chốt · package name</div>
+    <h3><code>com.anhtu.rungnhac</code></h3>
+    <p>Tên project trong Godot là <code>new-piano</code> nhưng <strong>không dùng được làm package name</strong>: dấu gạch ngang không hợp lệ. Quy tắc là mỗi đoạn phải bắt đầu bằng chữ cái, chỉ gồm chữ–số–gạch dưới, tối thiểu hai đoạn, và không trùng từ khóa Java.</p>
+    <p>Bây giờ đổi vẫn <strong>miễn phí</strong> — chỉ là một dòng trong export preset. Hạn chót thật không phải lúc phát hành mà là <strong>lần upload đầu tiên lên Play Console</strong>, kể cả bản Internal testing: sau giây phút đó, package name gắn vĩnh viễn với ứng dụng. Nếu muốn đổi, hãy đổi <em>trước</em> Spike C.</p>
+    <p class="small">Giá trị này được ghi vào <code>export_presets.cfg</code> ở Bước 1 / mục 5.2 — không tự tay sửa file đó, để Godot sinh ra.</p>
+  </div>
 </section>
 
 <section id="spike">
@@ -241,11 +277,13 @@ header .note{font-size:.95rem}
   </div>
 
   <div class="spike">
-    <div class="tag">Spike C · 1 ngày</div>
+    <div class="tag">Spike C · ~0,5 ngày</div>
     <h3>Đi trọn đường ống phát hành với một game rỗng</h3>
     <p>Một scene chỉ có chữ "hello". Xuất AAB đã ký bằng keystore thật, tải lên kênh <em>Internal testing</em> của Play Console, cài về máy từ link mời. Làm việc này khi trong tay chưa có gì để mất.</p>
     <p><b>Đạt khi:</b> bạn cài được game từ Play Store lên máy mình và nó chạy.</p>
-    <p class="small">Đây là bước hay bị dời đến phút chót và luôn tốn nhiều thời gian hơn dự tính: tài khoản chờ duyệt, form khai báo, chữ ký, quyền. Làm sớm thì nó là một ngày; làm muộn thì nó là một tuần trong lúc đang cháy.</p>
+    <p><b>Chặn trước khi bắt đầu:</b> chưa có <strong>export templates</strong> của Godot 4.7.2 (thư mục <code>export_templates</code> đang rỗng) và <code>adb devices</code> chưa thấy máy Android nào. Không có templates thì không export được gì, kể cả bản debug — và <em>Install Android Build Template</em> ở Bước 1 cũng cần templates có mặt trước.</p>
+    <p class="small">Tài liệu gốc ước tính một ngày, phần lớn là chờ duyệt tài khoản. Tài khoản đã có sẵn nên phần chờ biến mất, còn lại keystore → AAB → upload → cài về máy: khoảng nửa ngày. Đổi lại, thời gian tiết kiệm được chảy sang một chỗ khác — tải export templates là một gói lớn, và các gói SDK đang lệch phiên bản (xem Bước 1) là chỗ dễ vỡ nhất của spike này.</p>
+    <p class="small"><b>Trước khi upload:</b> lần đẩy đầu tiên lên Play Console, kể cả Internal testing, sẽ khóa vĩnh viễn package name <code>com.anhtu.rungnhac</code>. Muốn đổi thì đổi trước bước này.</p>
   </div>
 </section>
 
@@ -258,9 +296,26 @@ header .note{font-size:.95rem}
   <pre>sdkmanager --sdk_root=&lt;android_sdk_path&gt; \
   "platform-tools" "build-tools;35.0.1" "platforms;android-35" \
   "cmdline-tools;latest" "cmake;3.10.2.4988404" "ndk;28.1.13356709"</pre>
+  <p class="col small">Trang chính thức của Godot 4.7 xác nhận: <strong>OpenJDK 17</strong>, Platform-Tools 35.0.0+, Build-Tools 35.0.1, Platform 35, CMake 3.10.2.4988404, NDK r28b. Đối chiếu với máy hiện tại:</p>
+  <div class="tw">
+    <table class="mini">
+      <thead><tr><th>Gói</th><th>Godot 4.7 cần</th><th>Đang có</th><th>Trạng thái</th></tr></thead>
+      <tbody>
+        <tr><td>JDK</td><td>OpenJDK 17</td><td>17.0.8 Temurin</td><td class="st-ok">Khớp</td></tr>
+        <tr><td>Android SDK path</td><td>—</td><td><code>~/Library/Android/sdk</code></td><td class="st-ok">Đã trỏ đúng trong Godot</td></tr>
+        <tr><td>platforms</td><td>android-35</td><td>29 · 31 · 33 · 34 · 35 · 36</td><td class="st-ok">Khớp</td></tr>
+        <tr><td>build-tools</td><td>35.0.1</td><td>34.0.0 · 35.0.0 · 36.1.0</td><td class="st-wait">Lệch</td></tr>
+        <tr><td>ndk</td><td>28.1.13356709</td><td>27.2.12479018 · 28.2.13676358</td><td class="st-wait">Lệch</td></tr>
+        <tr><td>cmake</td><td>3.10.2.4988404</td><td>3.22.1 · 4.1.1</td><td class="st-wait">Lệch</td></tr>
+        <tr><td>Export templates</td><td>4.7.2 stable</td><td>chưa cài</td><td class="st-wait">Thiếu — chặn mọi export</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="col small">Ba dòng "lệch" chưa chắc đã hỏng: Gradle build template của Godot ghim phiên bản nó muốn và sẽ <em>nói thẳng tên gói còn thiếu</em> ngay trong lỗi build. Đừng cài trước cả ba cho chắc — chạy Spike C, đọc lỗi, rồi cài đúng thứ nó đòi. Nhưng nếu Spike C vỡ, đây là chỗ nhìn đầu tiên.</p>
   <ul class="check">
-    <li>Cài <strong>JDK</strong> đúng phiên bản mà Godot 4.7 yêu cầu — <span class="small mono">con số này đổi theo từng bản Godot, kiểm tra ở trang chính thức</span></li>
-    <li>Trong Godot: <b>Editor → Editor Settings → Export → Android</b>, trỏ đúng đường dẫn Android SDK và Java</li>
+    <li><b>Editor → Manage Export Templates → Download and Install</b> — làm trước tiên, mọi thứ khác đứng sau nó</li>
+    <li class="done">Cài <strong>JDK</strong> đúng phiên bản mà Godot 4.7 yêu cầu <span class="st">JDK 17 · xong</span></li>
+    <li class="done">Trong Godot: <b>Editor → Editor Settings → Export → Android</b>, trỏ đúng đường dẫn Android SDK và Java <span class="st">xong</span></li>
     <li><b>Project → Install Android Build Template</b> — bắt buộc, vì AAB chỉ tạo được qua Gradle build</li>
     <li>Trong Export preset Android, bật <b>Gradle Build</b></li>
     <li>Bật <b>USB debugging</b> trên máy thật, kiểm tra <code>adb devices</code> nhìn thấy máy</li>
