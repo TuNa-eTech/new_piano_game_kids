@@ -186,7 +186,7 @@ header .note{font-size:.95rem}
 
   <div class="spike" style="margin-top:28px;max-width:68ch">
     <div class="tag">Tiến độ · cập nhật 09/09/2026</div>
-    <h3>Đang ở: Tuần 1 và Tuần 2 xong phần code · chờ máy iOS thật</h3>
+    <h3>Đang ở: Tuần 1, 2 và 3 xong phần code · chờ máy iOS thật và chờ trẻ thật</h3>
 
     <div class="note" style="margin:10px 0"><b>Đổi mục tiêu: iOS trước, không còn Android trước.</b> Toàn bộ tài liệu đã viết lại theo iOS — Bước 0, Tuần 0, Bước 1 và Bước 5. Phần Android được giữ lại có chủ đích ở hai chỗ: bảng gói SDK ở cuối Bước 1, và mục 5.6. Bước 2, 3, 4 và 6 không phụ thuộc nền tảng nên giữ nguyên.</div>
 
@@ -196,6 +196,7 @@ header .note{font-size:.95rem}
           <tr><td>Bước 0 · chuẩn bị</td><td class="st-ok">Gần xong</td><td class="small">Tài khoản Apple, máy Mac, Xcode 26.2, git + LFS, bundle id iOS <code>com.tudavid.pianokids</code> đã chốt, export templates đã cài. Còn thiếu: cắm iPhone, và Audacity/Krita (chưa cần tới Bước 2–3)</td></tr>
           <tr><td>Tuần 1 · đàn + audio pool + con vật nảy + pad nền</td><td class="st-ok">Xong phần code</td><td class="small">7 phím ngũ cung, đa chạm thật, <code>AudioStreamPolyphonic</code> và pool 16 sau cùng một hàm, pad C–Am–F–G lặp liền mạch trên bus Music −18 dB. Đã đo: 900 cú chạm không rớt nốt nào, đường chạm→âm thanh không cấp phát (0,006 KB/chạm), bus Notes ra tiếng thật, 7 cao độ đúng theo phân tích phổ</td></tr>
           <tr><td>Tuần 2 · cây thần + gọi–đáp + lọ hạt sao</td><td class="st-ok">Xong phần code</td><td class="small">Cây 8 giai đoạn, 7 lá, vòng gọi–đáp không cửa sổ thời gian, lọ hạt sao, lật trang. Máy đo vòng chơi 19/19 đạt, gồm cả kiểm "bấm nhầm thì không mất gì". Art tạm là hình khối màu, đúng luật Bước 4</td></tr>
+          <tr><td>Tuần 3 · 3 chương + bản đồ chương + khoá giữ 2 giây + Chơi Tự Do</td><td class="st-ok">Xong phần code</td><td class="small">Bản đồ 3 chương có khoá tiến độ, nút Menu phải giữ 2 giây, thanh 5 chấm thay nhãn chữ, Chơi Tự Do, và <code>user://save.cfg</code> có version + bản <code>.bak</code>. Máy đo vòng chơi 52/52 đạt, máy đo file lưu 23/23 đạt, đường chạm→âm thanh vẫn 0,006 KB/chạm. <b>Chưa đóng được tuần</b>: tiêu chí thoát là ba đứa trẻ thật trên iPhone thật</td></tr>
           <tr><td>Tuần 0 · Spike A (xuất MP4)</td><td class="st-wait">Đã điều tra · chờ bạn chọn</td><td class="small"><b>A2 không tồn tại</b> — hệ sinh thái Godot chỉ có bộ <em>giải</em> mã video, không có bộ mã hoá. Nhưng nửa <em>chia sẻ</em> thì đã giải quyết xong bằng plugin có sẵn. Còn đúng một ngã ba: A1 (viết plugin Objective-C) hay A3 (ảnh tĩnh). Xem mục Spike A</td></tr>
           <tr><td>Tuần 0 · Spike B (độ trễ)</td><td class="st-wait">Chờ máy</td><td class="small">Không còn bị chặn vì thiếu code — thứ để đo đã dựng xong, kèm overlay chẩn đoán và máy đo soak test. Chỉ còn thiếu iPhone thật cắm vào</td></tr>
           <tr><td>Tuần 0 · Spike C (đường ống phát hành)</td><td class="st-wait">Chờ bạn</td><td class="small">Export templates xong. Chờ chuỗi chứng chỉ bạn sẽ làm sau cùng, cộng máy thật. TestFlight thay cho Internal testing</td></tr>
@@ -205,11 +206,17 @@ header .note{font-size:.95rem}
       </table>
     </div>
 
-    <p><b>Việc kế tiếp, theo thứ tự:</b> ① chọn ngã ba <b>A1 hay A3</b> của Spike A — điều tra đã xong, kết quả ở mục Spike A · ② cắm iPhone và chạy Spike B — để Xcode tự ký (<em>Automatically manage signing</em>), không phải vào portal · ③ Tuần 3: ba chương nội dung, bản đồ chương, khóa giữ 2 giây ở nút Menu.</p>
+    <p><b>Việc kế tiếp, theo thứ tự:</b> ① chọn ngã ba <b>A1 hay A3</b> của Spike A — điều tra đã xong, kết quả ở mục Spike A · ② cắm iPhone và chạy Spike B — để Xcode tự ký (<em>Automatically manage signing</em>), không phải vào portal · ③ <b>thử với ba đứa trẻ thật</b> để đóng Tuần 3 · ④ Tuần 4: màn kết chương, luồng chia sẻ, cổng phụ huynh đầy đủ.</p>
 
-    <div class="note" style="margin:12px 0"><b>Hai chỗ hai tài liệu nói khác nhau, phát hiện khi làm:</b>
+    <div class="note" style="margin:12px 0"><b>Lệch ảnh mock có chủ ý ở Tuần 3: gộp MENU và LEVELS thành một nút.</b> Ảnh mock có hai nút. Nhưng nếu LEVELS chạm phát là mở được bản đồ thì khoá nhẹ của MENU thành vô nghĩa — bé vẫn rời trang tự do, đúng thứ khoá nhẹ sinh ra để chặn. Nay còn một nút Menu (giữ 2 giây), và bản đồ chứa luôn phần chọn chương.</div>
+
+    <div class="warnbox" style="margin:12px 0"><b>Lỗi Tuần 1 chỉ lộ ra ở Tuần 3: pad nền chết sau 8 giây.</b> Trình nhập WAV của Godot có thêm mục <em>Detect From WAV</em> ở vị trí 0, nên <code>edit/loop_mode=1</code> nghĩa là <b>Disabled</b> chứ không phải Forward — Forward là <b>2</b>. Pad chạy hết 8 giây rồi im, và app im theo. Đúng thứ mà tiêu chí "trẻ chơi 5 phút một mình" phụ thuộc vào, mà không phép đo nào của Tuần 1 bắt được vì cả hai phép đo đều ngắn hơn 8 giây. Đã sửa, và phép đo Tuần 3 nay đo đỉnh bus <code>Music</code> ở phút thứ hai nên lỗi này không quay lại được.</div>
+
+    <div class="note" style="margin:12px 0"><b>Bốn chỗ tài liệu để hở hoặc nói khác nhau, phát hiện khi làm:</b>
     <br>· <b>Tuần 1 có pad nền hay không:</b> <code>gameplay-design</code> ghi "đàn ngũ cung + audio pool + con vật nảy", còn bảng Bước 4 ở đây ghi thêm "+ pad nền". Đã làm theo bản đầy đủ hơn — pad đã có.
-    <br>· <b>Một chương dài bao nhiêu trang:</b> Quyết định 03 nói "ba chuỗi = xong một chương", nhưng bảng Phạm vi v1 nói "3 chương × 5 trang" và HUD nói "5 nhạc cụ = 5 trang". Code đang theo <b>5 trang một chương</b> vì hai nguồn sau cụ thể hơn và khớp nhau. Nếu ý định thật là 3 thì sửa một hằng số trong <code>game/melodies.gd</code>.</div>
+    <br>· <b>Một chương dài bao nhiêu trang:</b> Quyết định 03 nói "ba chuỗi = xong một chương", nhưng bảng Phạm vi v1 nói "3 chương × 5 trang" và HUD nói "5 nhạc cụ = 5 trang". Code đang theo <b>5 trang một chương</b> vì hai nguồn sau cụ thể hơn và khớp nhau. Nếu ý định thật là 3 thì sửa một hằng số trong <code>game/melodies.gd</code>.
+    <br>· <b>Lọ hạt sao đầy thì được gì:</b> Quyết định 04 nói "lọ đầy = mở một con vật mới cho phím đàn", nhưng Phạm vi v1 chốt <b>đúng 7 con vật</b> và bộ sưu tập 20 con là hàng sau. Vậy phần thưởng khi đầy lọ <b>không có nội dung nào ở v1</b>. Code để lọ quay vòng và <b>không</b> bịa ra phần thưởng. Cần bạn quyết ở Tuần 4, hoặc chấp nhận lọ chỉ là thước đo tiến độ.
+    <br>· <b>Bong bóng thoại và phù thủy:</b> cây scene trong <code>gameplay-design</code> có <code>WizardSprite</code> và <code>SpeechBubble</code> với câu "Chạm con vật cùng màu với chiếc lá đang sáng!". Nhưng cùng tài liệu chốt v1 <b>không lời</b>, người chơi 3–5 tuổi chưa đọc được chữ. Thứ thật sự dạy là lá sáng cùng màu với phím, và cái đó đã chạy từ Tuần 2. Code <b>không</b> làm bong bóng thoại; phù thủy là art thuộc Bước 2.</div>
 
     <p class="small"><b>App ID và chứng chỉ development: bạn tự làm, để sau cùng.</b> Hoãn được, và hoãn không chặn Spike B — chạy trên máy thật chỉ cần Xcode tự quản chữ ký. Thứ thật sự cần chuỗi chứng chỉ dựng tay là Spike C (TestFlight).</p>
 
