@@ -1,5 +1,5 @@
 class_name ChapterMap
-extends CanvasLayer
+extends PauseOverlay
 ## Bản đồ chương — lớp phủ mở bằng nút Menu giữ 2 giây.
 ##
 ## LỆCH ẢNH MOCK CÓ CHỦ Ý: ảnh mock có hai nút MENU và LEVELS. Nhưng nếu LEVELS
@@ -7,41 +7,23 @@ extends CanvasLayer
 ## tự do, đúng thứ khoá nhẹ sinh ra để chặn. Nên gộp còn một nút Menu (giữ 2
 ## giây), và bản đồ chứa luôn phần chọn chương.
 ##
-## NƠI DUY NHẤT ĐƯỢC SỞ HỮU get_tree().paused. Không module nào khác chạm vào cờ
-## đó. Có nhiều chủ sở hữu là có kịch bản này: bé mở bản đồ → app xuống nền →
-## mở lại → đàn ở dưới tự chạy tiếp trong khi bản đồ vẫn phủ trên.
-##
-## Ván chơi bên dưới bị chặn bằng HAI lớp độc lập, đã đo chứ không đoán:
-##   ① get_tree().paused chặn _unhandled_input của node PROCESS_MODE_INHERIT;
-##   ② nền mờ là Control MOUSE_FILTER_STOP phủ kín, cũng chặn _unhandled_input.
-## Lớp phủ này process_mode = ALWAYS nên nút của chính nó vẫn ăn.
+## Quyền sở hữu get_tree().paused nằm ở lớp cha PauseOverlay, không ở đây — xem
+## ghi chú trong game/ui/pause_overlay.gd.
 
-signal opened
-signal closed
 signal chapter_selected(chapter: int)
-
-const FADE_SECONDS := 0.18
 
 var _cards: Array[ChapterCard] = []
 var _root: Control
-var _backdrop: ColorRect
-var _tween: Tween
 
 
 func _ready() -> void:
+	super()
 	layer = 10
-	process_mode = Node.PROCESS_MODE_ALWAYS
 	_build()
-	visible = false
 
 
 func _build() -> void:
-	_backdrop = ColorRect.new()
-	_backdrop.set_anchors_preset(Control.PRESET_FULL_RECT)
-	_backdrop.color = Color(0.04, 0.06, 0.05, 0.88)
-	# STOP chứ không IGNORE: nền này là lớp chặn chạm thứ hai cho bàn phím.
-	_backdrop.mouse_filter = Control.MOUSE_FILTER_STOP
-	add_child(_backdrop)
+	_add_backdrop(Color(0.04, 0.06, 0.05, 0.88))
 
 	_root = MarginContainer.new()
 	_root.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -124,26 +106,13 @@ func _draw_close_arrow(face: Control) -> void:
 # ---------------------------------------------------------------- điều khiển --
 
 func open_map() -> void:
-	if visible:
-		return
 	for card in _cards:
 		card.refresh()
-	visible = true
-	get_tree().paused = true
-	_fade(0.0, 1.0)
-	opened.emit()
+	open_overlay()
 
 
 func close_map() -> void:
-	if not visible:
-		return
-	get_tree().paused = false
-	visible = false
-	closed.emit()
-
-
-func is_open() -> bool:
-	return visible
+	close_overlay()
 
 
 func _on_card_pressed(chapter: int) -> void:
@@ -152,18 +121,3 @@ func _on_card_pressed(chapter: int) -> void:
 	GameState.select_chapter(chapter)
 	chapter_selected.emit(chapter)
 	close_map()
-
-
-## Tween mặc định dừng theo node bị pause. Node này ALWAYS nên nó vẫn chạy, còn
-## TWEEN_PAUSE_PROCESS là lời khẳng định tường minh — hoạt cảnh kẹt nửa chừng
-## đúng lúc cây đang dừng là một lỗi rất khó lần ra.
-func _fade(from: float, to: float) -> void:
-	if _tween != null and _tween.is_valid():
-		_tween.kill()
-	_root.modulate.a = from
-	_backdrop.modulate.a = from
-	_tween = create_tween().bind_node(self)
-	_tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
-	_tween.set_parallel(true)
-	_tween.tween_property(_root, "modulate:a", to, FADE_SECONDS)
-	_tween.tween_property(_backdrop, "modulate:a", to, FADE_SECONDS)

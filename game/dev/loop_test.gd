@@ -17,6 +17,7 @@ var _tree: MagicTree
 var _cr: CallResponse
 var _menu: HoldButton
 var _map: ChapterMap
+var _chapter_end: ChapterEnd
 var _points: Array[Vector2] = []
 var _fails: int = 0
 
@@ -29,6 +30,10 @@ func _ready() -> void:
 	# Ngắt file lưu: phép đo không được phụ thuộc vào những gì máy này đã chơi
 	# lần trước, và cũng không được ghi đè tiến độ thật của bé.
 	SaveStore.reset_for_test()
+
+	# Bộ đếm lớp phủ là biến static — nó sống qua cả lần dựng lại scene trong
+	# cùng một tiến trình, nên phải dọn nếu không phép đo sẽ thấy nó trôi.
+	PauseOverlay.reset_pause_state()
 
 	# main.tscn phải treo THẲNG vào root, KHÔNG phải làm con của máy đo.
 	# process_mode lan xuống con: máy đo là ALWAYS, nên nếu game nằm dưới nó thì
@@ -44,6 +49,7 @@ func _ready() -> void:
 	_cr = main.get_node("CallResponse")
 	_menu = main.get_node("HUD/Menu")
 	_map = main.get_node("ChapterMap")
+	_chapter_end = main.get_node("ChapterEnd")
 
 	var xf := _keyboard.get_global_transform()
 	var w: float = _keyboard.size.x / float(Notes.count())
@@ -57,6 +63,7 @@ func _ready() -> void:
 	await _run_chapter_map()
 	await _run_free_play()
 	await _run_backgrounded_mid_hold()
+	await _run_chapter_end()
 	print("\n=== %s ===" % ("ĐẠT" if _fails == 0 else "TRƯỢT (%d lỗi)" % _fails))
 	get_tree().quit()
 
@@ -376,3 +383,54 @@ func _run_backgrounded_mid_hold() -> void:
 	_map.close_map()
 	await get_tree().process_frame
 	_menu.cancel()
+
+
+# ====================================================== Tuần 4 · màn kết chương --
+
+## "Buổi Diễn Rừng Xanh" — docs/gameplay-design.html tả: "cả 7 con vật hát lại
+## đúng giai điệu bé vừa chơi, cây thần mọc theo, rương báu bật mở", trọn 12 giây.
+func _run_chapter_end() -> void:
+	print("")
+	print("⑩ Màn kết chương")
+	GameState.free_play = false
+	GameState.set_page(Chapters.pages_per_chapter() - 1)
+	await get_tree().process_frame
+
+	var page_before := GameState.page_index
+	GameState.advance_page()
+	await get_tree().process_frame
+	_check("hết trang cuối chương thì màn kết mở", _chapter_end.is_open())
+	_check("ván chơi bên dưới đã dừng", get_tree().paused)
+	_check("ván chơi đã sẵn ở trang đầu chương sau",
+		GameState.page_index == page_before + 1, "trang %d" % GameState.page_index)
+
+	# Diễn lại TOÀN BỘ giai điệu của chương, không phải mỗi trang cuối.
+	var expected := 0
+	for i in Chapters.pages_per_chapter():
+		expected += Melodies.for_page(i).size()
+	_check("diễn lại đủ giai điệu cả chương", _chapter_end.note_count() == expected,
+		"%d / %d nốt" % [_chapter_end.note_count(), expected])
+
+	# Có tiếng thật đi ra chứ không phải chỉ đổi con số.
+	var bus := AudioServer.get_bus_index("Notes")
+	var peak := -200.0
+	var t := 0.0
+	while not _chapter_end.is_done() and t < 20.0:
+		await get_tree().process_frame
+		t += get_process_delta_time()
+		peak = maxf(peak, AudioServer.get_bus_peak_volume_left_db(bus, 0))
+	_check("diễn xong trong khoảng 12 giây", _chapter_end.is_done(),
+		"%.1f s, pha %s" % [t, _chapter_end.phase_name()])
+	_check("thời lượng nằm trong 9–15 giây", t > 9.0 and t < 15.0, "%.1f s" % t)
+	# Vừa phải nghe rõ, vừa phải còn headroom — màn kết KHÔNG được to hơn hẳn
+	# lúc chơi. HardLimiter trên Master che được tiếng vỡ, nên chỉ có phép đo
+	# mới bắt được chuyện này.
+	_check("7 con vật CÓ hát ra tiếng thật", peak > -60.0, "%.1f dB" % peak)
+	_check("còn headroom, không dội tai", peak < -2.0, "%.1f dB" % peak)
+
+	_chapter_end.close_overlay()
+	await get_tree().process_frame
+	_check("đóng màn kết thì ván chơi chạy lại", not get_tree().paused)
+	_check("bộ đếm lớp phủ về 0", PauseOverlay.open_overlay_count() == 0,
+		"%d" % PauseOverlay.open_overlay_count())
+	_check("chơi tiếp được ngay trang mới", await _await_state("WAITING"), _cr.state_name())

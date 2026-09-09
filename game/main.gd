@@ -14,6 +14,7 @@ extends Node2D
 @onready var _probe: CanvasLayer = $LatencyProbe
 @onready var _menu: HoldButton = $HUD/Menu
 @onready var _map: ChapterMap = $ChapterMap
+@onready var _chapter_end: ChapterEnd = $ChapterEnd
 
 
 func _ready() -> void:
@@ -25,6 +26,7 @@ func _ready() -> void:
 
 	_menu.activated.connect(_on_menu_activated)
 	_map.closed.connect(_on_map_closed)
+	GameState.chapter_completed.connect(_on_chapter_completed)
 
 
 func _on_menu_activated() -> void:
@@ -38,3 +40,12 @@ func _on_map_closed() -> void:
 	# Lúc bản đồ mở, HUD bị dừng nên nút Menu không thấy ngón nhả ra. Không dọn
 	# thì lần sau nó tưởng vẫn còn ngón trên màn hình và từ chối nhận lượt giữ mới.
 	_menu.cancel()
+
+
+## "Buổi Diễn Rừng Xanh" — hết chương thì cả 7 con vật hát lại giai điệu của
+## chương đó. Ván chơi bên dưới đã sang trang đầu chương mới rồi và chỉ đang bị
+## dừng, nên đóng màn kết là bé chơi tiếp được ngay.
+func _on_chapter_completed(chapter_index: int) -> void:
+	_keyboard.release_all()
+	_menu.cancel()
+	_chapter_end.play_for_chapter(chapter_index)

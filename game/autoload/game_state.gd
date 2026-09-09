@@ -10,6 +10,11 @@ signal page_changed(page_index: int)
 signal stars_changed(total: int)
 signal free_play_changed(enabled: bool)
 
+## Bé vừa đi hết trang cuối của một chương. Phát SAU khi page_index đã nhảy sang
+## trang đầu chương mới, để màn kết chương mở ra trên một ván chơi đã dựng xong
+## và chỉ đang bị dừng — đóng màn kết là chơi tiếp được ngay.
+signal chapter_completed(chapter_index: int)
+
 ## Chơi Tự Do: không gợi ý, không chuỗi — chỉ đàn, con vật và cây mọc theo mỗi
 ## nốt. Tài liệu nói đây là chế độ trẻ ở lại lâu nhất và phụ huynh quay video
 ## nhiều nhất, nên nó phải có ở v1.
@@ -53,7 +58,11 @@ func award_star() -> void:
 ## "không có màn hình thua" cũng có nghĩa là không có ngõ cụt. max_page_reached
 ## đã chạm 14 từ trước nên vòng lại không hề khoá lại chương nào.
 func advance_page() -> void:
+	var finished := Chapters.of_page(page_index)
+	var was_last_page_of_chapter := page_in_chapter() == Melodies.PAGES_PER_CHAPTER - 1
 	set_page((page_index + 1) % Chapters.total_pages())
+	if was_last_page_of_chapter:
+		chapter_completed.emit(finished)
 
 
 func set_page(index: int) -> void:
