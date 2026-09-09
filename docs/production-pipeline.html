@@ -1,0 +1,607 @@
+<title>Quy Trình Sản Xuất Rừng Nhạc</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Be+Vietnam+Pro:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style>
+:root{
+  --ground:#EFF3F1; --surface:#FFFFFF; --surface-2:#E4EBE7;
+  --ink:#14262C; --ink-2:#41595F; --ink-3:#71888C;
+  --rule:#D2DDD8; --rule-strong:#B4C4BE;
+  --gold:#A8700C; --gold-soft:#F6E7C4;
+  --magic:#0E7C77; --magic-soft:#D5EDEA;
+  --warn:#9A4A16; --warn-soft:#F7E3D6;
+  --shadow:0 1px 2px rgba(20,38,44,.06),0 8px 24px -12px rgba(20,38,44,.18);
+  --k1:#E0644F; --k2:#E08A2E; --k3:#D8619A; --k4:#3F9455; --k5:#3877B5; --k6:#7C5CC4; --k7:#C7A017;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ground:#0E1A20; --surface:#152730; --surface-2:#1D343E;
+    --ink:#E6EFEC; --ink-2:#A9C0C0; --ink-3:#7E9698;
+    --rule:#26414B; --rule-strong:#365660;
+    --gold:#F2BE5C; --gold-soft:#3A2F14;
+    --magic:#54CDC1; --magic-soft:#123833;
+    --warn:#E9A277; --warn-soft:#3A2418;
+    --shadow:0 1px 2px rgba(0,0,0,.35),0 10px 28px -14px rgba(0,0,0,.7);
+    --k1:#F08472; --k2:#F0A855; --k3:#EE86B4; --k4:#66BC7C; --k5:#5FA0DC; --k6:#A487E0; --k7:#E4C24A;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0E1A20; --surface:#152730; --surface-2:#1D343E;
+  --ink:#E6EFEC; --ink-2:#A9C0C0; --ink-3:#7E9698;
+  --rule:#26414B; --rule-strong:#365660;
+  --gold:#F2BE5C; --gold-soft:#3A2F14;
+  --magic:#54CDC1; --magic-soft:#123833;
+  --warn:#E9A277; --warn-soft:#3A2418;
+  --shadow:0 1px 2px rgba(0,0,0,.35),0 10px 28px -14px rgba(0,0,0,.7);
+  --k1:#F08472; --k2:#F0A855; --k3:#EE86B4; --k4:#66BC7C; --k5:#5FA0DC; --k6:#A487E0; --k7:#E4C24A;
+}
+*{box-sizing:border-box}
+body{background:var(--ground);color:var(--ink);
+  font-family:"Be Vietnam Pro",system-ui,-apple-system,"Segoe UI",sans-serif;
+  font-size:16.5px;line-height:1.65;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1120px;margin:0 auto;padding:0 28px 96px}
+.col{max-width:68ch}
+h1,h2,h3{font-family:"Baloo 2","Be Vietnam Pro",system-ui,sans-serif;text-wrap:balance;margin:0}
+h1{font-size:clamp(2.3rem,5.4vw,3.5rem);font-weight:800;line-height:1.06;letter-spacing:-.015em}
+h2{font-size:clamp(1.5rem,2.7vw,1.95rem);font-weight:700;line-height:1.18;letter-spacing:-.01em}
+h3{font-size:1.1rem;font-weight:700;line-height:1.3}
+p{margin:0}
+a{color:var(--magic)}
+strong{font-weight:600;color:var(--ink)}
+em{font-style:italic;color:var(--ink-2)}
+.mono{font-family:"IBM Plex Mono",ui-monospace,SFMono-Regular,monospace}
+
+/* ---- header ---- */
+header{padding:64px 0 40px;display:flex;flex-direction:column;gap:22px}
+.kicker{font-family:"IBM Plex Mono",monospace;font-size:.72rem;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--ink-3);display:flex;gap:14px;flex-wrap:wrap}
+.kicker span{white-space:nowrap}
+.lede{font-size:1.2rem;line-height:1.55;color:var(--ink-2);max-width:60ch}
+.lede b{color:var(--ink);font-weight:600}
+
+/* ---- key band motif ---- */
+.band{display:flex;height:7px;border-radius:99px;overflow:hidden;gap:2px;max-width:320px}
+.band i{flex:1;display:block}
+
+/* ---- sections ---- */
+section{padding-top:56px;display:flex;flex-direction:column;gap:20px}
+.sec-head{display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--rule);padding-top:18px}
+.sec-num{font-family:"IBM Plex Mono",monospace;font-size:.72rem;letter-spacing:.14em;color:var(--gold);
+  text-transform:uppercase}
+
+/* ---- callouts ---- */
+.decision{background:var(--surface);border:1px solid var(--rule);border-left:4px solid var(--gold);
+  border-radius:4px;padding:20px 22px;display:flex;flex-direction:column;gap:10px;box-shadow:var(--shadow)}
+.decision .tag{font-family:"IBM Plex Mono",monospace;font-size:.7rem;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--gold)}
+.note{background:var(--magic-soft);border-radius:4px;padding:16px 18px;color:var(--ink-2);font-size:.95rem}
+.note b{color:var(--ink)}
+.warnbox{background:var(--warn-soft);border-radius:4px;padding:16px 18px;color:var(--ink-2);font-size:.95rem}
+
+/* ---- loop steps ---- */
+.loop{display:grid;gap:0;counter-reset:s;border:1px solid var(--rule);border-radius:6px;
+  overflow:hidden;background:var(--surface)}
+.loop > div{display:grid;grid-template-columns:44px 1fr;gap:16px;padding:16px 20px;align-items:start}
+.loop > div + div{border-top:1px solid var(--rule)}
+.loop .n{font-family:"IBM Plex Mono",monospace;font-size:.85rem;font-weight:600;color:var(--magic);
+  background:var(--magic-soft);border-radius:99px;width:30px;height:30px;display:grid;place-items:center}
+.loop b{display:block;margin-bottom:2px}
+.loop p{font-size:.94rem;color:var(--ink-2)}
+
+/* ---- tables ---- */
+.tw{overflow-x:auto;border:1px solid var(--rule);border-radius:6px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:.92rem;min-width:520px}
+th,td{text-align:left;padding:11px 16px;border-bottom:1px solid var(--rule);vertical-align:top}
+thead th{font-family:"IBM Plex Mono",monospace;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--ink-3);background:var(--surface-2);border-bottom:1px solid var(--rule-strong)}
+tbody tr:last-child td{border-bottom:0}
+td.num{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;white-space:nowrap}
+.yes{color:var(--magic);font-weight:600}
+.no{color:var(--ink-3)}
+
+/* ---- piano demo ---- */
+.demo{background:var(--surface);border:1px solid var(--rule);border-radius:8px;padding:22px;
+  display:flex;flex-direction:column;gap:16px;box-shadow:var(--shadow)}
+.demo-top{display:flex;justify-content:space-between;align-items:baseline;gap:16px;flex-wrap:wrap}
+.demo-hint{font-size:.88rem;color:var(--ink-3)}
+.keys{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.key{appearance:none;border:1px solid var(--rule-strong);border-bottom-width:4px;background:var(--surface-2);
+  border-radius:6px 6px 9px 9px;padding:14px 4px 12px;cursor:pointer;display:flex;flex-direction:column;
+  align-items:center;gap:6px;transition:transform .07s ease,background .12s ease;color:var(--ink)}
+.key:hover{background:var(--ground)}
+.key:active,.key.on{transform:translateY(3px);border-bottom-width:1px;margin-bottom:3px}
+.key .chip{width:clamp(20px,4.5vw,30px);aspect-ratio:1;border-radius:50%;background:var(--kc);
+  box-shadow:inset 0 -3px 0 rgba(0,0,0,.14)}
+.key .nm{font-size:.74rem;color:var(--ink-2);line-height:1.1}
+.key .lbl{font-family:"IBM Plex Mono",monospace;font-size:.72rem;font-weight:600;
+  color:#fff;background:var(--kc);border-radius:99px;padding:1px 8px}
+.key:focus-visible{outline:2px solid var(--magic);outline-offset:2px}
+.key.glow{border-color:var(--gold);box-shadow:0 0 0 3px var(--gold-soft)}
+.demo-foot{font-size:.86rem;color:var(--ink-3);font-family:"IBM Plex Mono",monospace}
+
+/* ---- scene tree ---- */
+pre{margin:0;font-family:"IBM Plex Mono",monospace;font-size:.83rem;line-height:1.7;
+  background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:18px 20px;
+  overflow-x:auto;color:var(--ink-2)}
+pre b{color:var(--ink);font-weight:600}
+pre i{color:var(--ink-3);font-style:normal}
+code{font-family:"IBM Plex Mono",monospace;font-size:.88em;background:var(--surface-2);
+  padding:1px 6px;border-radius:4px}
+
+/* ---- misc lists ---- */
+ul.clean{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px;color:var(--ink-2)}
+ul.clean li::marker{color:var(--rule-strong)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+.panel{background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:18px 20px;
+  display:flex;flex-direction:column;gap:8px}
+.panel h3{font-size:1rem}
+.panel p{font-size:.93rem;color:var(--ink-2)}
+footer{margin-top:72px;border-top:1px solid var(--rule);padding-top:20px;
+  font-family:"IBM Plex Mono",monospace;font-size:.75rem;color:var(--ink-3);
+  display:flex;gap:16px;flex-wrap:wrap}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+<style>
+/* --- bổ sung cho tài liệu quy trình --- */
+ul.check{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+ul.check li{position:relative;padding-left:30px;color:var(--ink-2)}
+ul.check li::before{content:"";position:absolute;left:0;top:.42em;width:14px;height:14px;
+  border:1.5px solid var(--rule-strong);border-radius:3px;background:var(--surface)}
+ul.check li b,ul.check li strong{color:var(--ink)}
+.spike{background:var(--surface);border:1px solid var(--rule);border-left:4px solid var(--magic);
+  border-radius:4px;padding:20px 22px;display:flex;flex-direction:column;gap:12px;box-shadow:var(--shadow)}
+.spike .tag{font-family:"IBM Plex Mono",monospace;font-size:.7rem;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--magic)}
+.spike h3{font-size:1.05rem}
+.spike p{color:var(--ink-2);font-size:.95rem}
+.spike b,.spike strong{color:var(--ink)}
+table.mini{min-width:0;font-size:.88rem;border:1px solid var(--rule);border-radius:4px}
+table.mini td,table.mini th{padding:8px 12px}
+.small{font-size:.87rem;color:var(--ink-3)}
+td.verify{font-family:"IBM Plex Mono",monospace;font-size:.76rem;color:var(--warn);white-space:nowrap}
+td.ok{font-family:"IBM Plex Mono",monospace;font-size:.76rem;color:var(--magic);white-space:nowrap}
+sup{font-size:.7em;color:var(--gold)}
+section h3{margin-top:14px}
+section h3:first-of-type{margin-top:0}
+header .note{font-size:.95rem}
+</style>
+
+<div class="wrap">
+<header>
+  <div class="band"><i style="background:var(--k1)"></i><i style="background:var(--k2)"></i><i style="background:var(--k3)"></i><i style="background:var(--k4)"></i><i style="background:var(--k5)"></i><i style="background:var(--k6)"></i><i style="background:var(--k7)"></i></div>
+  <div class="kicker"><span>Quy trình sản xuất · v1</span><span>Indie một người</span><span>Godot 4.7 · Android trước</span></div>
+  <h1>Rừng Nhạc<br>Quy trình sản xuất</h1>
+  <p class="lede">Từ máy trống đến game nằm trên Google Play. Tài liệu này là <b>danh sách việc phải làm theo thứ tự</b>, không phải bàn về thiết kế — phần thiết kế gameplay nằm ở <a href="gameplay-design.html">gameplay-design.html</a>. Trọng tâm: <b>mỹ thuật</b> và <b>âm thanh</b>, hai thứ chiếm phần lớn thời gian của một người làm một mình.</p>
+  <div class="note" style="max-width:68ch"><b>Thứ tự trong tài liệu này quan trọng hơn nội dung.</b> Ba việc rủi ro nhất được đẩy lên Tuần 0, trước khi vẽ một pixel nào. Lý do đơn giản: nếu một trong ba việc đó bất khả thi, thiết kế phải đổi — và bạn muốn biết điều đó vào ngày thứ ba, không phải tuần thứ tư.</div>
+</header>
+
+<section id="chuanbi">
+  <div class="sec-head">
+    <div class="sec-num">Bước 0 · Trước khi mở Godot</div>
+    <h2>Tài khoản, thiết bị, phần mềm, tiền</h2>
+  </div>
+  <div class="tw">
+    <table>
+      <thead><tr><th>Hạng mục</th><th>Chi phí</th><th>Bắt buộc?</th><th>Ghi chú</th></tr></thead>
+      <tbody>
+        <tr><td>Google Play Developer</td><td class="num">25 USD · một lần</td><td class="yes">Có</td><td>Duyệt tài khoản có thể mất vài ngày — <strong>đăng ký ngay hôm nay</strong>, đừng đợi đến lúc ship</td></tr>
+        <tr><td>Apple Developer</td><td class="num">99 USD / năm</td><td class="no">Để sau</td><td>Cần thêm máy Mac. Không làm ở v1</td></tr>
+        <tr><td>Máy Android thật, đời rẻ</td><td class="num">~2–3 tr</td><td class="yes">Có</td><td>Máy Android tầm thấp 2–3 năm tuổi. Đây là máy đo độ trễ âm thanh — máy cao cấp sẽ nói dối bạn</td></tr>
+        <tr><td>Godot 4.7 (bản standard)</td><td class="num">0</td><td class="yes">Có</td><td>GDScript, không cần bản .NET</td></tr>
+        <tr><td>Android SDK + JDK</td><td class="num">0</td><td class="yes">Có</td><td>Cài qua Android Studio hoặc chỉ command-line tools</td></tr>
+        <tr><td>Audacity <i>hoặc</i> Reaper</td><td class="num">0 · hoặc 60 USD</td><td class="yes">Có</td><td>Audacity đủ dùng cho toàn bộ v1</td></tr>
+        <tr><td>Krita hoặc Photoshop</td><td class="num">0 · hoặc thuê bao</td><td class="yes">Có</td><td>Để tách nền, chỉnh màu, cắt sprite. Krita miễn phí là đủ</td></tr>
+        <tr><td>Công cụ sinh ảnh AI</td><td class="num">~10–25 USD / tháng</td><td class="yes">Có<sup>*</sup></td><td>Xem mục 3 — kiểm tra điều khoản cho phép dùng thương mại</td></tr>
+        <tr><td>Thư viện âm mẫu</td><td class="num">0–30 USD</td><td class="no">Tùy</td><td>Xem mục 4 — ưu tiên CC0</td></tr>
+        <tr><td>Git + Git LFS</td><td class="num">0</td><td class="yes">Có</td><td>File ảnh/âm thanh đi qua LFS. Repo này chưa có git — <code>git init</code> trước tiên</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="col" style="color:var(--ink-2);font-size:.93rem"><sup>*</sup> Bắt buộc <em>nếu</em> bạn không tự vẽ và không mua asset pack. Mục 3.5 so sánh cả ba con đường.</p>
+
+  <h3>Việc làm ngay trong ngày đầu</h3>
+  <ul class="check">
+    <li>Đăng ký tài khoản Google Play Developer (chờ duyệt chạy nền trong lúc bạn code)</li>
+    <li><code>git init</code> + <code>git lfs track "*.png" "*.wav" "*.ogg"</code> + commit đầu tiên</li>
+    <li>Chọn <strong>package name</strong> vĩnh viễn, ví dụ <code>com.tenban.rungnhac</code> — đổi sau khi phát hành là không thể</li>
+    <li>Cài Android SDK và chạy thử một build rỗng lên máy thật (xem Spike C)</li>
+  </ul>
+</section>
+
+<section id="spike">
+  <div class="sec-head">
+    <div class="sec-num">Tuần 0 · Ba ngày</div>
+    <h2>Spike: chứng minh ba thứ trước khi vẽ pixel đầu tiên</h2>
+  </div>
+  <div class="col"><p>Spike là code vứt đi. Mục tiêu không phải làm đẹp mà là trả lời <em>có / không</em> cho một câu hỏi kỹ thuật. Mỗi spike có hạn chót cứng — hết hạn thì lấy phương án dự phòng, không kéo dài.</p></div>
+
+  <div class="spike">
+    <div class="tag">Spike A · 1,5 ngày · rủi ro cao nhất</div>
+    <h3>Xuất được một file MP4 dọc ra thư viện ảnh của máy Android</h3>
+    <p>Cơ chế lan truyền của game là clip 12 giây. <strong>Godot không có sẵn bộ mã hóa video.</strong> Nếu việc này khó hơn dự tính, toàn bộ màn hình kết chương phải thiết kế lại — nên phải biết trước khi làm bất cứ thứ gì khác.</p>
+    <p><b>Đạt khi:</b> một file <code>.mp4</code> xấu xí, 3 giây, xuất hiện trong Thư viện ảnh của máy Android thật và mở được bằng ứng dụng ảnh mặc định.</p>
+    <table class="mini">
+      <thead><tr><th>Phương án</th><th>Thử theo thứ tự</th></tr></thead>
+      <tbody>
+        <tr><td class="num">A1</td><td>Godot Android plugin gọi <code>MediaCodec</code> của hệ điều hành để mã hóa frame</td></tr>
+        <tr><td class="num">A2</td><td>Plugin cộng đồng có sẵn cho ghi hình / mã hóa video trong Godot</td></tr>
+        <tr><td class="num">A3</td><td><strong>Dự phòng tốt:</strong> xuất <em>ảnh tĩnh PNG dọc</em> (cây thần đã mọc xong + tên bé) kèm <em>file audio giai điệu</em>. Chia sẻ được, vẫn đáng khoe, dễ hơn nhiều</td></tr>
+        <tr><td class="num">A4</td><td><strong>Dự phòng tối thiểu:</strong> màn kết chương hiển thị gợi ý "quay màn hình để lưu lại" — clip tự phát 12 giây cho phụ huynh quay</td></tr>
+      </tbody>
+    </table>
+    <p class="small">Nếu hết 1,5 ngày mà A1/A2 chưa chạy: chốt A3 cho v1, ghi lại quyết định vào tài liệu gameplay, đi tiếp. Đừng quay lại.</p>
+  </div>
+
+  <div class="spike">
+    <div class="tag">Spike B · 0,5 ngày</div>
+    <h3>Độ trễ chạm → tiếng trên máy Android rẻ</h3>
+    <p>Làm một scene duy nhất: 7 nút, 7 file <code>.wav</code> preload, pool <code>AudioStreamPlayer</code>. Export lên máy thật. Chạm liên tục thật nhanh bằng cả hai tay.</p>
+    <p><b>Đạt khi:</b> nghe thấy tiếng "ngay lập tức", không có nốt nào rớt khi đập 10 lần/giây, không có tiếng rè khi nhiều nốt chồng nhau.</p>
+    <p><b>Nếu trượt:</b> giảm <code>audio/driver/output_latency</code>, đổi sample sang mono 44.1 kHz, cắt bớt phần lặng ở đầu file, kiểm tra không có <code>instantiate()</code> nào trong đường chạm.</p>
+  </div>
+
+  <div class="spike">
+    <div class="tag">Spike C · 1 ngày</div>
+    <h3>Đi trọn đường ống phát hành với một game rỗng</h3>
+    <p>Một scene chỉ có chữ "hello". Xuất AAB đã ký bằng keystore thật, tải lên kênh <em>Internal testing</em> của Play Console, cài về máy từ link mời. Làm việc này khi trong tay chưa có gì để mất.</p>
+    <p><b>Đạt khi:</b> bạn cài được game từ Play Store lên máy mình và nó chạy.</p>
+    <p class="small">Đây là bước hay bị dời đến phút chót và luôn tốn nhiều thời gian hơn dự tính: tài khoản chờ duyệt, form khai báo, chữ ký, quyền. Làm sớm thì nó là một ngày; làm muộn thì nó là một tuần trong lúc đang cháy.</p>
+  </div>
+</section>
+
+<section id="moitruong">
+  <div class="sec-head">
+    <div class="sec-num">Bước 1</div>
+    <h2>Dựng môi trường Android</h2>
+  </div>
+  <div class="col"><p>Các gói SDK chính xác cho Godot 4.7 (chạy bằng <code>sdkmanager</code> nếu bạn không dùng Android Studio):</p></div>
+  <pre>sdkmanager --sdk_root=&lt;android_sdk_path&gt; \
+  "platform-tools" "build-tools;35.0.1" "platforms;android-35" \
+  "cmdline-tools;latest" "cmake;3.10.2.4988404" "ndk;28.1.13356709"</pre>
+  <ul class="check">
+    <li>Cài <strong>JDK</strong> đúng phiên bản mà Godot 4.7 yêu cầu — <span class="small mono">con số này đổi theo từng bản Godot, kiểm tra ở trang chính thức</span></li>
+    <li>Trong Godot: <b>Editor → Editor Settings → Export → Android</b>, trỏ đúng đường dẫn Android SDK và Java</li>
+    <li><b>Project → Install Android Build Template</b> — bắt buộc, vì AAB chỉ tạo được qua Gradle build</li>
+    <li>Trong Export preset Android, bật <b>Gradle Build</b></li>
+    <li>Bật <b>USB debugging</b> trên máy thật, kiểm tra <code>adb devices</code> nhìn thấy máy</li>
+  </ul>
+  <div class="note col">Menu và tên tuỳ chọn có thể đổi giữa các bản Godot. Khi kẹt, tra trang chính thức <a href="https://docs.godotengine.org/en/4.7/tutorials/export/exporting_for_android.html">docs.godotengine.org · Exporting for Android</a> thay vì đoán.</div>
+</section>
+
+<section id="art">
+  <div class="sec-head">
+    <div class="sec-num">Bước 2 · Phần dài nhất</div>
+    <h2>Mỹ thuật: từ một ảnh mock đến 60 file dùng được</h2>
+  </div>
+  <div class="col"><p>Ảnh mock của bạn được sinh bằng AI từ một prompt. Với một người làm một mình, đó là con đường thực tế — nên quy trình dưới đây xây quanh nó. Nhưng cần nói thẳng vấn đề: <strong>sinh ảnh không khó, giữ 60 ảnh trông như cùng một cuốn sách mới khó.</strong> Toàn bộ mục này là để giải quyết chuyện nhất quán.</p></div>
+
+  <h3>2.1 · Khóa phong cách trước khi sản xuất</h3>
+  <p class="col">Việc đầu tiên là biến ảnh mock thành một <strong>trang khóa phong cách</strong> — một file duy nhất bạn mở ra mỗi lần sinh asset mới. Rút từ chính ảnh mock ra:</p>
+  <div class="tw">
+    <table>
+      <thead><tr><th>Thuộc tính</th><th>Chốt cụ thể (rút từ ảnh mock)</th></tr></thead>
+      <tbody>
+        <tr><td>Bảng màu chủ đạo</td><td>Lấy 8–10 mã hex bằng công cụ hút màu từ ảnh mock: xanh mòng két nền, vàng kho báu, hồng/tím ánh sáng phép, nâu gỗ, kem sáng</td></tr>
+        <tr><td>Nét viền</td><td>Có viền mềm, cùng độ dày ở mọi asset, màu viền là bản tối hơn của màu vùng chứ không phải đen thuần</td></tr>
+        <tr><td>Ánh sáng</td><td>Nguồn sáng dịu từ trên xuống, bóng đổ mềm, không có bóng cứng</td></tr>
+        <tr><td>Tỉ lệ nhân vật</td><td>Đầu to, thân tròn, mắt lớn — tỉ lệ khoảng 1 đầu : 1,5 thân</td></tr>
+        <tr><td>Chất liệu</td><td>Gỗ có vân, pha lê trong, lá bán trong suốt phát sáng</td></tr>
+        <tr><td>Điều <em>không</em> có</td><td>Không răng nanh, không bóng tối gắt, không chi tiết đáng sợ — đây là game cho trẻ 3 tuổi</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="decision col">
+    <div class="tag">Prompt xương sống</div>
+    <p>Viết <strong>một đoạn mô tả phong cách cố định</strong> và dán nó vào <em>mọi</em> prompt, chỉ đổi phần chủ thể ở đầu. Ví dụ:</p>
+    <p class="mono small">"[CHỦ THỂ]. Children's picture-book illustration, soft rounded shapes, gentle outlines in darker tone of base color, warm diffused top light, teal-and-gold palette [dán mã hex], flat 2D digital painting, friendly big-eyed character, no harsh shadows, plain white background, centered."</p>
+    <p>Phần <span class="mono">[CHỦ THỂ]</span> là thứ duy nhất thay đổi. Lưu toàn bộ prompt đã dùng vào <code>docs/art-log.md</code> — bạn sẽ cần sinh lại asset sau 3 tháng.</p>
+  </div>
+
+  <h3>2.2 · Danh sách asset và kích thước</h3>
+  <p class="col">Thiết kế ở độ phân giải <strong>1280×720</strong>, xuất ảnh ở <strong>2×</strong> để không vỡ trên máy màn hình dày điểm ảnh.</p>
+  <div class="tw">
+    <table>
+      <thead><tr><th>Asset</th><th>Số file</th><th>Kích thước xuất (2×)</th><th>Ghi chú</th></tr></thead>
+      <tbody>
+        <tr><td>Con vật trên phím</td><td class="num">7 × 3 tư thế = 21</td><td class="num">360 × 360</td><td>Tư thế: nghỉ · nảy lên · hát. Nền trong suốt</td></tr>
+        <tr><td>Cây thần</td><td class="num">8 giai đoạn</td><td class="num">1000 × 1600</td><td>Sinh nguyên cây từng giai đoạn, không ghép mảnh</td></tr>
+        <tr><td>Lá phát sáng</td><td class="num">7 màu × 2 trạng thái</td><td class="num">160 × 160</td><td>Có thể vẽ 1 lá trắng rồi nhuộm 7 màu bằng <code>modulate</code> trong Godot — tiết kiệm 12 file</td></tr>
+        <tr><td>Phù thủy nhỏ</td><td class="num">3 tư thế</td><td class="num">500 × 600</td><td></td></tr>
+        <tr><td>Nền rừng</td><td class="num">3 lớp × 1 cảnh</td><td class="num">2560 × 1440</td><td>Tách 3 lớp để cuộn thị sai. 1 bối cảnh duy nhất ở v1</td></tr>
+        <tr><td>Khung sách + bong bóng thoại</td><td class="num">2</td><td class="num">9-slice</td><td>Dùng NinePatchRect để co giãn, không cần nhiều kích thước</td></tr>
+        <tr><td>Thân đàn + phím</td><td class="num">3</td><td class="num">2560 × 500</td><td>Phím trắng, phím đen trang trí, thân gỗ</td></tr>
+        <tr><td>UI icon</td><td class="num">12</td><td class="num">180 × 180</td><td>Menu, chương, lọ sao, hạt sao, nút lưu, mũi tên…</td></tr>
+        <tr><td>Hiệu ứng lấp lánh</td><td class="num">3</td><td class="num">128 × 128</td><td>Hạt cho GPUParticles2D — đơn giản, đơn sắc, dùng modulate đổi màu</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>2.3 · Đường ống cho từng asset — 5 bước</h3>
+  <div class="loop">
+    <div><span class="n">1</span><div><b>Sinh theo lô, không sinh lẻ</b><p>Sinh <strong>cả 7 con vật trong MỘT ảnh</strong> — "seven cute animal faces in a row: lion, bear, rabbit, cat, monkey, elephant, owl" + prompt xương sống. Sinh chung một khung ép chúng cùng phong cách, cùng ánh sáng, cùng tỉ lệ. Rồi cắt ra. Đây là mẹo quan trọng nhất của cả mục này.</p></div></div>
+    <div><span class="n">2</span><div><b>Duyệt bằng contact sheet</b><p>Xếp mọi biến thể vào một trang duy nhất, thu nhỏ còn 30%, nhìn một lượt. Cái nào "nhảy ra" khỏi tấm chung là cái lạc phong cách — bỏ, sinh lại. Đừng bao giờ duyệt asset khi nhìn nó một mình.</p></div></div>
+    <div><span class="n">3</span><div><b>Tách nền &amp; làm sạch</b><p>Krita: tách nền, xóa viền thừa, làm mượt rìa. Kiểm tra rìa không còn viền trắng — lỗi này chỉ lộ ra khi đặt lên nền tối trong game.</p></div></div>
+    <div><span class="n">4</span><div><b>Chuẩn hóa</b><p>Ép về đúng bảng màu đã khóa (lớp điều chỉnh màu), thống nhất độ sáng, canh giữa trong khung vuông đúng kích thước, đặt gốc tọa độ nhất quán (chân con vật luôn ở cùng vị trí y).</p></div></div>
+    <div><span class="n">5</span><div><b>Xuất &amp; đặt tên</b><p>PNG-24 có alpha. Tên file theo khuôn: <code>animal_lion_idle.png</code>, <code>tree_stage_03.png</code>, <code>ui_star_jar.png</code>. Đặt tên tùy hứng ở file thứ 60 là địa ngục.</p></div></div>
+  </div>
+
+  <h3>2.4 · Đưa vào Godot</h3>
+  <div class="tw">
+    <table>
+      <thead><tr><th>Thiết lập import</th><th>Giá trị</th><th>Vì sao</th></tr></thead>
+      <tbody>
+        <tr><td>Filter</td><td>Bật (Linear)</td><td>Art vẽ tay mềm mại, không phải pixel art</td></tr>
+        <tr><td>Mipmaps</td><td>Tắt</td><td>Game 2D không thu nhỏ nhiều; bật chỉ tốn bộ nhớ</td></tr>
+        <tr><td>Compress mode</td><td>Lossless cho UI &amp; nhân vật</td><td>Nén VRAM làm bẩn rìa alpha ở nét mềm</td></tr>
+        <tr><td>Fix Alpha Border</td><td>Bật</td><td>Chống viền tối quanh sprite</td></tr>
+        <tr><td>Nhiều tư thế</td><td>Một <code>SpriteFrames</code> cho mỗi con vật</td><td>Đổi tư thế bằng <code>play("bounce")</code>, không hoán file thủ công</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="note col"><b>Vùng an toàn:</b> thiết kế ở 1280×720 nhưng máy 20:9 sẽ cắt hai bên. Neo hàng phím theo cạnh dưới, chừa <strong>60 px mỗi bên</strong> không đặt gì quan trọng, và kiểm tra ở tỉ lệ 20:9 trước khi coi một màn hình là xong.</div>
+
+  <h3>2.5 · Ba con đường, chọn một</h3>
+  <div class="tw">
+    <table>
+      <thead><tr><th>Cách</th><th>Tiền</th><th>Thời gian</th><th>Rủi ro chính</th></tr></thead>
+      <tbody>
+        <tr><td><strong>AI + tự làm sạch</strong></td><td class="num">~25 USD</td><td class="num">2–3 tuần</td><td>Mất nhất quán; cần kỷ luật ở mục 2.1–2.3</td></tr>
+        <tr><td><strong>Mua asset pack</strong></td><td class="num">20–60 USD</td><td class="num">3–5 ngày</td><td>Game trông giống game khác; hiếm pack có đúng 7 con vật hợp phong cách</td></tr>
+        <tr><td><strong>Thuê họa sĩ vẽ 7 con vật, còn lại tự làm</strong></td><td class="num">150–500 USD</td><td class="num">2–4 tuần chờ</td><td>Đắt nhất, nhưng 7 con vật là thứ người ta nhớ về game này</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="col" style="color:var(--ink-2)">Khối 2–3 tuần này <strong>không</strong> nằm trong bốn tuần lập trình ở mục 5 — xem bảng "Lịch thật của cả dự án". Gợi ý cho v1: <strong>đường thứ nhất</strong>. Nếu game có dấu hiệu sống sau khi ship, dùng doanh thu để đi đường thứ ba và thay bộ con vật ở bản cập nhật — đó cũng là một lý do tự nhiên để người chơi quay lại.</p>
+
+  <div class="warnbox col"><b>Về bản quyền ảnh AI.</b> Trước khi dùng, đọc điều khoản của công cụ bạn chọn xem <em>có cho phép dùng thương mại</em> hay không — điều này khác nhau giữa các công cụ và giữa các gói thuê bao. Đừng sinh ảnh theo phong cách của một studio hay một nhân vật có bản quyền. Lưu log prompt cho từng asset. Ở một số nơi, ảnh sinh hoàn toàn bằng máy có thể <em>không</em> được bảo hộ quyền tác giả — nghĩa là bạn dùng được nhưng khó ngăn người khác dùng lại; với v1 điều đó chấp nhận được, chỉ cần biết mà quyết định.</div>
+</section>
+
+<section id="audio">
+  <div class="sec-head">
+    <div class="sec-num">Bước 3 · Phần dài thứ hai</div>
+    <h2>Âm thanh: 30 file, nhưng chỉ thu 10</h2>
+  </div>
+
+  <h3>3.1 · Mẹo tiết kiệm lớn nhất: một mẫu, bảy nốt</h3>
+  <div class="col"><p>Tài liệu gameplay đếm 21 file nốt (7 nốt × 3 giọng thú). Đừng làm 21 file. <strong>Thu hoặc tìm một mẫu duy nhất cho mỗi con vật, tune về nốt G4, rồi để Godot đổi cao độ.</strong> Chỉnh <code>pitch_scale</code> của <code>AudioStreamPlayer</code> là xong.</p>
+  <p>Chọn G4 làm mẫu gốc là có chủ đích: nó nằm giữa thang, nên khoảng dịch tối đa chỉ ±7 nửa cung — vừa đủ để giọng thú không biến thành tiếng chuột hay tiếng quái vật.</p></div>
+  <div class="tw">
+    <table>
+      <thead><tr><th>Phím</th><th>Nốt</th><th>Tần số</th><th>Lệch so với G4</th><th><code>pitch_scale</code></th></tr></thead>
+      <tbody>
+        <tr><td>1 · Sư tử</td><td>C4</td><td class="num">261,63 Hz</td><td class="num">−7</td><td class="num">0,667</td></tr>
+        <tr><td>2 · Gấu</td><td>D4</td><td class="num">293,66 Hz</td><td class="num">−5</td><td class="num">0,749</td></tr>
+        <tr><td>3 · Thỏ</td><td>E4</td><td class="num">329,63 Hz</td><td class="num">−3</td><td class="num">0,841</td></tr>
+        <tr><td>4 · Mèo</td><td>G4</td><td class="num">392,00 Hz</td><td class="num">0 · gốc</td><td class="num">1,000</td></tr>
+        <tr><td>5 · Khỉ</td><td>A4</td><td class="num">440,00 Hz</td><td class="num">+2</td><td class="num">1,122</td></tr>
+        <tr><td>6 · Voi</td><td>C5</td><td class="num">523,25 Hz</td><td class="num">+5</td><td class="num">1,335</td></tr>
+        <tr><td>7 · Cú</td><td>D5</td><td class="num">587,33 Hz</td><td class="num">+7</td><td class="num">1,498</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="note col">Đổi <code>pitch_scale</code> cũng làm mẫu ngắn/dài đi theo. Với tiếng thú ngắn 0,4–0,8 giây thì điều đó không thành vấn đề — thậm chí còn duyên. Với pad nền thì có, nên pad không dùng cách này.</div>
+
+  <h3>3.2 · Lấy âm mẫu ở đâu — và cái bẫy giấy phép</h3>
+  <div class="tw">
+    <table>
+      <thead><tr><th>Giấy phép</th><th>Dùng được cho game bán trên store?</th><th>Việc phải làm</th></tr></thead>
+      <tbody>
+        <tr><td><strong>CC0 / Public Domain</strong></td><td class="yes">Được, thoải mái</td><td>Vẫn lưu link nguồn vào log</td></tr>
+        <tr><td><strong>CC-BY</strong></td><td class="yes">Được</td><td>Bắt buộc ghi công đúng tên tác giả trong màn hình Credits</td></tr>
+        <tr><td><strong>CC-BY-NC</strong></td><td class="no">Không</td><td>"NC" = phi thương mại. App trên store là thương mại kể cả khi miễn phí</td></tr>
+        <tr><td><strong>"Free download" không ghi rõ</strong></td><td class="no">Coi như không</td><td>Đây là bẫy phổ biến nhất. Không rõ giấy phép thì không dùng</td></tr>
+        <tr><td><strong>Mua thư viện thương mại</strong></td><td class="yes">Được</td><td>Lưu hóa đơn — bằng chứng khi bị khiếu nại</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="decision col">
+    <div class="tag">Làm ngay từ file đầu tiên</div>
+    <p>Tạo <code>docs/audio-log.md</code>, mỗi dòng một file: <span class="mono">tên file · nguồn · URL · giấy phép · tên tác giả</span>. Ba mươi dòng viết dần thì mất 20 phút; dựng lại từ trí nhớ sau 4 tháng thì mất một ngày và vẫn sai.</p>
+  </div>
+  <p class="col">Cách rẻ và vui nhất cho tiếng thú: <strong>tự thu giọng mình</strong> bằng chính điện thoại. Giọng người bắt chước tiếng thú, hát đúng nốt G4, rồi pitch-shift — nghe ấm và hợp sách tranh hơn tiếng thú thật, và không có vấn đề bản quyền nào cả.</p>
+
+  <h3>3.3 · Xử lý trong Audacity — cùng một quy trình cho mọi mẫu</h3>
+  <div class="loop">
+    <div><span class="n">1</span><div><b>Cắt phần lặng ở đầu</b><p>Kéo mốc bắt đầu đúng vào chỗ sóng âm nhô lên. <strong>Attack dưới 10 ms</strong> — mỗi mili-giây lặng ở đầu file là mili-giây trễ mà ngón tay bé cảm nhận được.</p></div></div>
+    <div><span class="n">2</span><div><b>Chỉnh về đúng cao độ G4</b><p>Dùng Change Pitch, đối chiếu với một nốt G4 chuẩn. Sai cao độ ở mẫu gốc sẽ làm cả 7 phím lệch tông so với pad nền.</p></div></div>
+    <div><span class="n">3</span><div><b>Fade out đuôi</b><p>Fade 30–50 ms ở cuối để không có tiếng "cụp" khi âm bị cắt đột ngột.</p></div></div>
+    <div><span class="n">4</span><div><b>Chuẩn hóa âm lượng</b><p>Normalize đỉnh về <strong>−3 dBFS</strong> cho mọi mẫu, rồi nghe lại cả bộ liên tiếp và chỉnh tay cho <em>cảm giác</em> to bằng nhau — voi nghe sẽ to hơn thỏ dù cùng số đo.</p></div></div>
+    <div><span class="n">5</span><div><b>Xuất</b><p><strong>WAV · 44,1 kHz · 16-bit · mono</strong> cho tất cả tiếng nốt và SFX. Mono là cố ý: nhẹ hơn, và loa điện thoại vốn gần như mono.</p></div></div>
+  </div>
+
+  <h3>3.4 · Danh sách file âm thanh v1</h3>
+  <div class="tw">
+    <table>
+      <thead><tr><th>Nhóm</th><th>Số file</th><th>Định dạng</th><th>Khuôn tên</th></tr></thead>
+      <tbody>
+        <tr><td>Giọng thú (mẫu gốc G4)</td><td class="num">7</td><td>WAV mono</td><td><code>voice_lion_g4.wav</code></td></tr>
+        <tr><td>Nốt đàn nền (harp/kalimba)</td><td class="num">1</td><td>WAV mono</td><td><code>note_base_g4.wav</code> — phát chồng dưới giọng thú cho dày tiếng</td></tr>
+        <tr><td>Pad hòa âm nền</td><td class="num">1 loop</td><td>OGG stereo</td><td><code>bgm_forest_loop.ogg</code></td></tr>
+        <tr><td>SFX</td><td class="num">8</td><td>WAV mono</td><td><code>sfx_star_ting.wav</code>, <code>sfx_leaf_bloom.wav</code>, <code>sfx_chest_open.wav</code>…</td></tr>
+        <tr><td>Nhạc màn kết chương</td><td class="num">1</td><td>OGG stereo</td><td><code>bgm_chapter_end.ogg</code> — 12 giây, khớp độ dài clip chia sẻ</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="col"><strong>Tổng: 18 file.</strong> Không phải 30. Tiết kiệm này đến từ pitch-shift ở mục 3.1 và từ việc dùng chung một nốt đàn nền cho cả 7 phím.</p>
+
+  <h3>3.5 · Pad hòa âm — thứ khiến mọi nốt nghe hay</h3>
+  <div class="col"><p>Đây là chi tiết nhỏ có tác động lớn nhất trong toàn bộ phần âm thanh. Soạn <strong>8 ô nhịp</strong>, vòng hợp âm <span class="mono">C – Am – F – G</span>, nhạc cụ dây hoặc harp mềm, tempo chậm khoảng 72 BPM, phát lặp vô hạn ở <strong>−18 dB</strong>.</p></div>
+  <ul class="check">
+    <li>Loop phải liền mạch: cắt đúng ở vạch ô nhịp, kiểm tra bằng cách nghe lặp 5 vòng liên tiếp</li>
+    <li>Không có nhạc cụ gõ mạnh — không trống, không tiếng gắt ở dải cao</li>
+    <li>Xuất OGG (nhạc dài dùng OGG cho nhẹ file; nốt ngắn vẫn dùng WAV cho nhanh)</li>
+    <li>Trong Godot bật <b>Loop</b> ở phần import của file OGG</li>
+  </ul>
+
+  <h3>3.6 · Bus và mixing cho tai trẻ em</h3>
+  <div class="tw">
+    <table>
+      <thead><tr><th>Bus</th><th>Mức</th><th>Ghi chú</th></tr></thead>
+      <tbody>
+        <tr><td>Master</td><td class="num">0 dB</td><td>Gắn <b>Limiter</b> ở đây — chặn mọi đỉnh giật mình khi bé đập 7 phím cùng lúc</td></tr>
+        <tr><td>Notes</td><td class="num">−3 dB</td><td>Giọng thú + nốt nền. Ưu tiên cao nhất</td></tr>
+        <tr><td>Music</td><td class="num">−18 dB</td><td>Pad nền. Không bao giờ được lấn tiếng nốt</td></tr>
+        <tr><td>SFX</td><td class="num">−8 dB</td><td>Hạt sao, lá nở, rương mở</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="warnbox col"><b>Kiểm tra bằng loa ngoài của chiếc điện thoại rẻ, không phải tai nghe.</b> Trẻ con chơi bằng loa ngoài, thường là loa nhỏ và méo. Một bản mix hay trên tai nghe có thể biến mất hoàn toàn trên loa điện thoại. Nghe thử ở mức âm lượng 50% và 100%, và bảo đảm không có âm nào làm người lớn giật mình ở 100%.</div>
+
+  <h3>3.7 · Bộ phát âm thanh trong Godot</h3>
+  <pre># AudioDirector.gd — autoload
+<i>const POOL_SIZE := 16</i>
+<i>const PITCH := {"C4":0.667,"D4":0.749,"E4":0.841,"G4":1.0,"A4":1.122,"C5":1.335,"D5":1.498}</i>
+
+<i>const VOICES := {</i>
+    <i>"lion": preload("res://audio/voice_lion_g4.wav"),</i>
+    <i>"bear": preload("res://audio/voice_bear_g4.wav"),</i>
+    <i># … 5 con còn lại. preload() nạp lúc biên dịch, không tốn gì lúc chạm</i>
+<i>}</i>
+
+<b>var _pool: Array[AudioStreamPlayer] = []</b>
+<b>var _next := 0</b>
+
+<b>func _ready() -&gt; void:</b>
+    <i>for i in POOL_SIZE:</i>
+        <i>var p := AudioStreamPlayer.new()</i>
+        <i>p.bus = "Notes"</i>
+        <i>add_child(p); _pool.append(p)</i>
+
+<b>func play_key(animal: String, note: String) -&gt; void:</b>
+    <i>var p := _pool[_next]; _next = (_next + 1) % POOL_SIZE</i>
+    <i>p.stream = VOICES[animal]</i>
+    <i>p.pitch_scale = PITCH[note]</i>
+    <i>p.play()</i>          <b># không new(), không load() — đường chạm phải sạch</b></pre>
+  <ul class="check">
+    <li>Preload toàn bộ stream lúc khởi động, <strong>không</strong> <code>load()</code> khi chạm</li>
+    <li>Pool quay vòng: nốt thứ 17 cắt nốt thứ 1 — với 7 phím thì không bao giờ chạm ngưỡng</li>
+    <li>Đặt <code>audio/driver/output_latency = 15</code> trong Project Settings, đo lại trên máy thật</li>
+  </ul>
+</section>
+
+<section id="devloop">
+  <div class="sec-head">
+    <div class="sec-num">Bước 4</div>
+    <h2>Bốn tuần phát triển</h2>
+  </div>
+  <div class="col"><p>Mỗi tuần kết thúc bằng một bản chạy được trên máy thật. Không có tuần nào kết thúc bằng "code xong nhưng chưa chạy".</p></div>
+  <div class="decision col">
+    <div class="tag">Chốt lịch</div>
+    <p><strong>Dùng art tạm cho đến hết tuần 3.</strong> Hình chữ nhật màu và vòng tròn màu là đủ: mỗi phím một chấm màu, cây thần là 8 hình khối cao dần, lá là 7 chấm nhỏ. Không vẽ gì thật trong bốn tuần này.</p>
+    <p>Lý do không chỉ là lịch: bạn <em>không muốn</em> có 60 asset hoàn thiện trước khi biết vòng gọi–đáp có giữ chân được đứa trẻ 4 tuổi hay không. Nếu vòng lặp phải đổi, art tạm đổi trong 5 phút còn art thật thì không.</p>
+    <p>Sản xuất mỹ thuật (mục 2) và âm thanh (mục 3) là <strong>khối công việc riêng</strong>, chạy sau — hoặc chạy xen kẽ vào buổi tối trong lúc code ban ngày.</p>
+  </div>
+  <div class="tw">
+    <table>
+      <thead><tr><th>Tuần</th><th>Làm</th><th>Xong khi</th></tr></thead>
+      <tbody>
+        <tr><td class="num">0</td><td>Ba spike + môi trường + khóa phong cách</td><td>Ba câu hỏi có/không đã được trả lời; trang phong cách đã chốt</td></tr>
+        <tr><td class="num">1</td><td>Đàn 7 phím + AudioDirector + con vật nảy + pad nền</td><td>Đập loạn 30 giây trên máy rẻ vẫn hay và không trễ</td></tr>
+        <tr><td class="num">2</td><td>Cây thần 8 giai đoạn + vòng gọi–đáp + lọ hạt sao</td><td>Chơi trọn một trang truyện từ đầu đến lúc cây trổ quả</td></tr>
+        <tr><td class="num">3</td><td>3 chương nội dung + bản đồ chương + khóa giữ 2 giây ở Menu</td><td>Một đứa trẻ thật chơi 5 phút không cần người lớn chỉ</td></tr>
+        <tr><td class="num">4</td><td>Màn kết chương + luồng chia sẻ + cổng phụ huynh</td><td>Một phụ huynh gửi được clip cho người khác mà không hỏi cách</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Lịch thật của cả dự án</h3>
+  <p class="col">Bảng trên chỉ đếm <strong>tuần lập trình</strong>. Cộng cả mỹ thuật, âm thanh và phát hành, con số thực tế cho một người làm một mình là:</p>
+  <div class="tw">
+    <table>
+      <thead><tr><th>Khối công việc</th><th>Thời gian</th><th>Chạy song song được?</th></tr></thead>
+      <tbody>
+        <tr><td>Tuần 0 — spike + môi trường + khóa phong cách</td><td class="num">3–4 ngày</td><td class="no">Không — phải xong trước</td></tr>
+        <tr><td>Lập trình (tuần 1–4, dùng art tạm)</td><td class="num">4 tuần</td><td class="yes">Có</td></tr>
+        <tr><td>Sản xuất mỹ thuật — 60 asset</td><td class="num">2–3 tuần</td><td class="yes">Có — xen kẽ buổi tối</td></tr>
+        <tr><td>Sản xuất âm thanh — 18 file</td><td class="num">3–4 ngày</td><td class="yes">Có</td></tr>
+        <tr><td>Thay art tạm bằng art thật + đánh bóng</td><td class="num">1 tuần</td><td class="no">Không — cần cả hai đã xong</td></tr>
+        <tr><td>Tuân thủ + trang cửa hàng + closed testing</td><td class="num">1–2 tuần</td><td class="yes">Có — bắt đầu từ tuần 4</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="col"><strong>Tổng thực tế: 7–8 tuần</strong> nếu làm toàn thời gian, và khoảng gấp đôi nếu làm ngoài giờ. Kế hoạch "4 tuần" chỉ đúng cho phần code.</p>
+  <div class="note col"><b>Thử với trẻ thật ở cuối tuần 3, không phải cuối tuần 4.</b> Ba đứa trẻ, mỗi đứa 20 phút, bạn <em>không nói gì cả</em>. Ghi lại: bé chạm vào đâu đầu tiên · bé có hiểu chiếc lá sáng nghĩa là gì không · phút thứ mấy bé ngẩng đầu lên khỏi màn hình. Ba quan sát đó đáng giá hơn ba tuần bạn tự đoán.</div>
+</section>
+
+<section id="ship">
+  <div class="sec-head">
+    <div class="sec-num">Bước 5</div>
+    <h2>Build và phát hành</h2>
+  </div>
+
+  <h3>5.1 · Tạo keystore phát hành</h3>
+  <pre>keytool -v -genkey -keystore rungnhac.keystore -alias rungnhac \
+  -keyalg RSA -validity 10000</pre>
+  <div class="warnbox col"><b>Sao lưu keystore ngay lập tức, ở ba nơi.</b> Mất file keystore hoặc quên mật khẩu <strong>đồng nghĩa với việc bạn không bao giờ cập nhật được ứng dụng nữa</strong> — phải phát hành lại dưới một package name khác và mất toàn bộ người dùng, đánh giá, lượt cài. Cất một bản trong két, một bản trong trình quản lý mật khẩu, một bản ở ổ cứng ngoài. <em>Không</em> commit vào git.<br><br>Lưu ý thêm: hiện tại Godot yêu cầu mật khẩu keystore và mật khẩu key <strong>phải giống nhau</strong>, và mật khẩu chỉ nên dùng chữ và số — ký tự đặc biệt gây lỗi ký lúc xuất.</div>
+
+  <h3>5.2 · Cấu hình export preset</h3>
+  <ul class="check">
+    <li>Bật <b>Gradle Build</b> (bắt buộc để tạo AAB)</li>
+    <li>Đặt <b>Export Format = .aab</b> cho bản lên Play; giữ thêm preset <code>.apk</code> để cài thử nhanh</li>
+    <li>Điền đường dẫn keystore phát hành, alias, mật khẩu</li>
+    <li><b>Tắt "Export With Debug"</b> — dễ quên, và một bản debug lên store là một bản bị từ chối</li>
+    <li>Đặt <code>version/code</code> tăng mỗi lần nộp, <code>version/name</code> kiểu <code>1.0.0</code></li>
+    <li>Chỉ để lại quyền thật sự cần — game này gần như không cần quyền nào ngoài lưu ảnh/video</li>
+    <li>Kiểm tra <code>min_sdk</code> và <code>target_sdk</code> đúng mức Play đang yêu cầu tại thời điểm nộp</li>
+  </ul>
+
+  <h3>5.3 · Asset cho trang cửa hàng</h3>
+  <div class="tw">
+    <table>
+      <thead><tr><th>Thứ cần</th><th>Quy cách</th><th>Mẹo</th></tr></thead>
+      <tbody>
+        <tr><td>Biểu tượng ứng dụng</td><td class="num">512 × 512 PNG</td><td>Một con vật, mặt to, nền màu đặc — phải đọc được ở kích thước 48 px</td></tr>
+        <tr><td>Ảnh đồ họa nổi bật</td><td class="num">1024 × 500</td><td>Cây thần + hàng thú, chữ tối thiểu</td></tr>
+        <tr><td>Ảnh chụp màn hình</td><td class="num">4–8 ảnh ngang</td><td>Ảnh đầu tiên quyết định lượt cài. Cho nó là khoảnh khắc cây trổ quả</td></tr>
+        <tr><td>Video giới thiệu</td><td class="num">tùy chọn</td><td>Dùng lại chính clip 12 giây của game</td></tr>
+        <tr><td>Chính sách quyền riêng tư</td><td class="num">một URL công khai</td><td><strong>Bắt buộc</strong> với ứng dụng cho trẻ em, kể cả khi bạn không thu thập gì. Một trang tĩnh là đủ</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>5.4 · Tuân thủ dành cho ứng dụng trẻ em</h3>
+  <div class="col"><p>Đây là thứ có khả năng chặn ngày phát hành cao hơn code của bạn. Bắt đầu <strong>trước khi nộp ít nhất hai tuần</strong>, không phải đêm trước khi upload.</p></div>
+  <div class="tw">
+    <table>
+      <thead><tr><th>Cổng phải qua</th><th>Chuẩn bị gì</th><th>Trạng thái</th></tr></thead>
+      <tbody>
+        <tr><td>Khai báo đối tượng &amp; nội dung mục tiêu</td><td>Chốt rõ nhóm tuổi nhắm tới, vì nó kích hoạt cả bộ yêu cầu riêng cho ứng dụng trẻ em</td><td class="verify">Tra tại nguồn trước khi nộp</td></tr>
+        <tr><td>Biểu mẫu An toàn dữ liệu</td><td>Liệt kê chính xác dữ liệu thu thập. Với thiết kế này: <em>không thu thập gì rời khỏi máy</em> — nói đúng như vậy</td><td class="verify">Tra tại nguồn trước khi nộp</td></tr>
+        <tr><td>Xếp hạng độ tuổi</td><td>Trả lời bảng câu hỏi nội dung một cách trung thực</td><td class="verify">Tra tại nguồn trước khi nộp</td></tr>
+        <tr><td>Chính sách cho gia đình / trẻ em</td><td>Rà lại: không quảng cáo hành vi, không SDK phân tích thu dữ liệu trẻ em, không liên kết ra ngoài không có cổng chặn</td><td class="verify">Tra tại nguồn trước khi nộp</td></tr>
+        <tr><td>Cổng phụ huynh</td><td>Đã có sẵn trong thiết kế — cổng đầy đủ ở luồng lưu clip, khóa giữ 2 giây ở nút Menu</td><td class="ok">Đã thiết kế</td></tr>
+        <tr><td>Chính sách quyền riêng tư</td><td>Một URL công khai, viết bằng lời dễ hiểu</td><td class="ok">Việc một buổi</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="warnbox col"><b>Đừng chép quy định từ trí nhớ — của tôi hay của bạn.</b> Yêu cầu cho ứng dụng trẻ em thay đổi thường xuyên và khác nhau giữa Google Play và App Store. Bảng trên chỉ liệt kê <em>những cổng bạn sẽ gặp</em>; nội dung chính xác của từng cổng phải đọc trên trang chính sách của chính cửa hàng tại thời điểm nộp. Hãy coi mỗi dòng "Tra tại nguồn" là một việc thật trong danh sách.</div>
+
+  <h3>5.5 · Trình tự phát hành</h3>
+  <div class="loop">
+    <div><span class="n">1</span><div><b>Internal testing</b><p>Chỉ mình bạn và vài người quen. Lên được trong vài phút. Cài về máy thật từ link mời, chơi trọn một chương.</p></div></div>
+    <div><span class="n">2</span><div><b>Closed testing</b><p>10–20 phụ huynh có con đúng độ tuổi. Đây là nơi bạn phát hiện lỗi trên đời máy mình không có. Chạy tối thiểu một tuần.</p></div></div>
+    <div><span class="n">3</span><div><b>Production</b><p>Phát hành theo tỉ lệ: 20% trước, theo dõi tỉ lệ crash trong 48 giờ, rồi mới mở 100%.</p></div></div>
+  </div>
+
+  <h3>5.6 · iOS — để sau v1</h3>
+  <p class="col">Cần máy Mac, Xcode, và 99 USD mỗi năm. Godot xuất được iOS nhưng thêm một chu trình ký chứng chỉ và một bộ quy định riêng cho hạng mục ứng dụng trẻ em. Chỉ làm khi bản Android đã cho thấy có người thật sự chơi.</p>
+</section>
+
+<section id="sauship">
+  <div class="sec-head">
+    <div class="sec-num">Bước 6</div>
+    <h2>Sau khi ship</h2>
+  </div>
+  <ul class="check">
+    <li><b>Tuần 1:</b> chỉ sửa crash và những chỗ trẻ bị kẹt. Không thêm tính năng</li>
+    <li><b>Chỉ số duy nhất cần nhìn:</b> tỉ lệ phiên chơi kết thúc bằng một clip được lưu vào máy. Mọi con số khác là nhiễu</li>
+    <li><b>Nếu chỉ số đó dưới 10%:</b> vấn đề nằm ở màn kết chương hoặc cổng phụ huynh, không nằm ở gameplay. Sửa chỗ đó trước khi làm bối cảnh thứ hai</li>
+    <li><b>Nếu trên 25%:</b> làm biome thứ hai (Biển) và bộ 7 con vật mới — dùng lại toàn bộ code, chỉ thay asset</li>
+    <li>Đọc mọi đánh giá trong tháng đầu. Phụ huynh viết đánh giá rất cụ thể, và họ nói cho bạn biết bản cập nhật tiếp theo nên làm gì</li>
+  </ul>
+</section>
+
+<footer>
+  <span>docs/production-pipeline.html</span><span>new-piano · Godot 4.7 Mobile</span><span>Bản v1 — 08.09.2026</span>
+</footer>
+</div>

@@ -1,0 +1,412 @@
+<title>Rừng Nhạc — Thiết Kế Gameplay</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Be+Vietnam+Pro:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style>
+:root{
+  --ground:#EFF3F1; --surface:#FFFFFF; --surface-2:#E4EBE7;
+  --ink:#14262C; --ink-2:#41595F; --ink-3:#71888C;
+  --rule:#D2DDD8; --rule-strong:#B4C4BE;
+  --gold:#A8700C; --gold-soft:#F6E7C4;
+  --magic:#0E7C77; --magic-soft:#D5EDEA;
+  --warn:#9A4A16; --warn-soft:#F7E3D6;
+  --shadow:0 1px 2px rgba(20,38,44,.06),0 8px 24px -12px rgba(20,38,44,.18);
+  --k1:#E0644F; --k2:#E08A2E; --k3:#D8619A; --k4:#3F9455; --k5:#3877B5; --k6:#7C5CC4; --k7:#C7A017;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ground:#0E1A20; --surface:#152730; --surface-2:#1D343E;
+    --ink:#E6EFEC; --ink-2:#A9C0C0; --ink-3:#7E9698;
+    --rule:#26414B; --rule-strong:#365660;
+    --gold:#F2BE5C; --gold-soft:#3A2F14;
+    --magic:#54CDC1; --magic-soft:#123833;
+    --warn:#E9A277; --warn-soft:#3A2418;
+    --shadow:0 1px 2px rgba(0,0,0,.35),0 10px 28px -14px rgba(0,0,0,.7);
+    --k1:#F08472; --k2:#F0A855; --k3:#EE86B4; --k4:#66BC7C; --k5:#5FA0DC; --k6:#A487E0; --k7:#E4C24A;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0E1A20; --surface:#152730; --surface-2:#1D343E;
+  --ink:#E6EFEC; --ink-2:#A9C0C0; --ink-3:#7E9698;
+  --rule:#26414B; --rule-strong:#365660;
+  --gold:#F2BE5C; --gold-soft:#3A2F14;
+  --magic:#54CDC1; --magic-soft:#123833;
+  --warn:#E9A277; --warn-soft:#3A2418;
+  --shadow:0 1px 2px rgba(0,0,0,.35),0 10px 28px -14px rgba(0,0,0,.7);
+  --k1:#F08472; --k2:#F0A855; --k3:#EE86B4; --k4:#66BC7C; --k5:#5FA0DC; --k6:#A487E0; --k7:#E4C24A;
+}
+*{box-sizing:border-box}
+body{background:var(--ground);color:var(--ink);
+  font-family:"Be Vietnam Pro",system-ui,-apple-system,"Segoe UI",sans-serif;
+  font-size:16.5px;line-height:1.65;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1120px;margin:0 auto;padding:0 28px 96px}
+.col{max-width:68ch}
+h1,h2,h3{font-family:"Baloo 2","Be Vietnam Pro",system-ui,sans-serif;text-wrap:balance;margin:0}
+h1{font-size:clamp(2.3rem,5.4vw,3.5rem);font-weight:800;line-height:1.06;letter-spacing:-.015em}
+h2{font-size:clamp(1.5rem,2.7vw,1.95rem);font-weight:700;line-height:1.18;letter-spacing:-.01em}
+h3{font-size:1.1rem;font-weight:700;line-height:1.3}
+p{margin:0}
+a{color:var(--magic)}
+strong{font-weight:600;color:var(--ink)}
+em{font-style:italic;color:var(--ink-2)}
+.mono{font-family:"IBM Plex Mono",ui-monospace,SFMono-Regular,monospace}
+
+/* ---- header ---- */
+header{padding:64px 0 40px;display:flex;flex-direction:column;gap:22px}
+.kicker{font-family:"IBM Plex Mono",monospace;font-size:.72rem;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--ink-3);display:flex;gap:14px;flex-wrap:wrap}
+.kicker span{white-space:nowrap}
+.lede{font-size:1.2rem;line-height:1.55;color:var(--ink-2);max-width:60ch}
+.lede b{color:var(--ink);font-weight:600}
+
+/* ---- key band motif ---- */
+.band{display:flex;height:7px;border-radius:99px;overflow:hidden;gap:2px;max-width:320px}
+.band i{flex:1;display:block}
+
+/* ---- sections ---- */
+section{padding-top:56px;display:flex;flex-direction:column;gap:20px}
+.sec-head{display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--rule);padding-top:18px}
+.sec-num{font-family:"IBM Plex Mono",monospace;font-size:.72rem;letter-spacing:.14em;color:var(--gold);
+  text-transform:uppercase}
+
+/* ---- callouts ---- */
+.decision{background:var(--surface);border:1px solid var(--rule);border-left:4px solid var(--gold);
+  border-radius:4px;padding:20px 22px;display:flex;flex-direction:column;gap:10px;box-shadow:var(--shadow)}
+.decision .tag{font-family:"IBM Plex Mono",monospace;font-size:.7rem;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--gold)}
+.note{background:var(--magic-soft);border-radius:4px;padding:16px 18px;color:var(--ink-2);font-size:.95rem}
+.note b{color:var(--ink)}
+.warnbox{background:var(--warn-soft);border-radius:4px;padding:16px 18px;color:var(--ink-2);font-size:.95rem}
+
+/* ---- loop steps ---- */
+.loop{display:grid;gap:0;counter-reset:s;border:1px solid var(--rule);border-radius:6px;
+  overflow:hidden;background:var(--surface)}
+.loop > div{display:grid;grid-template-columns:44px 1fr;gap:16px;padding:16px 20px;align-items:start}
+.loop > div + div{border-top:1px solid var(--rule)}
+.loop .n{font-family:"IBM Plex Mono",monospace;font-size:.85rem;font-weight:600;color:var(--magic);
+  background:var(--magic-soft);border-radius:99px;width:30px;height:30px;display:grid;place-items:center}
+.loop b{display:block;margin-bottom:2px}
+.loop p{font-size:.94rem;color:var(--ink-2)}
+
+/* ---- tables ---- */
+.tw{overflow-x:auto;border:1px solid var(--rule);border-radius:6px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:.92rem;min-width:520px}
+th,td{text-align:left;padding:11px 16px;border-bottom:1px solid var(--rule);vertical-align:top}
+thead th{font-family:"IBM Plex Mono",monospace;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--ink-3);background:var(--surface-2);border-bottom:1px solid var(--rule-strong)}
+tbody tr:last-child td{border-bottom:0}
+td.num{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;white-space:nowrap}
+.yes{color:var(--magic);font-weight:600}
+.no{color:var(--ink-3)}
+
+/* ---- piano demo ---- */
+.demo{background:var(--surface);border:1px solid var(--rule);border-radius:8px;padding:22px;
+  display:flex;flex-direction:column;gap:16px;box-shadow:var(--shadow)}
+.demo-top{display:flex;justify-content:space-between;align-items:baseline;gap:16px;flex-wrap:wrap}
+.demo-hint{font-size:.88rem;color:var(--ink-3)}
+.keys{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.key{appearance:none;border:1px solid var(--rule-strong);border-bottom-width:4px;background:var(--surface-2);
+  border-radius:6px 6px 9px 9px;padding:14px 4px 12px;cursor:pointer;display:flex;flex-direction:column;
+  align-items:center;gap:6px;transition:transform .07s ease,background .12s ease;color:var(--ink)}
+.key:hover{background:var(--ground)}
+.key:active,.key.on{transform:translateY(3px);border-bottom-width:1px;margin-bottom:3px}
+.key .chip{width:clamp(20px,4.5vw,30px);aspect-ratio:1;border-radius:50%;background:var(--kc);
+  box-shadow:inset 0 -3px 0 rgba(0,0,0,.14)}
+.key .nm{font-size:.74rem;color:var(--ink-2);line-height:1.1}
+.key .lbl{font-family:"IBM Plex Mono",monospace;font-size:.72rem;font-weight:600;
+  color:#fff;background:var(--kc);border-radius:99px;padding:1px 8px}
+.key:focus-visible{outline:2px solid var(--magic);outline-offset:2px}
+.key.glow{border-color:var(--gold);box-shadow:0 0 0 3px var(--gold-soft)}
+.demo-foot{font-size:.86rem;color:var(--ink-3);font-family:"IBM Plex Mono",monospace}
+
+/* ---- scene tree ---- */
+pre{margin:0;font-family:"IBM Plex Mono",monospace;font-size:.83rem;line-height:1.7;
+  background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:18px 20px;
+  overflow-x:auto;color:var(--ink-2)}
+pre b{color:var(--ink);font-weight:600}
+pre i{color:var(--ink-3);font-style:normal}
+code{font-family:"IBM Plex Mono",monospace;font-size:.88em;background:var(--surface-2);
+  padding:1px 6px;border-radius:4px}
+
+/* ---- misc lists ---- */
+ul.clean{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px;color:var(--ink-2)}
+ul.clean li::marker{color:var(--rule-strong)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+.panel{background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:18px 20px;
+  display:flex;flex-direction:column;gap:8px}
+.panel h3{font-size:1rem}
+.panel p{font-size:.93rem;color:var(--ink-2)}
+footer{margin-top:72px;border-top:1px solid var(--rule);padding-top:20px;
+  font-family:"IBM Plex Mono",monospace;font-size:.75rem;color:var(--ink-3);
+  display:flex;gap:16px;flex-wrap:wrap}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<div class="wrap">
+<header>
+  <div class="band"><i style="background:var(--k1)"></i><i style="background:var(--k2)"></i><i style="background:var(--k3)"></i><i style="background:var(--k4)"></i><i style="background:var(--k5)"></i><i style="background:var(--k6)"></i><i style="background:var(--k7)"></i></div>
+  <div class="kicker"><span>Tài liệu gameplay · v1</span><span>Godot 4.7 · Mobile</span><span>Đối tượng 3–6 tuổi</span></div>
+  <h1>Rừng Nhạc<br>Thiết kế gameplay</h1>
+  <p class="lede">Một cuốn sách tranh biết hát. Bé chạm phím đàn có mặt con vật, <b>cây thần mọc lên</b> theo giai điệu, và cuối mỗi chương bé nhận được một <b>đoạn clip 12 giây</b> để bố mẹ gửi cho ông bà. Không tính giờ, không thua, không thể chơi sai.</p>
+</header>
+
+<section id="one-touch">
+  <div class="sec-head">
+    <div class="sec-num">Điều quan trọng nhất</div>
+    <h2>Chuyện gì xảy ra khi ngón tay bé chạm một phím?</h2>
+  </div>
+  <div class="col" style="display:flex;flex-direction:column;gap:14px">
+    <p>Con vật trên phím nảy lên và <strong>hát đúng nốt của nó</strong> bằng giọng riêng (sư tử trầm, chim cú cao), kèm một lớp hòa âm nền tự động nên nốt nào cũng nghe hay.</p>
+    <p>Cùng lúc, <strong>một chiếc lá cùng màu</strong> bung ra trên thân cây thần trong khung truyện phía trên — mỗi lần chạm là cây cao thêm một chút.</p>
+    <p>Nếu đó đúng là nốt đang được gợi ý, chiếc lá <strong>nở thành nốt vàng</strong> và cây vươn lên một đoạn lớn. Nếu không đúng, <strong>không có gì xấu xảy ra</strong>: nốt vẫn kêu hay, lá vẫn mọc, chiếc lá gợi ý chỉ nhấp nháy rõ hơn.</p>
+  </div>
+  <div class="note col"><b>Nguyên tắc gốc:</b> không có trạng thái "sai". Mọi cú chạm đều tạo ra âm thanh dễ chịu và một thay đổi nhìn thấy được trên màn hình. Đây là điều kiện sống còn của một món đồ chơi dành cho trẻ 3 tuổi, và cũng là thứ khiến người lớn thử một lần rồi quay video.</div>
+</section>
+
+<section id="conflict">
+  <div class="sec-head">
+    <div class="sec-num">Quyết định 01</div>
+    <h2>Gỡ mâu thuẫn trong ảnh mock</h2>
+  </div>
+  <div class="col"><p>Ảnh mock đang mô tả <em>hai</em> cơ chế nhập liệu cùng lúc: hàng phím đàn ở dưới, và dòng chữ "TAP THE MUSICAL LEAVES TO FIND THE TREASURE!" gợi ý chạm vào lá trong khung truyện. Hai vùng chạm cạnh tranh nhau sẽ làm trẻ nhỏ bối rối và làm code phức tạp gấp đôi.</p></div>
+  <div class="decision col">
+    <div class="tag">Chốt</div>
+    <p><strong>Phím đàn là bề mặt tương tác duy nhất.</strong> Khung truyện chỉ là nơi hiển thị kết quả — không nhận input.</p>
+    <p>Chiếc lá phát sáng <em>chính là</em> lời chỉ dẫn "hãy bấm phím màu này". Lá và phím dùng chung một màu, một hình con vật, một nốt. Câu thoại trong bong bóng đổi thành: <strong>"Chạm con vật cùng màu với chiếc lá đang sáng!"</strong></p>
+  </div>
+</section>
+
+<section id="music">
+  <div class="sec-head">
+    <div class="sec-num">Quyết định 02</div>
+    <h2>Bảng âm: ngũ cung, không phải C-D-E-F-G-A-B</h2>
+  </div>
+  <div class="col"><p>Mock ghi nhãn 7 phím trắng theo thang diatonic. Vấn đề: trong tập đó có nửa cung (E–F, B–C) và quãng ba cung (F–B). Trẻ đập loạn xạ sẽ tạo ra âm nghịch tai — hỏng ngay lời hứa "chạm đâu cũng hay".</p></div>
+  <div class="decision col">
+    <div class="tag">Chốt</div>
+    <p>Dùng <strong>thang ngũ cung trưởng</strong> trải trên 7 phím: <span class="mono">C4 D4 E4 G4 A4 C5 D5</span>. Bất kỳ tổ hợp nào trong tập này, chơi đồng thời hay nối tiếp, đều thuận tai. Bỏ F và B.</p>
+    <p><strong>Phím đen chỉ để trang trí</strong> ở v1 — vẽ giữ đúng dáng đàn piano trong mock nhưng không nhận chạm. Điều này cũng làm vùng chạm của phím trắng rộng hơn, phù hợp ngón tay bé.</p>
+  </div>
+
+  <div class="demo col" id="demo">
+    <div class="demo-top">
+      <h3>Thử nghe: 7 phím ngũ cung</h3>
+      <span class="demo-hint">Bấm bừa vài phím — không có tổ hợp nào chối tai. (Bản game dùng tranh vẽ con vật thay cho chấm màu.)</span>
+    </div>
+    <div class="keys" id="keys"></div>
+    <div class="demo-foot" id="readout">Chưa chạm phím nào</div>
+  </div>
+  <div class="note col"><b>Nền hòa âm:</b> một pad dây/harp trải hợp âm C — Am — F — G lặp vô hạn ở âm lượng −18 dB. Nó biến mọi nốt bé bấm thành một phần của bản nhạc, và lấp khoảng lặng khi bé nghĩ.</div>
+</section>
+
+<section id="loop">
+  <div class="sec-head">
+    <div class="sec-num">Quyết định 03</div>
+    <h2>Vòng lặp chơi: gọi–đáp, không có cửa sổ thời gian</h2>
+  </div>
+  <div class="col"><p>Không có note highway, không judgement "Perfect/Good/Miss". Độ trễ audio trên Android khiến mọi cơ chế chấm điểm theo nhịp đều cảm giác hỏng, và việc chấm điểm nhịp là hình phạt vô nghĩa với trẻ 4 tuổi. Thay vào đó: <strong>game hát trước, rồi chờ bé — chờ vô hạn.</strong></p></div>
+
+  <div class="loop col">
+    <div><span class="n">1</span><div><b>Cây hát</b><p>Cây thần tự sáng 3–5 lá theo thứ tự, mỗi lá phát nốt của nó. Đây là câu "gọi". Kéo dài 2–4 giây.</p></div></div>
+    <div><span class="n">2</span><div><b>Cây chờ</b><p>Lá đầu tiên trong chuỗi nhấp nháy nhẹ theo nhịp thở. Không đồng hồ, không thanh thời gian. Sau 8 giây không chạm, con vật tương ứng vẫy tay và ngân nhẹ nốt của mình.</p></div></div>
+    <div><span class="n">3</span><div><b>Bé đáp</b><p>Mỗi phím đúng: lá nở thành nốt vàng, thân cây vươn lên, hạt sao rơi vào lọ. Phím khác: vẫn kêu hay, lá thường mọc thêm, chuỗi gợi ý giữ nguyên vị trí — bé thử lại bao nhiêu lần cũng được.</p></div></div>
+    <div><span class="n">4</span><div><b>Cây trổ quả</b><p>Hết chuỗi, cây bật lên một đoạn: hoa nở, rương báu hiện ra, cả 7 con vật cùng hát lại giai điệu vừa xong. Đây là <em>khoảnh khắc quay màn hình</em> — thiết kế nó như một cảnh phim ngắn 3 giây.</p></div></div>
+    <div><span class="n">5</span><div><b>Trang mới</b><p>Trang sách lật, giai điệu mới, chuỗi dài thêm 1 nốt. Ba chuỗi = xong một chương.</p></div></div>
+  </div>
+
+  <div class="grid2">
+    <div class="panel"><h3>Chế độ Chơi Tự Do</h3><p>Nút "Tự do" luôn hiện trên phím đàn. Không gợi ý, không chuỗi — chỉ đàn, con vật và cây mọc theo mỗi nốt. Đây là chế độ trẻ ở lại lâu nhất, và là chế độ phụ huynh quay video nhiều nhất. Phải có ở v1.</p></div>
+    <div class="panel"><h3>Không có màn hình thua</h3><p>Không mạng, không hết giờ, không "Thử lại". Nút duy nhất thoát ván chơi là Menu ở góc, dùng <strong>khóa nhẹ: giữ 2 giây</strong> — đủ để bé không thoát nhầm, không cản người lớn. Khác với cổng phụ huynh đầy đủ ở phần chia sẻ.</p></div>
+  </div>
+</section>
+
+<section id="reward">
+  <div class="sec-head">
+    <div class="sec-num">Quyết định 04</div>
+    <h2>HUD: đổi SCORE/COMBO thành Lọ Hạt Sao</h2>
+  </div>
+  <div class="col"><p>Ảnh mock có <span class="mono">SCORE: 1250</span> và <span class="mono">COMBO: 15</span>. Điểm số và combo là ngôn ngữ của trẻ lớn hơn — trẻ 4 tuổi không đọc được số bốn chữ, và "combo" chỉ có nghĩa khi có hình phạt làm đứt combo, thứ ta vừa loại bỏ.</p></div>
+  <div class="decision col">
+    <div class="tag">Chốt</div>
+    <p>Giữ đúng vị trí góc phải trên của mock, nhưng thay bằng <strong>một chiếc lọ thủy tinh đầy dần</strong>. Mỗi nốt đúng = một hạt sao bay vào lọ, có tiếng "ting". Lọ đầy = mở một con vật mới cho phím đàn.</p>
+    <p>Con số vẫn hiện <em>nhỏ, mờ, bên dưới lọ</em> — dành cho phụ huynh nhìn qua vai, không dành cho bé.</p>
+  </div>
+  <div class="tw col">
+    <table>
+      <thead><tr><th>Trong mock</th><th>Ở v1</th><th>Lý do</th></tr></thead>
+      <tbody>
+        <tr><td>SCORE: 1250</td><td>Lọ hạt sao (đầy 0–100%)</td><td>Đọc được bằng mắt, không cần biết chữ số</td></tr>
+        <tr><td>COMBO: 15</td><td>Bỏ</td><td>Combo chỉ có nghĩa khi có hình phạt</td></tr>
+        <tr><td>Thanh nhạc cụ góc trái</td><td>Giữ — thành tiến độ chương</td><td>5 nhạc cụ = 5 trang của chương hiện tại</td></tr>
+        <tr><td>Nút LEVELS 1-2-3</td><td>Giữ — bản đồ 3 chương</td><td>Là nơi bé tự chọn lại chương yêu thích</td></tr>
+        <tr><td>Nút MENU</td><td>Giữ — khóa nhẹ, giữ 2 giây</td><td>Chặn bé thoát nhầm mà không cản người lớn</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="viral">
+  <div class="sec-head">
+    <div class="sec-num">Động cơ lan truyền</div>
+    <h2>Trẻ không chia sẻ. Bố mẹ mới chia sẻ.</h2>
+  </div>
+  <div class="col"><p>Mọi thiết kế "viral" cho game trẻ em đều phải chạy qua điện thoại của phụ huynh. Vì vậy sản phẩm lan truyền không phải là bảng xếp hạng hay lời mời bạn bè — mà là <strong>một hiện vật đáng khoe</strong> mà trò chơi tự tạo ra hộ phụ huynh.</p></div>
+
+  <div class="decision col">
+    <div class="tag">Cơ chế lan truyền chính</div>
+    <p><strong>"Buổi Diễn Rừng Xanh" — clip 12 giây, khung dọc 9:16, xuất ra thư viện ảnh.</strong></p>
+    <p>Kết thúc mỗi chương, game tự dựng một clip: cả 7 con vật hát lại đúng giai điệu bé vừa chơi, cây thần mọc theo, rương báu bật mở. Ở góc là dòng chữ bé tự "ký": <em>"Bản nhạc của Bún, 4 tuổi"</em>. Clip tự phát ngay tại màn hình kết chương; bên dưới là một nút duy nhất — <strong>Lưu vào máy</strong>.</p>
+    <p>Nút đó mở <strong>cổng phụ huynh đầy đủ</strong> (một phép cộng đơn giản, kiểu "3 + 4 = ?") vì đây là hành động đưa dữ liệu ra khỏi ứng dụng. Sau khi qua cổng: một chạm nữa là share sheet của hệ điều hành.</p>
+  </div>
+
+  <div class="grid2">
+    <div class="panel"><h3>Vì sao clip này được gửi đi</h3><p>Nó có thứ mà video quay màn hình không có: giai điệu <em>do chính bé chơi</em>, tên bé, và một cái kết trọn vẹn 12 giây. Ông bà xem hết. Đó là toàn bộ mục tiêu.</p></div>
+    <div class="panel"><h3>Ba khoảnh khắc đáng quay khác</h3><p>Con vật mới nở khỏi trứng · cây thần vươn kín màn hình ở nốt cuối · cả bầy thú hát bè khi bé giữ 3 phím cùng lúc. Mỗi khoảnh khắc thiết kế để đẹp <em>khi bị quay lại</em>.</p></div>
+    <div class="panel"><h3>Vòng quay tự nhiên</h3><p>Clip gửi qua Zalo/Messenger → phụ huynh khác hỏi "app gì đấy?" → tải. Không cần hệ thống mời, không cần thưởng giới thiệu.</p></div>
+  </div>
+
+  <div class="warnbox col"><b>Ranh giới cứng — không được vượt qua.</b> Người dùng dưới 13 tuổi (COPPA / GDPR-K). Vì vậy: <strong>không tài khoản, không đăng nhập, không danh sách bạn bè, không bảng xếp hạng, không chat, không feed nội dung người dùng, không quảng cáo hành vi, không thu thập dữ liệu nào rời khỏi máy.</strong> Việc chia sẻ luôn là <em>xuất file ra ngoài</em> qua share sheet của hệ điều hành, do phụ huynh chủ động. Tên bé lưu cục bộ trong <code>user://</code>. Đừng để ai đó ở sprint sau thiết kế nhầm một mạng xã hội trong này.</div>
+
+  <div class="note col"><b>Lưu ý kỹ thuật:</b> gameplay là 16:9 ngang, nhưng clip chia sẻ phải là 9:16 dọc. Cần một <code>SubViewport</code> riêng 1080×1920 với bố cục dựng lại (cây ở giữa, hàng thú xếp dưới), render offline rồi ghép audio. Đừng cố crop màn hình ngang.</div>
+</section>
+
+<section id="content">
+  <div class="sec-head">
+    <div class="sec-num">Phạm vi v1</div>
+    <h2>Ranh giới cắt: cái gì vào bản đầu, cái gì không</h2>
+  </div>
+  <div class="tw col">
+    <table>
+      <thead><tr><th>Hạng mục</th><th>v1</th><th>Để sau</th></tr></thead>
+      <tbody>
+        <tr><td>Bối cảnh</td><td class="yes">1 — Rừng Thần lúc hoàng hôn</td><td class="no">Biển, Tuyết, Sa mạc</td></tr>
+        <tr><td>Chương truyện</td><td class="yes">3 chương × 5 trang</td><td class="no">Chương theo mùa/lễ</td></tr>
+        <tr><td>Giai điệu</td><td class="yes">6 giai điệu tự soạn trên thang ngũ cung</td><td class="no">Gói bài hát mở rộng</td></tr>
+        <tr><td>Con vật trên phím</td><td class="yes">7 con (đúng ảnh mock)</td><td class="no">Bộ sưu tập 20 con</td></tr>
+        <tr><td>Nhân vật phù thủy nhỏ</td><td class="yes">Sprite 3 tư thế + nhún nhảy</td><td class="no">Diễn hoạt khung hình đầy đủ</td></tr>
+        <tr><td>Giọng đọc</td><td class="yes">Không lời — chỉ biểu tượng &amp; tiếng thú</td><td class="no">Lồng tiếng đa ngôn ngữ</td></tr>
+        <tr><td>Clip chia sẻ</td><td class="yes">Có — đây là tính năng lan truyền</td><td class="no">Sticker, khung ảnh tùy chọn</td></tr>
+        <tr><td>Chơi tự do</td><td class="yes">Có</td><td class="no">Ghi âm sáng tác của bé</td></tr>
+        <tr><td>Ghi điểm / combo</td><td class="no">Không</td><td class="no">—</td></tr>
+        <tr><td>Mua trong ứng dụng</td><td class="no">Không</td><td class="no">Mở khóa chương, một lần mua</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="warnbox col"><b>Về bản quyền giai điệu:</b> v1 <strong>tự soạn</strong> cả 6 giai điệu. Với 5 nốt ngũ cung, viết một câu nhạc 5–9 nốt dễ nghe là việc của một buổi chiều — rẻ hơn nhiều so với thẩm định bản quyền. Nếu sau này muốn dùng bài dân ca quen thuộc, phải kiểm tra riêng cho từng thị trường phát hành: giai điệu có thể đã thuộc phạm vi công cộng nhưng <em>bản phối và bản thu cụ thể</em> thì thường không.</div>
+  <div class="note col"><b>Đếm asset cho v1:</b> 7 con vật (3 khung hình mỗi con) · 1 phù thủy (3 tư thế) · 1 cây thần (8 giai đoạn mọc) · 3 nền chương · 12 UI icon · 7 sample nốt × 3 giọng thú = 21 file wav · 1 pad nền · 8 SFX. Tổng khoảng <strong>60 file ảnh và 30 file âm thanh</strong> — vừa sức một họa sĩ trong 3 tuần.</div>
+</section>
+
+<section id="tech">
+  <div class="sec-head">
+    <div class="sec-num">Kỹ thuật</div>
+    <h2>Cấu trúc scene Godot &amp; ràng buộc audio</h2>
+  </div>
+  <pre><b>Main</b> <i>(Node2D)</i>
+├── <b>AudioDirector</b> <i>(autoload) — pool 16 AudioStreamPlayer, preload toàn bộ wav</i>
+├── <b>GameState</b> <i>(autoload) — chương/trang hiện tại, chuỗi nốt, lọ sao, tên bé</i>
+├── ForestBackground <i>(ParallaxBackground, 3 lớp)</i>
+├── <b>StoryPanel</b> <i>(Control) — chỉ hiển thị, KHÔNG nhận input</i>
+│   ├── MagicTree <i>(AnimatedSprite2D, 8 giai đoạn)</i>
+│   ├── LeafSlots <i>(7 Marker2D + Sprite lá, màu khớp phím)</i>
+│   ├── WizardSprite
+│   └── SpeechBubble
+├── <b>PianoKeyboard</b> <i>(Control) — bề mặt input duy nhất</i>
+│   └── AnimalKey ×7 <i>(TouchScreenButton + AnimatedSprite2D)</i>
+├── HUD <i>(CanvasLayer)</i>
+│   ├── StarJar · ChapterProgress · MenuButton <i>(giữ 2s)</i> · LevelsButton
+├── <b>ParentGate</b> <i>(CanvasLayer, ẩn) — chỉ dùng cho luồng lưu clip</i>
+└── <b>ShareRenderer</b> <i>(SubViewport 1080×1920, chỉ bật khi dựng clip)</i></pre>
+
+  <div class="grid2">
+    <div class="panel"><h3>Audio — sai ở đây là hỏng cả game</h3><p>Tạo sẵn pool <code>AudioStreamPlayer</code> lúc khởi động và tái sử dụng; <strong>không bao giờ</strong> <code>instantiate()</code> tại thời điểm chạm. Dùng <code>.wav</code> (không <code>.ogg</code>) cho nốt đàn để bỏ chi phí giải mã. Sample phải có attack cực ngắn (&lt;10 ms). Đặt <code>audio/driver/output_latency=15</code>. Mục tiêu: dưới 60 ms từ ngón tay đến âm thanh.</p></div>
+    <div class="panel"><h3>Chạm</h3><p>Bật <code>emulate_mouse_from_touch=false</code> và xử lý đa chạm thật — bé sẽ đập cả bàn tay. Vùng chạm mỗi phím tối thiểu 12 mm. Phản hồi hình ảnh phải nổ ra ở khung hình <em>ngay sau</em> sự kiện chạm, trước cả âm thanh nếu cần.</p></div>
+    <div class="panel"><h3>Hiển thị</h3><p>Đã đặt <code>canvas_items</code> + <code>expand</code>. Thiết kế ở 1280×720, neo phím đàn theo cạnh dưới để tai thỏ không cắt mất. Kiểm tra ở tỉ lệ 20:9.</p></div>
+    <div class="panel"><h3>Lưu trữ</h3><p>Một file <code>user://save.cfg</code>: chương đã mở, con vật đã mở, tên bé, tổng hạt sao. Không cloud, không phân tích hành vi. Ghi lại sau mỗi trang.</p></div>
+  </div>
+</section>
+
+<section id="risk">
+  <div class="sec-head">
+    <div class="sec-num">Rủi ro</div>
+    <h2>Ba thứ có thể giết sản phẩm này</h2>
+  </div>
+  <div class="tw col">
+    <table>
+      <thead><tr><th>Rủi ro</th><th>Dấu hiệu sớm</th><th>Xử lý</th></tr></thead>
+      <tbody>
+        <tr><td>Độ trễ âm thanh trên Android tầm thấp</td><td>Bé chạm rồi nhìn lên, không phản ứng theo nhạc</td><td>Dựng phím + audio pool trong tuần 1, đo trên máy thật trước khi làm nội dung</td></tr>
+        <tr><td>Clip chia sẻ quá phiền để xuất</td><td>Phụ huynh test bỏ ngang ở cổng phụ huynh</td><td>Clip tự phát sẵn, không cần bấm xem. Sau cổng phụ huynh chỉ còn đúng 1 chạm đến share sheet — cổng là bước duy nhất được phép gây ma sát</td></tr>
+        <tr><td>Bé chán sau 3 phút</td><td>Phiên chơi trung bình &lt; 4 phút</td><td>Chế độ Tự Do phải hấp dẫn hơn phần chơi có hướng dẫn — nếu ngược lại, cắt phần hướng dẫn</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="note col"><b>Chỉ số duy nhất đáng theo dõi ở v1:</b> tỉ lệ phiên chơi kết thúc bằng một clip được lưu vào máy. Đó là con số dự báo lan truyền. Mọi chỉ số khác là nhiễu.</div>
+</section>
+
+<section id="plan">
+  <div class="sec-head">
+    <div class="sec-num">Lộ trình</div>
+    <h2>Bốn tuần đến bản chơi được</h2>
+  </div>
+  <div class="tw col">
+    <table>
+      <thead><tr><th>Tuần</th><th>Mục tiêu</th><th>Xong khi</th></tr></thead>
+      <tbody>
+        <tr><td class="num">1</td><td>Đàn ngũ cung + audio pool + con vật nảy</td><td>Đập loạn 30 giây trên máy thật vẫn nghe hay và không trễ</td></tr>
+        <tr><td class="num">2</td><td>Cây thần mọc + vòng gọi–đáp + lọ sao</td><td>Chơi trọn 1 trang truyện từ đầu đến cây trổ quả</td></tr>
+        <tr><td class="num">3</td><td>3 chương nội dung + bản đồ chương + parent gate</td><td>Một đứa trẻ thật chơi được 5 phút không cần người lớn</td></tr>
+        <tr><td class="num">4</td><td>ShareRenderer 9:16 + xuất file + đánh bóng</td><td>Một phụ huynh gửi được clip cho người khác mà không cần hỏi cách</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<footer>
+  <span>docs/gameplay-design.html</span><span>new-piano · Godot 4.7 Mobile</span><span>Bản v1 — 08.09.2026</span>
+</footer>
+</div>
+
+<script>
+(function(){
+  var NOTES=[
+    {f:261.63,n:"C4",c:"var(--k1)",name:"Sư tử"},
+    {f:293.66,n:"D4",c:"var(--k2)",name:"Gấu"},
+    {f:329.63,n:"E4",c:"var(--k3)",name:"Thỏ"},
+    {f:392.00,n:"G4",c:"var(--k4)",name:"Mèo"},
+    {f:440.00,n:"A4",c:"var(--k5)",name:"Khỉ"},
+    {f:523.25,n:"C5",c:"var(--k6)",name:"Voi"},
+    {f:587.33,n:"D5",c:"var(--k7)",name:"Cú"}
+  ];
+  var keys=document.getElementById('keys'), out=document.getElementById('readout'), ctx=null, played=[];
+  NOTES.forEach(function(N,i){
+    var b=document.createElement('button');
+    b.className='key'; b.type='button'; b.style.setProperty('--kc',N.c);
+    b.setAttribute('aria-label',N.name+' — nốt '+N.n);
+    b.innerHTML='<span class="chip"></span><span class="nm">'+N.name+'</span><span class="lbl">'+N.n+'</span>';
+    if(i===2) b.classList.add('glow');
+    b.addEventListener('pointerdown',function(){play(i,b)});
+    b.addEventListener('keydown',function(e){if(e.key===' '||e.key==='Enter'){e.preventDefault();play(i,b)}});
+    keys.appendChild(b);
+  });
+  function play(i,b){
+    var N=NOTES[i];
+    try{
+      ctx=ctx||new (window.AudioContext||window.webkitAudioContext)();
+      if(ctx.state==='suspended') ctx.resume();
+      var t=ctx.currentTime, g=ctx.createGain();
+      g.gain.setValueAtTime(0,t);
+      g.gain.linearRampToValueAtTime(.22,t+.008);
+      g.gain.exponentialRampToValueAtTime(.0008,t+1.6);
+      g.connect(ctx.destination);
+      [[1,1],[2,.28],[3,.12]].forEach(function(p){
+        var o=ctx.createOscillator(), og=ctx.createGain();
+        o.type='triangle'; o.frequency.value=N.f*p[0]; og.gain.value=p[1];
+        o.connect(og); og.connect(g); o.start(t); o.stop(t+1.7);
+      });
+    }catch(e){}
+    b.classList.add('on'); setTimeout(function(){b.classList.remove('on')},110);
+    played.push(N.n); if(played.length>8) played.shift();
+    out.textContent='Đã chơi: '+played.join(' · ');
+  }
+})();
+</script>
