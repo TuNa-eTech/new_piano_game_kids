@@ -186,16 +186,17 @@ header .note{font-size:.95rem}
 
   <div class="spike" style="margin-top:28px;max-width:68ch">
     <div class="tag">Tiến độ · cập nhật 09/09/2026</div>
-    <h3>Đang ở: Tuần 1 xong phần code · chờ máy iOS thật</h3>
+    <h3>Đang ở: Tuần 1 và Tuần 2 xong phần code · chờ máy iOS thật</h3>
 
     <div class="note" style="margin:10px 0"><b>Đổi mục tiêu: iOS trước, không còn Android trước.</b> Toàn bộ tài liệu đã viết lại theo iOS — Bước 0, Tuần 0, Bước 1 và Bước 5. Phần Android được giữ lại có chủ đích ở hai chỗ: bảng gói SDK ở cuối Bước 1, và mục 5.6. Bước 2, 3, 4 và 6 không phụ thuộc nền tảng nên giữ nguyên.</div>
 
     <div class="tw" style="margin:4px 0">
       <table class="mini">
         <tbody>
-          <tr><td>Bước 0 · chuẩn bị</td><td class="st-ok">Gần xong</td><td class="small">Tài khoản Apple, máy Mac, Xcode 26.2, git + LFS, bundle id <code>com.anhtu.rungnhac</code> đã chốt, export templates đã cài. Còn thiếu: cắm iPhone, và Audacity/Krita (chưa cần tới Bước 2–3)</td></tr>
-          <tr><td>Tuần 1 · đàn + audio pool + con vật nảy</td><td class="st-ok">Xong phần code</td><td class="small">7 phím ngũ cung, đa chạm thật, <code>AudioStreamPolyphonic</code> và pool 16 sau cùng một hàm. Đã đo: 900 cú chạm không rớt nốt nào, đường nóng không cấp phát (0,006 KB/chạm ở trạng thái ổn định), bus Notes ra tiếng thật −2,9 dB, 7 cao độ đúng theo phân tích phổ</td></tr>
-          <tr><td>Tuần 0 · Spike A (xuất MP4)</td><td class="st-wait">Chưa bắt đầu</td><td class="small"><b>Rủi ro cao nhất, và iOS làm nó khó hơn Android:</b> plugin phải viết Objective-C/Swift biên dịch thành static library, còn plugin cộng đồng thì mỏng hơn hẳn. Cần lưu vào Photos → <code>NSPhotoLibraryAddUsageDescription</code></td></tr>
+          <tr><td>Bước 0 · chuẩn bị</td><td class="st-ok">Gần xong</td><td class="small">Tài khoản Apple, máy Mac, Xcode 26.2, git + LFS, bundle id iOS <code>com.tudavid.pianokids</code> đã chốt, export templates đã cài. Còn thiếu: cắm iPhone, và Audacity/Krita (chưa cần tới Bước 2–3)</td></tr>
+          <tr><td>Tuần 1 · đàn + audio pool + con vật nảy + pad nền</td><td class="st-ok">Xong phần code</td><td class="small">7 phím ngũ cung, đa chạm thật, <code>AudioStreamPolyphonic</code> và pool 16 sau cùng một hàm, pad C–Am–F–G lặp liền mạch trên bus Music −18 dB. Đã đo: 900 cú chạm không rớt nốt nào, đường chạm→âm thanh không cấp phát (0,006 KB/chạm), bus Notes ra tiếng thật, 7 cao độ đúng theo phân tích phổ</td></tr>
+          <tr><td>Tuần 2 · cây thần + gọi–đáp + lọ hạt sao</td><td class="st-ok">Xong phần code</td><td class="small">Cây 8 giai đoạn, 7 lá, vòng gọi–đáp không cửa sổ thời gian, lọ hạt sao, lật trang. Máy đo vòng chơi 19/19 đạt, gồm cả kiểm "bấm nhầm thì không mất gì". Art tạm là hình khối màu, đúng luật Bước 4</td></tr>
+          <tr><td>Tuần 0 · Spike A (xuất MP4)</td><td class="st-wait">Đã điều tra · chờ bạn chọn</td><td class="small"><b>A2 không tồn tại</b> — hệ sinh thái Godot chỉ có bộ <em>giải</em> mã video, không có bộ mã hoá. Nhưng nửa <em>chia sẻ</em> thì đã giải quyết xong bằng plugin có sẵn. Còn đúng một ngã ba: A1 (viết plugin Objective-C) hay A3 (ảnh tĩnh). Xem mục Spike A</td></tr>
           <tr><td>Tuần 0 · Spike B (độ trễ)</td><td class="st-wait">Chờ máy</td><td class="small">Không còn bị chặn vì thiếu code — thứ để đo đã dựng xong, kèm overlay chẩn đoán và máy đo soak test. Chỉ còn thiếu iPhone thật cắm vào</td></tr>
           <tr><td>Tuần 0 · Spike C (đường ống phát hành)</td><td class="st-wait">Chờ bạn</td><td class="small">Export templates xong. Chờ chuỗi chứng chỉ bạn sẽ làm sau cùng, cộng máy thật. TestFlight thay cho Internal testing</td></tr>
           <tr><td>Bước 1 · dựng môi trường iOS</td><td class="st-wait">Đang làm</td><td class="small">Export templates 4.7.2 <strong>đã cài</strong> — hết chặn. Còn lại: cắm máy. App ID + chứng chỉ <strong>bạn tự làm, để sau cùng</strong></td></tr>
@@ -204,11 +205,15 @@ header .note{font-size:.95rem}
       </table>
     </div>
 
-    <p><b>Việc kế tiếp, theo thứ tự:</b> ① điều tra Spike A <em>trên giấy</em> trước khi viết dòng code nào · ② cắm iPhone và chạy Spike B — để Xcode tự ký (<em>Automatically manage signing</em>), không phải vào portal · ③ dựng chuỗi chứng chỉ đầy đủ khi tới Spike C.</p>
+    <p><b>Việc kế tiếp, theo thứ tự:</b> ① chọn ngã ba <b>A1 hay A3</b> của Spike A — điều tra đã xong, kết quả ở mục Spike A · ② cắm iPhone và chạy Spike B — để Xcode tự ký (<em>Automatically manage signing</em>), không phải vào portal · ③ Tuần 3: ba chương nội dung, bản đồ chương, khóa giữ 2 giây ở nút Menu.</p>
+
+    <div class="note" style="margin:12px 0"><b>Hai chỗ hai tài liệu nói khác nhau, phát hiện khi làm:</b>
+    <br>· <b>Tuần 1 có pad nền hay không:</b> <code>gameplay-design</code> ghi "đàn ngũ cung + audio pool + con vật nảy", còn bảng Bước 4 ở đây ghi thêm "+ pad nền". Đã làm theo bản đầy đủ hơn — pad đã có.
+    <br>· <b>Một chương dài bao nhiêu trang:</b> Quyết định 03 nói "ba chuỗi = xong một chương", nhưng bảng Phạm vi v1 nói "3 chương × 5 trang" và HUD nói "5 nhạc cụ = 5 trang". Code đang theo <b>5 trang một chương</b> vì hai nguồn sau cụ thể hơn và khớp nhau. Nếu ý định thật là 3 thì sửa một hằng số trong <code>game/melodies.gd</code>.</div>
 
     <p class="small"><b>App ID và chứng chỉ development: bạn tự làm, để sau cùng.</b> Hoãn được, và hoãn không chặn Spike B — chạy trên máy thật chỉ cần Xcode tự quản chữ ký. Thứ thật sự cần chuỗi chứng chỉ dựng tay là Spike C (TestFlight).</p>
 
-    <p class="small">Việc ① không cần gì cả, làm được ngay hôm nay; ② mới cần cắm máy. Thứ duy nhất cần phần cứng là con số độ trễ — và cả Spike B lẫn Spike C đều vô nghĩa trên máy ảo: Simulator chạy bằng CoreAudio của chính con Mac, nó sẽ cho số đẹp không có thật. Máy <code>Anh Tu</code> (iOS 26.5, chip A12 đời 2018) mà <code>xctrace</code> nhìn thấy đang offline — nếu là máy của bạn thì nó đúng chuẩn máy đo, đủ cũ để không nói dối.</p>
+    <p class="small">Ngã ba của việc ① chọn được ngay hôm nay; ② mới cần cắm máy. Thứ duy nhất cần phần cứng là con số độ trễ — và cả Spike B lẫn Spike C đều vô nghĩa trên máy ảo: Simulator chạy bằng CoreAudio của chính con Mac, nó sẽ cho số đẹp không có thật. Máy <code>Anh Tu</code> (iOS 26.5, chip A12 đời 2018) mà <code>xctrace</code> nhìn thấy đang offline — nếu là máy của bạn thì nó đúng chuẩn máy đo, đủ cũ để không nói dối.</p>
 
     <p class="small"><b>Hai chỗ tài liệu nói sai, đã kiểm chứng:</b> <code>audio/driver/output_latency=15</code> vốn đã là <em>mặc định</em> của Godot 4.7 — không phải chỉnh gì, và Godot không ghi nó vào <code>project.godot</code>. Còn <code>AudioServer.get_output_latency()</code> trả về đúng 0 trên macOS/CoreAudio, nên đừng đọc số 0 đó thành "không có độ trễ".</p>
   </div>
@@ -243,18 +248,19 @@ header .note{font-size:.95rem}
   <ul class="check">
     <li class="done">Tài khoản Apple Developer <span class="st">đã có sẵn</span></li>
     <li class="done"><code>git init</code> + <code>git lfs track</code> + commit đầu tiên <span class="st">xong</span></li>
-    <li class="done">Chốt <strong>bundle identifier</strong>: <code>com.anhtu.rungnhac</code> <span class="st">xong</span></li>
+    <li class="done">Chốt <strong>bundle identifier</strong> iOS: <code>com.tudavid.pianokids</code> <span class="st">xong · 09/09/2026</span></li>
     <li class="done">Cài <strong>export templates</strong> của Godot 4.7.2 <span class="st">xong</span></li>
     <li>Cắm iPhone qua USB, bấm <b>Trust</b> — đủ để chạy Spike B với chữ ký Xcode tự quản</li>
     <li>Tạo <strong>App ID</strong> + chứng chỉ development trên Apple Developer portal <span class="st">bạn tự làm · để sau cùng</span></li>
   </ul>
 
   <div class="spike" style="margin-top:26px;border-left-color:var(--gold)">
-    <div class="tag" style="color:var(--gold)">Chốt · bundle identifier</div>
-    <h3><code>com.anhtu.rungnhac</code></h3>
-    <p>Tên project trong Godot là <code>new-piano</code> nhưng <strong>không dùng được</strong>: dấu gạch ngang tuy hợp lệ trong bundle id của Apple, nhưng lại không hợp lệ cho package name Android — giữ một tên duy nhất cho cả hai nền tảng thì đỡ phải nghĩ lại về sau.</p>
-    <p>Bây giờ đổi vẫn <strong>miễn phí</strong> — chỉ là một dòng trong export preset. Mốc khóa <em>vĩnh viễn</em> là lúc <strong>tạo bản ghi ứng dụng trong App Store Connect</strong>. Đăng ký App ID ở portal đến sớm hơn nhưng chưa phải vĩnh viễn: một App ID chưa ứng dụng nào dùng thì nói chung vẫn gỡ được. <b>Tra tại nguồn trước khi dựa vào điều này.</b></p>
-    <p class="small">Nghĩa là hoãn App ID đến sau cùng <em>không</em> làm mất quyền đổi tên: mốc thật nằm ở App Store Connect, tức là muộn hơn cả Spike B. Khác Android, nơi mốc khóa là lần upload đầu tiên lên Play Console kể cả Internal testing.</p>
+    <div class="tag" style="color:var(--gold)">Chốt · bundle identifier · iOS</div>
+    <h3><code>com.tudavid.pianokids</code></h3>
+    <p><b>Đổi ngày 09/09/2026, thay cho <code>com.anhtu.rungnhac</code> đã chốt trước đó.</b> Đổi được vì chưa mất gì: mốc khóa vĩnh viễn nằm ở lúc tạo bản ghi ứng dụng trong App Store Connect, mà bản ghi đó chưa tồn tại. Chưa có <code>export_presets.cfg</code>, chưa có App ID, nên lần đổi này chỉ là sửa mấy dòng trong tài liệu.</p>
+    <p>Tên project trong Godot vẫn là <code>new-piano</code> — không dùng được làm định danh vì dấu gạch ngang không hợp lệ cho package name Android. <code>com.tudavid.pianokids</code> thì hợp lệ cho <em>cả hai</em> nền tảng: mỗi đoạn bắt đầu bằng chữ cái, chỉ gồm chữ và số, không trùng từ khóa Java.</p>
+    <div class="note" style="margin:12px 0"><b>Còn một việc chưa quyết:</b> tên này mới chốt <em>cho iOS</em>. Android chưa khóa gì cả — mốc của Play Console là lần upload đầu tiên, mà lần đó chưa xảy ra. Vì <code>com.tudavid.pianokids</code> cũng hợp lệ làm package name Android, bạn có hai đường: <b>dùng chung một tên</b> cho cả hai nền tảng (đỡ phải nghĩ lại, một danh tính duy nhất), hoặc <b>để Android giữ <code>com.anhtu.rungnhac</code></b> và chấp nhận hai danh tính tách rời. Chưa cần quyết bây giờ, nhưng phải quyết trước khi đụng tới Play Console.</div>
+    <p class="small">Giá trị này sẽ được ghi vào <code>export_presets.cfg</code> ở Bước 1 — không tự tay sửa file đó, để Godot sinh ra.</p>
   </div>
 </section>
 
@@ -282,6 +288,22 @@ header .note{font-size:.95rem}
     </table>
     <p><b>Bắt buộc dù đi đường nào:</b> khai <code>NSPhotoLibraryAddUsageDescription</code> trong <code>Info.plist</code>, kèm câu giải thích bằng tiếng người. Thiếu nó thì app <em>crash</em> lúc lưu, không phải báo lỗi nhẹ nhàng.</p>
     <p class="small">Vì A2 mỏng, hãy đảo thứ tự so với tài liệu gốc: <b>tra cứu A2 trên giấy trước</b>, rồi mới quyết định bỏ 1,5 ngày vào A1 hay chốt luôn A3. Nếu ra A3 thì màn kết chương phải thiết kế lại — việc đó thuộc Bước 2, biết sớm rẻ hơn nhiều.</p>
+
+    <div class="note" style="margin:14px 0"><b>Đã điều tra xong, 09/09/2026.</b> Kết quả tách Spike A làm hai nửa có số phận khác hẳn nhau.
+
+    <p style="margin:10px 0 6px"><b>Nửa mã hoá — không có đường tắt, đúng như dự đoán.</b> Hệ sinh thái Godot chỉ có bộ <em>giải</em> mã video (GoZen, EIRTeam.FFmpeg, elly_videoplayer), <b>không có bộ mã hoá nào</b>. Addon <code>godot-screen-recorder</code> duy nhất tìm được đã <em>lưu trữ</em> từ 2021, thời Godot 3, và hoạt động bằng cách gọi lệnh hệ thống tới binary <code>ffmpeg</code> — trên iOS là bất khả thi, không có tiến trình con. Danh sách plugin iOS chính thức (<code>godot-ios-plugins</code>) có apn · arkit · camera · gamecenter · icloud · inappstore · photo_picker — <code>photo_picker</code> là để <em>đọc</em> ảnh, không phải ghi. <b>Kết luận: A2 không tồn tại. Muốn MP4 thì phải tự viết plugin AVAssetWriter.</b></p>
+
+    <p style="margin:10px 0 6px"><b>Nửa chia sẻ — đã có sẵn, dùng được ngay.</b> Plugin <a href="https://github.com/godot-mobile-plugins/godot-share">godot-share</a> bản v6.0 (12/06/2026) ghi rõ <em>"tested against and supports Godot version 4.7"</em>, chạy cả iOS lẫn Android, MIT. Nó cho đúng hai hàm ta cần:</p>
+    <pre>share_viewport(viewport, title, subject, content, flip_y)
+share_file(path, mime_type, title, subject, content)</pre>
+    <p style="margin:6px 0"><code>share_viewport()</code> nhận kiểu <code>Viewport</code>, mà <code>SubViewport</code> kế thừa từ đó — nên <b>khung dọc 9:16 ngoài màn hình trong thiết kế cắm thẳng vào được</b>. Bên trong nó chỉ là <code>get_texture().get_image()</code> → <code>save_png()</code> → <code>share_file()</code>. Và <code>share_file()</code> nhận MIME tuỳ ý, nghĩa là một file MP4 sau này <em>đi chung đúng đường đó</em>, không phải làm lại.</p>
+
+    <p style="margin:10px 0 0"><b>Nghĩa là:</b> giá của A3 vừa rụng mạnh — nó gần như chỉ còn là nối dây một plugin có sẵn, không phải viết gì bản địa. Giá của A1 thì <em>không đổi</em>: vẫn là một plugin Objective-C dựng static library. Luật của chính tài liệu này là "hết 1,5 ngày mà A1/A2 chưa chạy thì chốt A3" — mà A2 vừa được chứng minh là không tồn tại, nên 1,5 ngày đó co lại thành một ngã ba chọn được ngay hôm nay.</p>
+    </div>
+
+    <p class="small"><b>Chưa kiểm được, phải chờ máy:</b> cài <code>godot-share</code> cho iOS đòi bật plugin trong <em>export settings</em>, tức là cần export preset iOS, tức là cần chuỗi chữ ký. Chọn được ngay bây giờ, nhưng thử thì phải đợi cắm máy.</p>
+
+    <p class="small"><b>Về <code>NSPhotoLibraryAddUsageDescription</code>:</b> luồng thiết kế đi qua share sheet của hệ điều hành, nên <em>code của ta không bao giờ gọi <code>PHPhotoLibrary</code></em> — người lưu vào Photos là chính hệ thống, khi phụ huynh bấm "Save". Có thể vì thế mà khoá này không còn bắt buộc. <b>Nhưng đây là suy luận, chưa kiểm chứng — cứ khai khoá đó.</b> Khai thừa thì không mất gì; thiếu thì <em>crash</em>. Xác minh trên máy thật ở Spike B.</p>
   </div>
 
   <div class="spike">
@@ -302,7 +324,7 @@ header .note{font-size:.95rem}
     <p><b>Đạt khi:</b> bạn cài được game từ TestFlight lên iPhone mình và nó chạy.</p>
     <p><b>Chặn trước khi bắt đầu:</b> <span class="st-ok">export templates 4.7.2 đã cài xong</span>. Còn thiếu: chứng chỉ + provisioning profile, và một iPhone thật đã đăng ký vào profile đó.</p>
     <p><b>Khác Android ở một điểm quan trọng:</b> tester <em>nội bộ</em> của TestFlight <strong>không phải qua Beta App Review</strong>, nên tính chất "lên được trong vài phút" của Internal testing vẫn giữ. Tester <em>ngoài</em> thì phải qua duyệt. Thời gian duyệt cụ thể: tra tại nguồn lúc nộp, đừng tin con số nhớ được.</p>
-    <p class="small"><b>Đây là chỗ chuỗi chứng chỉ trở thành bắt buộc.</b> Spike B chạy được bằng chữ ký Xcode tự quản, nhưng TestFlight thì không — cần chứng chỉ distribution thật và một bản ghi App Store Connect. Bundle id <code>com.anhtu.rungnhac</code> khóa vĩnh viễn ở đúng bước này. Muốn đổi thì đổi trước.</p>
+    <p class="small"><b>Đây là chỗ chuỗi chứng chỉ trở thành bắt buộc.</b> Spike B chạy được bằng chữ ký Xcode tự quản, nhưng TestFlight thì không — cần chứng chỉ distribution thật và một bản ghi App Store Connect. Bundle id <code>com.tudavid.pianokids</code> khóa vĩnh viễn ở đúng bước này. Muốn đổi thì đổi trước.</p>
   </div>
 </section>
 
@@ -319,7 +341,7 @@ header .note{font-size:.95rem}
         <tr><td>macOS + Xcode</td><td>Xcode 26.2 (17C52)</td><td class="st-ok">Đã có</td></tr>
         <tr><td>Export templates 4.7.2</td><td><code>4.7.2.stable</code> · 2,0 GB · có <code>ios.zip</code></td><td class="st-ok">Đã cài</td></tr>
         <tr><td>Apple Developer Program</td><td>tài khoản đã kích hoạt</td><td class="st-ok">Đã có</td></tr>
-        <tr><td>App ID <code>com.anhtu.rungnhac</code></td><td>—</td><td class="st-wait">Bạn tự làm · sau cùng</td></tr>
+        <tr><td>App ID <code>com.tudavid.pianokids</code></td><td>—</td><td class="st-wait">Bạn tự làm · sau cùng</td></tr>
         <tr><td>Chứng chỉ + provisioning profile</td><td>Xcode tự quản là đủ cho Spike B</td><td class="st-wait">Bạn tự làm · sau cùng</td></tr>
         <tr><td>iPhone thật đã đăng ký vào profile</td><td>máy <code>Anh Tu</code> (A12, iOS 26.5) đang offline</td><td class="st-wait">Chưa cắm</td></tr>
       </tbody>
@@ -627,7 +649,7 @@ header .note{font-size:.95rem}
   <h3>5.2 · Cấu hình export preset</h3>
   <ul class="check">
     <li>Preset <b>iOS</b>. Không có tuỳ chọn Gradle Build và không có định dạng AAB — Godot sinh ra <b>project Xcode</b>, việc đóng gói do Xcode làm</li>
-    <li>Điền <b>Team ID</b>, <b>bundle identifier</b> <code>com.anhtu.rungnhac</code>, và provisioning profile cho từng cấu hình debug / release</li>
+    <li>Điền <b>Team ID</b>, <b>bundle identifier</b> <code>com.tudavid.pianokids</code>, và provisioning profile cho từng cấu hình debug / release</li>
     <li><b>Tắt "Export With Debug"</b> cho bản nộp — dễ quên, và một bản debug lên store là một bản bị từ chối</li>
     <li>Đặt <code>version</code> và <b>build number</b> tăng mỗi lần nộp; App Store Connect từ chối trùng build number</li>
     <li>Khai đầy đủ các dòng <b>usage description</b> trong Info.plist. Thiếu một dòng là <em>crash</em> lúc chạy, không phải cảnh báo: game này cần ít nhất <code>NSPhotoLibraryAddUsageDescription</code> cho luồng lưu clip</li>
