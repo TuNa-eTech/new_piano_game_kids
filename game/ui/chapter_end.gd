@@ -16,23 +16,31 @@ extends PauseOverlay
 ## HAI CHỖ CHƯA LÀM, CÓ LÝ DO:
 ##  · "dòng chữ bé tự ký — Bản nhạc của Bún, 4 tuổi" cần TÊN BÉ, mà chưa có màn
 ##    nhập tên nào sinh ra dữ liệu đó. Chỗ ký để trống thay vì bịa một cái tên.
-##  · Bước xuất file (A1 clip MP4 / A3 ảnh + nhạc / A4 gợi ý quay màn hình) chưa
-##    nối, đang chờ chốt ngã ba Spike A.
+##  · Bước xuất file đi theo A4: game KHÔNG tự dựng file, chỉ mời phụ huynh bật
+##    quay màn hình. Ghi lại để người sau biết đây là lựa chọn, không phải thiếu
+##    sót — và biết cả cái giá của nó: docs/gameplay-design.html nói ngược ở hai
+##    chỗ ("Đừng cố crop màn hình ngang" và "Nó có thứ mà video quay màn hình
+##    không có"), mà app thì khoá landscape nên clip quay ra là clip NGANG.
 
 signal finished
 
-enum Phase { SPROUT, SINGING, FRUIT, DONE }
+## REST là khoảng nghỉ giữa hai lượt diễn: buổi diễn TỰ LẶP LẠI cho tới khi bé
+## chạm nút đi tiếp. Nhờ vậy phụ huynh có bao nhiêu lượt bật quay màn hình cũng
+## được mà màn hình chỉ còn MỘT nút — bé 4 tuổi chưa đọc được chữ, hai nút tròn
+## cạnh nhau trông mời gọi như nhau và bé sẽ bấm mãi nút lặp, không sang chương.
+enum Phase { SPROUT, SINGING, FRUIT, REST }
 
 const SPROUT_SECONDS := 1.0
 const NOTE_INTERVAL := 0.4      ## 23 nốt × 0,4 s ≈ 9,2 s
 const FRUIT_SECONDS := 1.6      ## tổng ≈ 11,8 s, đúng "trọn vẹn 12 giây"
+const REST_SECONDS := 4.0       ## đủ để người lớn đọc dòng gợi ý và bật máy quay
 const ANIMAL_RADIUS := 26.0
 const ANIMAL_POP := 1.55
 const CELEBRATION_DB := -6.0
 
 var _chapter: int = 0
 var _sequence: PackedInt32Array = PackedInt32Array()
-var _phase: Phase = Phase.DONE
+var _phase: Phase = Phase.REST
 var _timer: float = 0.0
 var _played: int = 0
 var _lit: int = -1
@@ -40,6 +48,8 @@ var _lit_age: float = 0.0
 
 var _tree: MagicTree
 var _animals: Control
+var _footer: Control
+var _hint: Label
 var _continue: Button
 
 
@@ -83,35 +93,52 @@ func _build() -> void:
 	column.add_child(_animals)
 	_animals.draw.connect(_draw_animals)
 
-	var footer := CenterContainer.new()
-	footer.custom_minimum_size = Vector2(0, 120)
-	column.add_child(footer)
-	_continue = _make_continue_button()
-	footer.add_child(_continue)
+	_footer = VBoxContainer.new()
+	_footer.custom_minimum_size = Vector2(0, 176)
+	_footer.add_theme_constant_override("separation", 14)
+	_footer.visible = false
+	column.add_child(_footer)
+
+	# Dòng này dành cho NGƯỜI LỚN đọc, không phải cho bé — cùng loại với con số
+	# hạt sao "hiện mờ bên dưới, dành cho phụ huynh nhìn qua vai". Ranh giới "v1
+	# không lời" là về trải nghiệm của bé.
+	_hint = Label.new()
+	_hint.text = "Muốn giữ lại buổi diễn? Bật quay màn hình của máy — buổi diễn sẽ tự chạy lại."
+	_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_hint.modulate = Color(1, 1, 1, 0.5)
+	_footer.add_child(_hint)
+
+	var row := HBoxContainer.new()
+	row.alignment = BoxContainer.ALIGNMENT_CENTER
+	row.add_theme_constant_override("separation", 28)
+	_footer.add_child(row)
+
+	_continue = _make_button(Color("#3F9455"), _draw_continue_arrow, _on_continue)
+	row.add_child(_continue)
 
 
-func _make_continue_button() -> Button:
+func _make_button(accent: Color, painter: Callable, action: Callable) -> Button:
 	var button := Button.new()
 	button.focus_mode = Control.FOCUS_NONE
+	# Apple HIG 44 pt ×2, giống mọi nút khác trong game.
 	button.custom_minimum_size = Vector2(180, 96)
-	button.visible = false
 
 	var box := StyleBoxFlat.new()
-	box.bg_color = Color("#3F9455").darkened(0.35)
+	box.bg_color = accent.darkened(0.35)
 	box.set_corner_radius_all(48)
 	for state in ["normal", "hover", "focus"]:
 		button.add_theme_stylebox_override(state, box)
 	var down := box.duplicate() as StyleBoxFlat
-	down.bg_color = Color("#3F9455")
+	down.bg_color = accent
 	button.add_theme_stylebox_override("pressed", down)
 
 	var face := Control.new()
 	face.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	face.set_anchors_preset(Control.PRESET_FULL_RECT)
 	button.add_child(face)
-	face.draw.connect(_draw_continue_arrow.bind(face))
+	face.draw.connect(painter.bind(face))
 
-	button.pressed.connect(_on_continue)
+	button.pressed.connect(action)
 	return button
 
 
@@ -126,6 +153,14 @@ func play_for_chapter(chapter: int) -> void:
 		_sequence.append_array(Melodies.for_page(first + i))
 
 	_ensure_built()
+	_start_show()
+	open_overlay()
+
+
+func _start_show() -> void:
+	# Gợi ý và hai nút BIẾN MẤT trong lúc diễn. Để nguyên thì chúng lọt thẳng
+	# vào khung hình mà phụ huynh vừa bật máy quay.
+	_footer.visible = false
 	_played = 0
 	_lit = -1
 	_lit_age = 0.0
@@ -133,10 +168,7 @@ func play_for_chapter(chapter: int) -> void:
 	_phase = Phase.SPROUT
 	_tree.reset_page()
 	_tree.set_sequence(_sequence)
-	_continue.visible = false
 	_animals.queue_redraw()
-
-	open_overlay()
 	set_process(true)
 
 
@@ -152,9 +184,10 @@ func _process(delta: float) -> void:
 			_tick_singing()
 		Phase.FRUIT:
 			if _timer >= FRUIT_SECONDS:
-				_enter(Phase.DONE)
-		Phase.DONE:
-			set_process(false)
+				_enter(Phase.REST)
+		Phase.REST:
+			if _timer >= REST_SECONDS:
+				_start_show()
 
 	if _lit >= 0:
 		_animals.queue_redraw()
@@ -166,12 +199,13 @@ func _enter(next: Phase) -> void:
 	match next:
 		Phase.FRUIT:
 			_tree.fruit()
-		Phase.DONE:
+		Phase.REST:
 			_lit = -1
 			_animals.queue_redraw()
-			# Nút hiện SAU khi diễn xong: trong lúc diễn không có gì mời bấm,
-			# để 12 giây đó quay lại được trọn vẹn.
-			_continue.visible = true
+			# Nút và gợi ý hiện SAU khi diễn xong: trong lúc diễn không có gì mời
+			# bấm và không có chữ nào trong khung, để 12 giây đó quay lại được
+			# trọn vẹn.
+			_footer.visible = true
 			finished.emit()
 
 
@@ -202,16 +236,23 @@ func _on_continue() -> void:
 	set_process(false)
 
 
+## Gợi ý quay màn hình có đang hiện không. Máy đo dùng để khẳng định nó KHÔNG
+## nằm trong khung lúc đang diễn.
+func hint_visible() -> bool:
+	return _footer != null and _footer.visible
+
+
 func note_count() -> int:
 	return _sequence.size()
 
 
 func phase_name() -> String:
-	return ["SPROUT", "SINGING", "FRUIT", "DONE"][_phase]
+	return ["SPROUT", "SINGING", "FRUIT", "REST"][_phase]
 
 
+## Vừa diễn xong một lượt trọn vẹn và đang nghỉ.
 func is_done() -> bool:
-	return _phase == Phase.DONE
+	return _phase == Phase.REST
 
 
 # -------------------------------------------------------------------- vẽ --

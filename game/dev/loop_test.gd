@@ -411,6 +411,11 @@ func _run_chapter_end() -> void:
 	_check("diễn lại đủ giai điệu cả chương", _chapter_end.note_count() == expected,
 		"%d / %d nốt" % [_chapter_end.note_count(), expected])
 
+	# Gợi ý quay màn hình KHÔNG được nằm trong khung lúc đang diễn — nếu không
+	# nó lọt thẳng vào đoạn phim phụ huynh vừa bật máy quay.
+	_check("lúc đang diễn thì không có chữ nào trong khung",
+		not _chapter_end.hint_visible())
+
 	# Có tiếng thật đi ra chứ không phải chỉ đổi con số.
 	var bus := AudioServer.get_bus_index("Notes")
 	var peak := -200.0
@@ -427,6 +432,18 @@ func _run_chapter_end() -> void:
 	# mới bắt được chuyện này.
 	_check("7 con vật CÓ hát ra tiếng thật", peak > -60.0, "%.1f dB" % peak)
 	_check("còn headroom, không dội tai", peak < -2.0, "%.1f dB" % peak)
+
+	_check("diễn xong mới hiện gợi ý quay màn hình", _chapter_end.hint_visible())
+
+	# Buổi diễn TỰ LẶP LẠI: phụ huynh có bao nhiêu lượt bật quay màn hình cũng
+	# được, mà màn hình chỉ có một nút cho bé.
+	var t2 := 0.0
+	while _chapter_end.is_done() and t2 < 8.0:
+		await get_tree().process_frame
+		t2 += get_process_delta_time()
+	_check("tự diễn lại sau khoảng nghỉ", not _chapter_end.is_done(),
+		"%.1f s, pha %s" % [t2, _chapter_end.phase_name()])
+	_check("diễn lại thì chữ lại biến mất", not _chapter_end.hint_visible())
 
 	_chapter_end.close_overlay()
 	await get_tree().process_frame
