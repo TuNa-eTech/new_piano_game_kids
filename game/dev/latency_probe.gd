@@ -13,6 +13,7 @@ const REBASE_KEY := KEY_F5
 const LATENCY_REFRESH_SEC := 1.0
 
 var _keyboard: PianoKeyboard
+var _call_response: CallResponse
 var _latency_timer: float = 0.0
 ## Mốc bộ nhớ lúc bắt đầu. Đường nóng không cấp phát thì con số này phải phẳng.
 ## Performance.get_monitor() trả về float — khai báo int ở đây sẽ ăn cảnh báo
@@ -30,6 +31,10 @@ func _ready() -> void:
 
 func bind_keyboard(keyboard: PianoKeyboard) -> void:
 	_keyboard = keyboard
+
+
+func bind_call_response(call_response: CallResponse) -> void:
+	_call_response = call_response
 
 
 func _unhandled_key_input(event: InputEvent) -> void:
@@ -76,6 +81,11 @@ func _process(delta: float) -> void:
 		"nốt đang kêu %d" % AudioDirector.active_voice_count(),
 		"ngón đang chạm %d" % (_keyboard.fingers_down() if _keyboard else 0),
 		"tổng nốt   %d" % GameState.notes_played_this_session,
+		"vòng chơi  %s  %s" % [
+			_call_response.state_name() if _call_response else "-",
+			_call_response.progress() if _call_response else "",
+		],
+		"sao / trang %d / %d" % [GameState.stars, GameState.page_index + 1],
 		"bộ nhớ trôi %+.1f KB" % mem_drift,
 		"fps        %d" % Engine.get_frames_per_second(),
 		"",

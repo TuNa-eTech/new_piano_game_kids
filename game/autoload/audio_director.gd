@@ -19,6 +19,11 @@ enum Backend {
 const POOL_SIZE := 16
 const POLYPHONY := 32
 const BUS_NOTES := &"Notes"
+const BUS_MUSIC := &"Music"
+
+## Pad hoà âm nền — docs/gameplay-design.html · Quyết định 02:
+## "biến mọi nốt bé bấm thành một phần của bản nhạc, và lấp khoảng lặng khi bé nghĩ".
+const PAD_STREAM := "res://assets/placeholder/music/pad_c_am_f_g.wav"
 
 ## Số ID gần nhất giữ lại để overlay đếm được số nốt đang kêu.
 ## Mảng cấp phát sẵn — đường nóng không được cấp phát gì.
@@ -46,6 +51,8 @@ var _recent_i: int = 0
 ## get_output_latency() đắt — tài liệu 4.7 dặn đừng gọi mỗi frame. Cache lại.
 var _cached_latency_ms: float = 0.0
 
+var _pad_player: AudioStreamPlayer
+
 
 func _ready() -> void:
 	# Phải sống qua pause thì mới tắt tiếng được lúc app xuống nền.
@@ -59,6 +66,7 @@ func _ready() -> void:
 	_preload_samples()
 	_setup_polyphonic()
 	_setup_pool()
+	_setup_pad()
 
 	refresh_latency()
 
@@ -92,6 +100,22 @@ func _setup_polyphonic() -> void:
 		push_error("AudioDirector: không lấy được AudioStreamPlaybackPolyphonic")
 
 
+## Pad chạy trên bus Music riêng (-18 dB trong default_bus_layout.tres), tách
+## khỏi bus Notes để sau này chỉnh cân bằng mà không đụng tới tiếng đàn.
+func _setup_pad() -> void:
+	var stream: AudioStream = load(PAD_STREAM)
+	if stream == null:
+		push_error("AudioDirector: không nạp được pad %s" % PAD_STREAM)
+		return
+
+	_pad_player = AudioStreamPlayer.new()
+	_pad_player.name = "PadPlayer"
+	_pad_player.bus = BUS_MUSIC if AudioServer.get_bus_index(BUS_MUSIC) != -1 else &"Master"
+	_pad_player.stream = stream
+	add_child(_pad_player)
+	_pad_player.play()
+
+
 func _setup_pool() -> void:
 	_pool.resize(POOL_SIZE)
 	for i in POOL_SIZE:
@@ -123,6 +147,38 @@ func play_note(index: int) -> void:
 		_pool_next = (_pool_next + 1) % POOL_SIZE
 		p.stream = stream
 		p.play()
+
+
+## Biến thể có cao độ và âm lượng riêng — dùng cho tiếng "ting" của hạt sao và
+## cho tiếng ngân nhắc nhẹ khi bé ngồi im. Vẫn không cấp phát gì.
+func play_note_pitched(index: int, pitch: float, volume_db: float = 0.0) -> void:
+	if index < 0 or index >= _streams.size():
+		return
+	var stream := _streams[index]
+	if stream == null:
+		return
+
+	if backend == Backend.POLYPHONIC:
+		var id := _poly.play_stream(
+			stream, 0.0, volume_db, pitch, AudioServer.PLAYBACK_TYPE_DEFAULT, _bus
+		)
+		_recent[_recent_i] = id
+		_recent_i = (_recent_i + 1) % RECENT_IDS
+	else:
+		var p := _pool[_pool_next]
+		_pool_next = (_pool_next + 1) % POOL_SIZE
+		p.stream = stream
+		p.pitch_scale = pitch
+		p.volume_db = volume_db
+		p.play()
+		p.pitch_scale = 1.0
+		p.volume_db = 0.0
+
+
+## Tiếng "ting" khi một hạt sao rơi vào lọ (Quyết định 04). Placeholder: chính
+## nốt cao nhất kéo lên một quãng tám, chưa cần file SFX riêng của Bước 3.
+func play_ting() -> void:
+	play_note_pitched(Notes.count() - 1, 2.0, -8.0)
 
 
 # ------------------------------------------------------------------ chẩn đoán --
@@ -161,6 +217,10 @@ func toggle_backend() -> void:
 
 # ------------------------------------------------------------------ vòng đời --
 
+func pad_is_playing() -> bool:
+	return _pad_player != null and _pad_player.playing
+
+
 func _silence_all() -> void:
 	for p in _pool:
 		p.stop()
@@ -170,6 +230,36 @@ func _silence_all() -> void:
 			if id != AudioStreamPlaybackPolyphonic.INVALID_ID:
 				_poly.stop_stream(id)
 			_recent[i] = AudioStreamPlaybackPolyphonic.INVALID_ID
+
+
+## Tắt hết tiếng và nhả những tham chiếu do node này giữ, trước khi cây scene
+## bị tháo.
+##
+## ĐÃ ĐO, ĐỪNG KỲ VỌNG QUÁ: hàm này CÓ chạy, nhưng KHÔNG dập tắt được thông báo
+## "N ObjectDB instances were leaked / resources still in use at exit" khi thoát
+## lúc còn nốt đang ngân. Thread trộn âm của engine vẫn giữ AudioStreamPlayback
+## tới sau thời điểm ObjectDB kiểm tra, và GDScript không ép nó nhả sớm hơn được.
+## Kể từ khi cây thần tự hát lúc khởi động thì gần như lần thoát nào cũng vướng.
+##
+## Vô hại: chỉ xảy ra lúc tiến trình kết thúc, không ảnh hưởng bộ nhớ trong lúc
+## chơi (soak test đã chứng minh đường nóng phẳng). Giữ hàm này vì dọn tham
+## chiếu của chính mình vẫn là việc đúng, không phải vì nó làm sạch log.
+func _exit_tree() -> void:
+	_silence_all()
+
+	if _pad_player != null:
+		_pad_player.stop()
+		_pad_player.stream = null
+
+	if _poly_player != null:
+		_poly_player.stop()
+		_poly_player.stream = null
+	_poly = null
+
+	for p in _pool:
+		p.stream = null
+
+	_streams.clear()
 
 
 func _notification(what: int) -> void:

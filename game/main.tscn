@@ -1,8 +1,11 @@
 [gd_scene format=3 uid="uid://bksoeqgbkp2oc"]
 
-[ext_resource type="Script" path="res://game/main.gd" id="1_emt18"]
+[ext_resource type="Script" uid="uid://ceiuq1wnm8chb" path="res://game/main.gd" id="1_emt18"]
 [ext_resource type="PackedScene" uid="uid://cchdvvlnvwlkd" path="res://game/piano/piano_keyboard.tscn" id="2_vop5m"]
-[ext_resource type="Script" path="res://game/dev/latency_probe.gd" id="3_5un7r"]
+[ext_resource type="Script" uid="uid://cuqrqtaxbyl1d" path="res://game/dev/latency_probe.gd" id="3_5un7r"]
+[ext_resource type="Script" uid="uid://c45vjgh7yssp2" path="res://game/story/magic_tree.gd" id="3_dgpao"]
+[ext_resource type="Script" uid="uid://db68jfyytks35" path="res://game/hud/star_jar.gd" id="5_wjctj"]
+[ext_resource type="Script" uid="uid://d0v2gcbg8rggx" path="res://game/call_response.gd" id="6_xkbyp"]
 
 [node name="Main" type="Node2D" unique_id=1267166556]
 script = ExtResource("1_emt18")
@@ -23,13 +26,53 @@ anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_top = -260.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="MagicTree" type="Control" parent="UI" unique_id=1298867192]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_bottom = -260.0
+script = ExtResource("3_dgpao")
 
 [node name="LatencyProbe" type="CanvasLayer" parent="." unique_id=807943349]
 script = ExtResource("3_5un7r")
 
 [node name="Panel" type="PanelContainer" parent="LatencyProbe" unique_id=909376415]
+visible = false
 offset_left = 16.0
 offset_top = 16.0
 
 [node name="Label" type="Label" parent="LatencyProbe/Panel" unique_id=1342743443]
 layout_mode = 2
+
+[node name="HUD" type="CanvasLayer" parent="." unique_id=741003904]
+
+[node name="StarJar" type="Control" parent="HUD" unique_id=1959697669]
+layout_mode = 3
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -112.0
+offset_top = 34.0
+offset_right = -46.0
+offset_bottom = 124.0
+script = ExtResource("5_wjctj")
+
+[node name="Count" type="Label" parent="HUD/StarJar" unique_id=449423394]
+modulate = Color(1, 1, 1, 0.45)
+layout_mode = 0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_bottom = 22.0
+horizontal_alignment = 1
+
+[node name="PageLabel" type="Label" parent="HUD" unique_id=1221102866]
+offset_left = 28.0
+offset_top = 34.0
+
+[node name="CallResponse" type="Node" parent="." unique_id=2112156833]
+script = ExtResource("6_xkbyp")
