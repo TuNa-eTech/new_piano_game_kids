@@ -1,11 +1,22 @@
 # Godot 4+ specific ignores
 .godot/
 /android/
+/ios/
+
+# Thư mục Godot xuất ra project Xcode (Bước 1 · iOS)
+/build/ios/
 
 # macOS
 .DS_Store
 
 # Signing — never commit (xem Bước 5.1)
+# iOS / Apple
+*.p12
+*.cer
+*.certSigningRequest
+*.mobileprovision
+*.provisionprofile
+# Android — để dành cho bản sau
 *.keystore
 *.jks
 keystore.properties

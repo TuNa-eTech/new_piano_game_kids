@@ -1,0 +1,21 @@
+[gd_scene format=3 uid="uid://dou3i6dep04vk"]
+
+[ext_resource type="Script" path="res://game/piano/animal_key.gd" id="1_qeg72"]
+
+[node name="AnimalKey" type="Control" unique_id=906978271]
+layout_mode = 3
+anchors_preset = 0
+script = ExtResource("1_qeg72")
+
+[node name="Body" type="ColorRect" parent="." unique_id=1798707488]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="Label" type="Label" parent="." unique_id=1927897250]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_bottom = -22.0
+horizontal_alignment = 1
+vertical_alignment = 2

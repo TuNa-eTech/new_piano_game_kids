@@ -6,3 +6,8 @@
 *.wav filter=lfs diff=lfs merge=lfs -text
 *.ogg filter=lfs diff=lfs merge=lfs -text
 *.mp3 filter=lfs diff=lfs merge=lfs -text
+
+# Wav placeholder sinh ra từ tools/gen_placeholder_notes.py — KHÔNG đưa vào LFS.
+# Chúng tái tạo được và sẽ thay đổi liên tục cho tới Bước 3; LFS giữ mọi phiên
+# bản vĩnh viễn nên không đáng.
+assets/placeholder/**/*.wav -filter -diff -merge -text
