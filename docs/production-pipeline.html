@@ -217,8 +217,8 @@ header .note{font-size:.95rem}
         <tr><td>Máy Android thật, đời rẻ</td><td class="num">~2–3 tr</td><td class="yes">Có</td><td class="st-wait">Chưa thấy máy</td><td>Máy Android tầm thấp 2–3 năm tuổi. Đây là máy đo độ trễ âm thanh — máy cao cấp sẽ nói dối bạn. <code>adb devices</code> đang trống → Spike B và Spike C bị chặn</td></tr>
         <tr><td>Godot 4.7 (bản standard)</td><td class="num">0</td><td class="yes">Có</td><td class="st-ok">4.7.2 stable</td><td>GDScript, không cần bản .NET. <strong>Export templates chưa cài</strong> — xem Bước 1</td></tr>
         <tr><td>Android SDK + JDK</td><td class="num">0</td><td class="yes">Có</td><td class="st-ok">Đã cài</td><td>SDK ở <code>~/Library/Android/sdk</code>, JDK 17.0.8 Temurin — đúng bản Godot 4.7 yêu cầu. Một vài gói lệch phiên bản, xem Bước 1</td></tr>
-        <tr><td>Audacity <i>hoặc</i> Reaper</td><td class="num">0 · hoặc 60 USD</td><td class="yes">Có</td><td class="st-wait">Chưa kiểm tra</td><td>Audacity đủ dùng cho toàn bộ v1</td></tr>
-        <tr><td>Krita hoặc Photoshop</td><td class="num">0 · hoặc thuê bao</td><td class="yes">Có</td><td class="st-wait">Chưa kiểm tra</td><td>Để tách nền, chỉnh màu, cắt sprite. Krita miễn phí là đủ</td></tr>
+        <tr><td>Audacity <i>hoặc</i> Reaper</td><td class="num">0 · hoặc 60 USD</td><td class="yes">Có</td><td class="st-wait">Chưa cài</td><td>Audacity đủ dùng cho toàn bộ v1. Chưa cần đến Bước 3 — <code>brew install --cask audacity</code></tr>
+        <tr><td>Krita hoặc Photoshop</td><td class="num">0 · hoặc thuê bao</td><td class="yes">Có</td><td class="st-wait">Chưa cài</td><td>Để tách nền, chỉnh màu, cắt sprite. Krita miễn phí là đủ. Chưa cần đến Bước 2 — <code>brew install --cask krita</code></tr>
         <tr><td>Công cụ sinh ảnh AI</td><td class="num">~10–25 USD / tháng</td><td class="yes">Có<sup>*</sup></td><td class="st-wait">Chưa chốt</td><td>Xem mục 3 — kiểm tra điều khoản cho phép dùng thương mại</td></tr>
         <tr><td>Thư viện âm mẫu</td><td class="num">0–30 USD</td><td class="no">Tùy</td><td class="st-wait">Chưa chốt</td><td>Xem mục 4 — ưu tiên CC0</td></tr>
         <tr><td>Git + Git LFS</td><td class="num">0</td><td class="yes">Có</td><td class="st-ok">Xong</td><td>LFS đã bật cho <code>png jpg jpeg wav ogg mp3</code>; commit đầu tiên đã tạo trên nhánh <code>main</code>. <code>.gitignore</code> đã chặn <code>*.keystore</code> và <code>*.jks</code></td></tr>
@@ -246,7 +246,7 @@ header .note{font-size:.95rem}
 
 <section id="spike">
   <div class="sec-head">
-    <div class="sec-num">Tuần 0 · Ba ngày</div>
+    <div class="sec-num">Tuần 0 · 2,5 ngày</div>
     <h2>Spike: chứng minh ba thứ trước khi vẽ pixel đầu tiên</h2>
   </div>
   <div class="col"><p>Spike là code vứt đi. Mục tiêu không phải làm đẹp mà là trả lời <em>có / không</em> cho một câu hỏi kỹ thuật. Mỗi spike có hạn chót cứng — hết hạn thì lấy phương án dự phòng, không kéo dài.</p></div>
@@ -303,6 +303,7 @@ header .note{font-size:.95rem}
       <tbody>
         <tr><td>JDK</td><td>OpenJDK 17</td><td>17.0.8 Temurin</td><td class="st-ok">Khớp</td></tr>
         <tr><td>Android SDK path</td><td>—</td><td><code>~/Library/Android/sdk</code></td><td class="st-ok">Đã trỏ đúng trong Godot</td></tr>
+        <tr><td>platform-tools</td><td>35.0.0+</td><td>36.0.2</td><td class="st-ok">Khớp</td></tr>
         <tr><td>platforms</td><td>android-35</td><td>29 · 31 · 33 · 34 · 35 · 36</td><td class="st-ok">Khớp</td></tr>
         <tr><td>build-tools</td><td>35.0.1</td><td>34.0.0 · 35.0.0 · 36.1.0</td><td class="st-wait">Lệch</td></tr>
         <tr><td>ndk</td><td>28.1.13356709</td><td>27.2.12479018 · 28.2.13676358</td><td class="st-wait">Lệch</td></tr>
