@@ -201,12 +201,19 @@ header .note{font-size:.95rem}
           <tr><td>Tuần 0 · Spike B (độ trễ)</td><td class="st-wait">Chờ máy</td><td class="small">Không còn bị chặn vì thiếu code — thứ để đo đã dựng xong, kèm overlay chẩn đoán và máy đo soak test. Chỉ còn thiếu iPhone thật cắm vào</td></tr>
           <tr><td>Tuần 0 · Spike C (đường ống phát hành)</td><td class="st-wait">Chờ bạn</td><td class="small">Export templates xong. Chờ chuỗi chứng chỉ bạn sẽ làm sau cùng, cộng máy thật. TestFlight thay cho Internal testing</td></tr>
           <tr><td>Bước 1 · dựng môi trường iOS</td><td class="st-wait">Đang làm</td><td class="small">Export templates 4.7.2 <strong>đã cài</strong> — hết chặn. Còn lại: cắm máy. App ID + chứng chỉ <strong>bạn tự làm, để sau cùng</strong></td></tr>
+          <tr><td>Tuần 4 · màn kết chương (đang làm)</td><td class="st-wait">Một nửa</td><td class="small">"Buổi Diễn Rừng Xanh" đã chạy: 7 con vật hát lại trọn 23 nốt của cả chương, cây mọc theo, rương báu bật mở, đo được <b>11,8 giây</b> — đúng "trọn vẹn 12 giây". Quyền sở hữu <code>get_tree().paused</code> gom về một lớp cha <code>PauseOverlay</code> đếm chồng. <b>Còn treo:</b> bước xuất file, vì lựa chọn A4 mâu thuẫn với chính tài liệu thiết kế (xem ô bên dưới)</td></tr>
           <tr><td>Bước 2 → 6</td><td class="st-wait">Chưa bắt đầu</td><td class="small">Mỹ thuật, âm thanh thật, nội dung chương, phát hành</td></tr>
         </tbody>
       </table>
     </div>
 
     <p><b>Việc kế tiếp, theo thứ tự:</b> ① chọn ngã ba <b>A1 hay A3</b> của Spike A — điều tra đã xong, kết quả ở mục Spike A · ② cắm iPhone và chạy Spike B — để Xcode tự ký (<em>Automatically manage signing</em>), không phải vào portal · ③ <b>thử với ba đứa trẻ thật</b> để đóng Tuần 3 · ④ Tuần 4: màn kết chương, luồng chia sẻ, cổng phụ huynh đầy đủ.</p>
+
+    <div class="warnbox" style="margin:12px 0"><b>Ngã ba Spike A: đã chọn A4, nhưng tài liệu thiết kế nói ngược lại.</b> Tác giả chọn A4 (không xuất file, chỉ gợi ý phụ huynh tự quay màn hình). Hai câu trong <code>gameplay-design</code> đi ngược lựa chọn đó, ghi lại để quyết định được đưa ra với đủ dữ kiện:
+    <br>· <em>"Đừng cố crop màn hình ngang."</em> — mà screen recording của một app khoá <code>landscape</code> thì ra clip ngang, đúng thứ bị cấm.
+    <br>· Về lý do clip được gửi đi: <em>"Nó có thứ mà video quay màn hình không có"</em> — tài liệu đã cân nhắc và loại bỏ chính cách quay màn hình.
+    <br>Hệ quả kèm theo: tài liệu đặt <b>cổng phụ huynh đầy đủ</b> ở luồng lưu clip, mà A4 không có luồng lưu clip nào. Kiểm phía quy định: Kids Category của Apple đòi cổng phụ huynh trước <em>liên kết ra ngoài</em> và <em>mua trong app</em> — v1 không có cả hai. Nên dưới A4, <b>v1 không còn thứ gì cần cổng phụ huynh</b>; khoá giữ 2 giây của Tuần 3 đã lo phần "đừng để bé đi lạc". Chưa dựng một cánh cổng không có cửa.
+    <br>Tiêu chí thoát Tuần 4 ("một phụ huynh gửi được clip cho người khác mà không hỏi cách") cũng không đo được theo nghĩa tài liệu đặt ra nếu giữ A4.</div>
 
     <div class="note" style="margin:12px 0"><b>Lệch ảnh mock có chủ ý ở Tuần 3: gộp MENU và LEVELS thành một nút.</b> Ảnh mock có hai nút. Nhưng nếu LEVELS chạm phát là mở được bản đồ thì khoá nhẹ của MENU thành vô nghĩa — bé vẫn rời trang tự do, đúng thứ khoá nhẹ sinh ra để chặn. Nay còn một nút Menu (giữ 2 giây), và bản đồ chứa luôn phần chọn chương.</div>
 
