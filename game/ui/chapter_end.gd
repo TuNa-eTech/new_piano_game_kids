@@ -82,7 +82,15 @@ func _build() -> void:
 	# khung hình thành một mớ chồng chéo. Chỉ ảnh chụp mới lộ ra chuyện này.
 	_add_backdrop(Color(0.03, 0.05, 0.04, 1.0))
 
-	if ResourceLoader.exists("res://assets/art/stage_grand_finale.png"):
+	if ResourceLoader.exists("res://docs/mock-grand-finale.jpeg"):
+		var stage_bg := TextureRect.new()
+		stage_bg.texture = load("res://docs/mock-grand-finale.jpeg")
+		stage_bg.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		stage_bg.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+		stage_bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+		stage_bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		add_child(stage_bg)
+	elif ResourceLoader.exists("res://assets/art/stage_grand_finale.png"):
 		var stage_bg := TextureRect.new()
 		stage_bg.texture = load("res://assets/art/stage_grand_finale.png")
 		stage_bg.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
@@ -99,11 +107,13 @@ func _build() -> void:
 
 	_tree = MagicTree.new()
 	_tree.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_tree.modulate.a = 0.0 # Giữ nguyên logic tính toán nốt nhưng nhường chỗ cho sân khấu đại hòa tấu
 	column.add_child(_tree)
 
 	_animals = Control.new()
 	_animals.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_animals.custom_minimum_size = Vector2(0, ANIMAL_RADIUS * 3.4)
+	_animals.modulate.a = 0.0
 	column.add_child(_animals)
 	_animals.draw.connect(_draw_animals)
 

@@ -3,7 +3,7 @@ extends Control
 ## Dải ruy băng nhạc sáng ma thuật nối từ phím đàn bay lên cuốn sách và cây thần.
 ## Đúng như ảnh mock: luồng ánh sáng uốn lượn với nốt nhạc phát quang (khóa Sol, nốt đơn, nốt đôi).
 
-const NOTE_ICONS := ["♪", "♫", "♬", "𝄞"]
+const NOTE_ICONS: Array[String] = ["♪", "♫", "♬", "𝄞"]
 
 class ActiveBeam:
 	var start_pos: Vector2
@@ -48,8 +48,34 @@ func emit_ribbon(from_pos: Vector2, to_pos: Vector2, color: Color) -> void:
 	queue_redraw()
 
 
-func _process(delta: float) -> void:
+var _guide_from: Vector2
+var _guide_to: Vector2
+var _guide_color: Color
+var _guide_active: bool = false
+var _guide_time: float = 0.0
+
+
+func set_guiding_stream(from_leaf_pos: Vector2, to_key_pos: Vector2, color: Color) -> void:
+	_guide_from = from_leaf_pos
+	_guide_to = to_key_pos
+	_guide_color = color
+	_guide_active = true
+	set_process(true)
+	queue_redraw()
+
+
+func clear_guiding_stream() -> void:
+	_guide_active = false
 	if _beams.is_empty():
+		set_process(false)
+	queue_redraw()
+
+
+func _process(delta: float) -> void:
+	if _guide_active:
+		_guide_time += delta
+
+	if _beams.is_empty() and not _guide_active:
 		set_process(false)
 		return
 
@@ -65,8 +91,43 @@ func _process(delta: float) -> void:
 
 
 func _draw() -> void:
+	if _guide_active:
+		_draw_guiding_stream()
+
 	for beam in _beams:
 		_draw_single_beam(beam)
+
+
+func _draw_guiding_stream() -> void:
+	var segments := 28
+	var points := PackedVector2Array()
+	var colors := PackedColorArray()
+
+	var mid := (_guide_from + _guide_to) * 0.5
+	var normal := Vector2(-(_guide_to.y - _guide_from.y), _guide_to.x - _guide_from.x).normalized()
+	var ctrl := mid + normal * 80.0
+
+	var pulse := 0.65 + 0.35 * sin(_guide_time * 3.2)
+
+	for s in range(segments + 1):
+		var t := float(s) / float(segments)
+		var p := (1.0 - t) * (1.0 - t) * _guide_from + 2.0 * (1.0 - t) * t * ctrl + t * t * _guide_to
+		points.append(p)
+		var a := sin(t * PI) * (0.30 + 0.22 * pulse)
+		colors.append(Color(_guide_color.r, _guide_color.g, _guide_color.b, a))
+
+	if points.size() >= 2:
+		draw_polyline_colors(points, colors, 14.0, true)
+		draw_polyline_colors(points, colors, 4.0, true)
+
+	# Nốt nhạc bay xuôi dòng từ lá xuống phím đàn
+	var font := ThemeDB.fallback_font
+	for i in 5:
+		var raw_t := fposmod((_guide_time * 0.45) + float(i) * 0.20, 1.0)
+		var note_pos := (1.0 - raw_t) * (1.0 - raw_t) * _guide_from + 2.0 * (1.0 - raw_t) * raw_t * ctrl + raw_t * raw_t * _guide_to
+		var note_a := sin(raw_t * PI) * 0.88
+		var sym: String = NOTE_ICONS[i % NOTE_ICONS.size()]
+		draw_string(font, note_pos + Vector2(-8, 8), sym, HORIZONTAL_ALIGNMENT_CENTER, -1, 16, Color(1.0, 1.0, 1.0, note_a))
 
 
 func _draw_single_beam(beam: ActiveBeam) -> void:

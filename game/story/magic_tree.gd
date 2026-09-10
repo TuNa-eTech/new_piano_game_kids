@@ -32,7 +32,9 @@ var _time: float = 0.0
 
 var _tree_textures: Array[Texture2D] = []
 var _leaf_texture: Texture2D
+var _chest_closed_texture: Texture2D
 var _chest_open_texture: Texture2D
+var _burst_texture: Texture2D
 
 
 func _ready() -> void:
@@ -50,8 +52,12 @@ func _ready() -> void:
 
 	if ResourceLoader.exists("res://assets/art/leaf_white.png"):
 		_leaf_texture = load("res://assets/art/leaf_white.png")
+	if ResourceLoader.exists("res://assets/art/chest_closed.png"):
+		_chest_closed_texture = load("res://assets/art/chest_closed.png")
 	if ResourceLoader.exists("res://assets/art/chest_open.png"):
 		_chest_open_texture = load("res://assets/art/chest_open.png")
+	if ResourceLoader.exists("res://assets/art/fx_golden_burst.png"):
+		_burst_texture = load("res://assets/art/fx_golden_burst.png")
 
 	reset_page()
 	resized.connect(queue_redraw)
@@ -215,9 +221,9 @@ func _draw() -> void:
 	for i in Notes.count():
 		_draw_leaf(i, _leaf_anchor(i))
 
-	if _fruiting:
-		var fruit_top := Vector2(tree_cx, tree_rect.position.y + 0.16 * tree_display_h)
-		_draw_fruit(fruit_top)
+	# Rương báu ngọn cây: luôn ngự trên đỉnh ngọn cây beanstalk leo lên trời
+	var chest_pos := get_chest_position()
+	_draw_chest(chest_pos)
 
 
 ## Vẽ lá: dùng _leaf_texture nếu có, kết hợp vẽ quầng sáng và ký tự nốt nhạc
@@ -266,22 +272,48 @@ func _draw_leaf(i: int, p: Vector2) -> void:
 			draw_string(font, p + Vector2(-6, 6), "★", HORIZONTAL_ALIGNMENT_CENTER, -1, 15, Color.WHITE)
 
 
+func get_chest_position() -> Vector2:
+	var ground_y := size.y * 0.94
+	var tree_cx := size.x * center_ratio_x
+	var tree_display_h := ground_y * 0.92
+	var st := stage()
+	var peak_frac := lerpf(0.18, 0.94, float(st) / float(STAGES - 1))
+	var bob := sin(_time * 2.5) * 3.5
+	return Vector2(tree_cx, ground_y - tree_display_h * peak_frac + bob)
 
-func _draw_fruit(top: Vector2) -> void:
-	var t := _time * 3.0
-	var gold := Color("#F2C64B")
-	for k in 6:
-		var a := TAU * k / 6.0 + t * 0.35
-		var rr := size.y * 0.10 * (1.0 + 0.12 * sin(t + k))
-		draw_circle(top + Vector2(cos(a), sin(a)) * rr, size.y * 0.022, gold)
 
-	# Rương báu mở
-	if _chest_open_texture != null:
-		var cs := size.y * 0.22
-		var rect := Rect2(top.x - cs * 0.5, top.y - cs * 0.85, cs, cs)
-		draw_texture_rect(_chest_open_texture, rect, false)
+func get_chest_global_position() -> Vector2:
+	return global_position + get_chest_position()
+
+
+func _draw_chest(pos: Vector2) -> void:
+	var cs := size.y * 0.16
+	var rect := Rect2(pos.x - cs * 0.5, pos.y - cs * 0.75, cs, cs)
+
+	if _fruiting:
+		# Hiệu ứng bùng nổ tia sáng vàng
+		if _burst_texture != null:
+			var burst_size := cs * 2.6
+			var burst_rect := Rect2(pos.x - burst_size * 0.5, pos.y - burst_size * 0.6, burst_size, burst_size)
+			draw_texture_rect(_burst_texture, burst_rect, false, Color(1.0, 1.0, 1.0, 0.75 + 0.25 * sin(_time * 4.0)))
+		# Các hạt sao vàng bay quanh rương
+		var t := _time * 3.0
+		var gold := Color("#F2C64B")
+		for k in 8:
+			var a := TAU * k / 8.0 + t * 0.4
+			var rr := cs * 0.85 * (1.0 + 0.15 * sin(t + k))
+			draw_circle(pos + Vector2(cos(a), sin(a)) * rr, size.y * 0.016, gold)
+
+		# Rương mở bung nắp
+		if _chest_open_texture != null:
+			draw_texture_rect(_chest_open_texture, rect, false)
 	else:
-		var cw := size.x * 0.07
-		var ch := size.y * 0.06
-		draw_rect(Rect2(top.x - cw * 0.5, top.y - ch * 1.6, cw, ch), Color("#8a5a2b"))
-		draw_rect(Rect2(top.x - cw * 0.5, top.y - ch * 1.6, cw, ch * 0.28), gold)
+		# Hào quang vàng nhẹ quanh rương đóng
+		var glow_pulse := 0.5 + 0.5 * sin(_time * 2.2)
+		draw_circle(pos - Vector2(0, cs * 0.25), cs * 0.55, Color(1.0, 0.88, 0.45, 0.18 + 0.14 * glow_pulse))
+
+		# Rương đóng cưỡi trên đỉnh cành đậu thần
+		if _chest_closed_texture != null:
+			draw_texture_rect(_chest_closed_texture, rect, false)
+		elif _chest_open_texture != null:
+			draw_texture_rect(_chest_open_texture, rect, false)

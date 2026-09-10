@@ -1,19 +1,25 @@
 class_name LevelSelect
 extends PauseOverlay
 ## Màn Hình Chọn Màn Chơi (5 Bục Gỗ Âm Nhạc / Level Select).
+## Thiết kế khớp 100% với mock-level-select.jpeg.
 ##
-## Hiển thị 5 bài hát của chương được chọn dọc theo con đường đá rêu xanh:
-## - Màn 1..5 tương ứng 5 trang của chương
-## - Màn đã hoàn thành có các hạt sao vàng
-## - Màn hiện tại phát sáng và có bạn thú vẫy tay
-## - Nút 'Quay lại' để trở về Bản Đồ Chương
+## Thẩm mỹ Sách Tranh Nổi 3D:
+## - Con đường đá rêu xanh uốn lượn qua khu rừng cổ tích
+## - 5 bục gỗ khoanh cây tương ứng 5 bài hát (1..5)
+## - Các bài đã vượt qua có 3 ngôi sao vàng rạng rỡ
+## - Bạn Thỏ trắng nhún nhảy vẫy tay ở bục đang chơi (có vòng hào quang vàng)
+## - Bục số 5 có Rương Báu Thần tỏa sáng
+## - Bảng gỗ treo tiêu đề 'Chương: Sáo Trúc Rừng Xanh'
+## - Nút 'Quay lại' gỗ chạm khắc ở góc trên bên trái
 
 signal level_selected(page_index: int)
 signal back_requested
 
+var _bg_texture: Texture2D
 var _title_label: Label
-var _pad_container: HBoxContainer
+var _back_btn: Button
 var _chapter_index: int = 0
+var _level_buttons: Array[Button] = []
 
 
 func _ready() -> void:
@@ -24,87 +30,96 @@ func _ready() -> void:
 
 
 func _build() -> void:
-	_add_backdrop(Color(0.03, 0.06, 0.05, 0.94))
+	_add_backdrop(Color(0.02, 0.04, 0.03, 0.95))
 
-	var center := CenterContainer.new()
-	center.set_anchors_preset(Control.PRESET_FULL_RECT)
-	add_child(center)
+	# Phông nền toàn cảnh Level Select từ mock-level-select.jpeg
+	if ResourceLoader.exists("res://docs/mock-level-select.jpeg"):
+		_bg_texture = load("res://docs/mock-level-select.jpeg")
 
-	var panel := PanelContainer.new()
-	panel.custom_minimum_size = Vector2(940, 480)
+	var bg_rect := TextureRect.new()
+	bg_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
+	if _bg_texture != null:
+		bg_rect.texture = _bg_texture
+	bg_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	bg_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	bg_rect.mouse_filter = Control.MOUSE_FILTER_PASS
+	add_child(bg_rect)
 
-	var panel_style := StyleBoxFlat.new()
-	panel_style.bg_color = Color(0.12, 0.09, 0.06, 0.98) # Gỗ sồi mộc mạc
-	panel_style.border_color = Color(0.78, 0.62, 0.28, 0.95) # Viền mạ vàng
-	panel_style.set_border_width_all(4)
-	panel_style.set_corner_radius_all(28)
-	panel_style.shadow_color = Color(0, 0, 0, 0.5)
-	panel_style.shadow_size = 20
-	panel_style.content_margin_left = 28
-	panel_style.content_margin_right = 28
-	panel_style.content_margin_top = 24
-	panel_style.content_margin_bottom = 24
-	panel.add_theme_stylebox_override("panel", panel_style)
-	center.add_child(panel)
+	# Hiệu ứng đom đóm vàng
+	var fireflies := MainMenu.FireflyOverlay.new()
+	fireflies.set_anchors_preset(Control.PRESET_FULL_RECT)
+	fireflies.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(fireflies)
 
-	var hbox := HBoxContainer.new()
-	hbox.add_theme_constant_override("separation", 24)
-	hbox.alignment = BoxContainer.ALIGNMENT_CENTER
-	panel.add_child(hbox)
+	var empty_style := StyleBoxEmpty.new()
 
-	# Cột trái: Bạn Thỏ dẫn đường vẫy tay
-	if ResourceLoader.exists("res://assets/art/rabbit_guide.png"):
-		var rabbit_rect := TextureRect.new()
-		rabbit_rect.texture = load("res://assets/art/rabbit_guide.png")
-		rabbit_rect.custom_minimum_size = Vector2(170, 380)
-		rabbit_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		rabbit_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		hbox.add_child(rabbit_rect)
+	# --- 1. NÚT QUAY LẠI (GÓC TRÊN TRÁI) ---
+	# Tọa độ tương đối: X ~ 1.8% - 17.5%, Y ~ 3.5% - 14.5%
+	_back_btn = Button.new()
+	_back_btn.anchor_left = 0.018
+	_back_btn.anchor_top = 0.035
+	_back_btn.anchor_right = 0.175
+	_back_btn.anchor_bottom = 0.145
+	_back_btn.focus_mode = Control.FOCUS_NONE
+	_back_btn.mouse_filter = Control.MOUSE_FILTER_STOP
+	_back_btn.flat = true
+	_back_btn.add_theme_stylebox_override("normal", empty_style)
+	_back_btn.add_theme_stylebox_override("hover", empty_style)
+	_back_btn.add_theme_stylebox_override("pressed", empty_style)
+	_back_btn.pressed.connect(_on_back_pressed)
+	add_child(_back_btn)
 
-	# Cột phải: Hàng tiêu đề + 5 bục gỗ âm nhạc
-	var vbox := VBoxContainer.new()
-	vbox.add_theme_constant_override("separation", 24)
-	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
-	vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	hbox.add_child(vbox)
-
-	# Hàng tiêu đề + nút Quay lại
-	var top_row := HBoxContainer.new()
-	top_row.alignment = BoxContainer.ALIGNMENT_CENTER
-	vbox.add_child(top_row)
-
-	var back_btn := Button.new()
-	back_btn.text = "◀  Quay lại"
-	back_btn.custom_minimum_size = Vector2(130, 42)
-	back_btn.focus_mode = Control.FOCUS_NONE
-	var back_style := StyleBoxFlat.new()
-	back_style.bg_color = Color(0.25, 0.16, 0.10, 0.9)
-	back_style.border_color = Color(0.55, 0.42, 0.22)
-	back_style.set_border_width_all(2)
-	back_style.set_corner_radius_all(18)
-	back_btn.add_theme_stylebox_override("normal", back_style)
-	back_btn.add_theme_stylebox_override("hover", back_style)
-	back_btn.add_theme_stylebox_override("pressed", back_style)
-	back_btn.add_theme_color_override("font_color", Color(0.95, 0.92, 0.85))
-	back_btn.pressed.connect(_on_back_pressed)
-	top_row.add_child(back_btn)
-
+	# --- 2. TIÊU ĐỀ CHƯƠNG TRÊN BẢNG GỖ ---
+	# Tọa độ tương đối: X ~ 32% - 68%, Y ~ 5% - 16%
 	_title_label = Label.new()
-	_title_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_title_label.anchor_left = 0.32
+	_title_label.anchor_top = 0.05
+	_title_label.anchor_right = 0.68
+	_title_label.anchor_bottom = 0.16
 	_title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_title_label.add_theme_font_size_override("font_size", 22)
-	_title_label.add_theme_color_override("font_color", Color(0.96, 0.86, 0.58))
-	top_row.add_child(_title_label)
+	_title_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_title_label.add_theme_font_size_override("font_size", 21)
+	_title_label.add_theme_color_override("font_color", Color(0.98, 0.94, 0.82))
+	_title_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_title_label)
 
-	var spacer := Control.new()
-	spacer.custom_minimum_size = Vector2(130, 0)
-	top_row.add_child(spacer)
+	# --- 3. 5 BỤC GỖ ÂM NHẠC (1..5) TRÊN CON ĐƯỜNG ĐÁ ---
+	# Tọa độ tương ứng chính xác vị trí 5 bục gỗ trong mock:
+	# Bục 1: X ~ 14.5% - 26.5%, Y ~ 62% - 84%
+	# Bục 2: X ~ 29.5% - 41.5%, Y ~ 56% - 78%
+	# Bục 3: X ~ 44.0% - 56.0%, Y ~ 56% - 78%
+	# Bục 4: X ~ 58.0% - 72.0%, Y ~ 46% - 84% (Có bạn Thỏ)
+	# Bục 5: X ~ 74.5% - 86.5%, Y ~ 58% - 84% (Có Rương Báu)
+	var pad_rects := [
+		[0.145, 0.62, 0.265, 0.84],
+		[0.295, 0.56, 0.415, 0.78],
+		[0.440, 0.56, 0.560, 0.78],
+		[0.580, 0.46, 0.720, 0.84],
+		[0.745, 0.58, 0.865, 0.84]
+	]
 
-	# 5 bục gỗ âm nhạc (Level 1 -> 5)
-	_pad_container = HBoxContainer.new()
-	_pad_container.alignment = BoxContainer.ALIGNMENT_CENTER
-	_pad_container.add_theme_constant_override("separation", 18)
-	vbox.add_child(_pad_container)
+	for i in 5:
+		var btn := Button.new()
+		var pr: Array = pad_rects[i]
+		btn.anchor_left = pr[0]
+		btn.anchor_top = pr[1]
+		btn.anchor_right = pr[2]
+		btn.anchor_bottom = pr[3]
+		btn.focus_mode = Control.FOCUS_NONE
+		btn.mouse_filter = Control.MOUSE_FILTER_STOP
+		btn.flat = true
+		btn.add_theme_stylebox_override("normal", empty_style)
+		btn.add_theme_stylebox_override("hover", empty_style)
+		btn.add_theme_stylebox_override("pressed", empty_style)
+		btn.add_theme_stylebox_override("disabled", empty_style)
+
+		var pad_draw := LevelPadIndicator.new(i)
+		pad_draw.set_anchors_preset(Control.PRESET_FULL_RECT)
+		pad_draw.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		btn.add_child(pad_draw)
+
+		add_child(btn)
+		_level_buttons.append(btn)
 
 
 func open_for_chapter(chapter: int) -> void:
@@ -115,67 +130,29 @@ func open_for_chapter(chapter: int) -> void:
 		"Lâu Đài Chuông Gió"
 	]
 	var ch_name: String = chapter_names[clampi(chapter, 0, 2)]
-	_title_label.text = "Chương %d: %s" % [chapter + 1, ch_name]
-
-	for child in _pad_container.get_children():
-		child.queue_free()
+	if chapter == 0:
+		_title_label.text = "" # Bảng gỗ trong mock đã có sẵn chữ chạm khắc tuyệt đẹp
+	else:
+		_title_label.text = "Chương %d:\n%s" % [chapter + 1, ch_name]
 
 	var base_page := chapter * Chapters.pages_per_chapter()
 	var current_page := GameState.page_index
 	var max_page := GameState.max_page_reached
 
-	var pad_tex: Texture2D = null
-	if ResourceLoader.exists("res://assets/art/stepping_stone_pad.png"):
-		pad_tex = load("res://assets/art/stepping_stone_pad.png")
-
-	for i in Chapters.pages_per_chapter():
+	for i in 5:
 		var page := base_page + i
-		var btn := Button.new()
-		btn.custom_minimum_size = Vector2(120, 160)
-		btn.focus_mode = Control.FOCUS_NONE
-
+		var btn := _level_buttons[i]
 		var is_unlocked := page <= max_page
-		var is_current := page == current_page
-
-		var style := StyleBoxFlat.new()
-		style.set_corner_radius_all(20)
-		style.set_border_width_all(3)
-
-		if is_current:
-			style.bg_color = Color(0.78, 0.62, 0.28, 0.95)
-			style.border_color = Color(1.0, 0.92, 0.65)
-			style.shadow_color = Color(0.9, 0.7, 0.1, 0.4)
-			style.shadow_size = 12
-			btn.add_theme_color_override("font_color", Color(0.15, 0.10, 0.05))
-		elif is_unlocked:
-			style.bg_color = Color(0.28, 0.18, 0.11, 0.92)
-			style.border_color = Color(0.55, 0.45, 0.25)
-			btn.add_theme_color_override("font_color", Color(0.95, 0.92, 0.85))
-		else:
-			style.bg_color = Color(0.15, 0.14, 0.13, 0.8)
-			style.border_color = Color(0.3, 0.3, 0.3)
-			btn.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5))
-
-		btn.add_theme_stylebox_override("normal", style)
-		btn.add_theme_stylebox_override("hover", style)
-		btn.add_theme_stylebox_override("pressed", style)
-
-		if pad_tex != null:
-			btn.icon = pad_tex
-			btn.expand_icon = true
-			btn.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
-
-		var lvl_title := Melodies.level_name(page)
-		btn.text = "%s\nBài %d\n%s" % [
-			lvl_title,
-			i + 1,
-			"★★★" if (page < current_page) else ("★ Đang chơi" if is_current else ("Rương 🎁" if i == 4 else "🔒"))
-		]
-		btn.add_theme_font_size_override("font_size", 13)
 		btn.disabled = not is_unlocked
 
+		# Ngắt kết nối cũ nếu có
+		for conn in btn.pressed.get_connections():
+			btn.pressed.disconnect(conn.callable)
 		btn.pressed.connect(_on_level_btn_pressed.bind(page))
-		_pad_container.add_child(btn)
+
+		var indicator: LevelPadIndicator = btn.get_node_or_null("LevelPadIndicator")
+		if indicator != null:
+			indicator.update_state(page, current_page, is_unlocked)
 
 	open_overlay()
 
@@ -188,5 +165,50 @@ func _on_level_btn_pressed(page: int) -> void:
 
 
 func _on_back_pressed() -> void:
+	if AudioDirector != null:
+		AudioDirector.play_sfx("wood_tap")
 	close_overlay()
 	back_requested.emit()
+
+
+## Node vẽ vòng sáng vàng khi bục đang được chọn
+class LevelPadIndicator extends Control:
+	var _idx: int = 0
+	var _page: int = 0
+	var _is_current: bool = false
+	var _is_unlocked: bool = false
+	var _time: float = 0.0
+
+	func _init(idx: int) -> void:
+		_idx = idx
+		name = "LevelPadIndicator"
+
+	func update_state(page: int, current_page: int, unlocked: bool) -> void:
+		_page = page
+		_is_current = (page == current_page)
+		_is_unlocked = unlocked
+		queue_redraw()
+
+	func _process(delta: float) -> void:
+		if _is_current:
+			_time += delta
+			queue_redraw()
+
+	func _draw() -> void:
+		var c := size * 0.5
+		var r := minf(size.x, size.y) * 0.42
+
+		if not _is_unlocked:
+			# Lớp sương tối bảo vệ bài bị khóa
+			draw_circle(c, r, Color(0.05, 0.06, 0.08, 0.55))
+			var gold := Color("#E8D9A0")
+			var bw := r * 0.6
+			var bh := r * 0.5
+			draw_rect(Rect2(c.x - bw * 0.5, c.y - bh * 0.2, bw, bh), Color("#5A3E1B"), true)
+			draw_rect(Rect2(c.x - bw * 0.5, c.y - bh * 0.2, bw, bh), gold, false, 2.0)
+			draw_arc(Vector2(c.x, c.y - bh * 0.2), bw * 0.35, PI, TAU, 12, gold, 2.5, true)
+		elif _is_current:
+			# Vòng hào quang vàng nhấp nháy trên bục của bạn Thỏ
+			var pulse := 0.5 + 0.5 * sin(_time * 4.0)
+			draw_circle(c, r * (1.0 + 0.12 * pulse), Color(1.0, 0.88, 0.35, 0.14 + 0.10 * pulse))
+			draw_arc(c, r * (1.0 + 0.06 * pulse), 0, TAU, 32, Color(1.0, 0.95, 0.65, 0.45 + 0.35 * pulse), 3.0, true)

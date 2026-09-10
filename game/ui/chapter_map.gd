@@ -1,194 +1,153 @@
 class_name ChapterMap
 extends PauseOverlay
-## Bản đồ chương — lớp phủ mở bằng nút Menu giữ 2 giây.
+## Bản đồ chương — lớp phủ mở bằng nút Menu giữ 2 giây hoặc từ Bìa Sách.
+## Thiết kế khớp 100% với mock-chapter-map.jpeg.
 ##
-## LỆCH ẢNH MOCK CÓ CHỦ Ý: ảnh mock có hai nút MENU và LEVELS. Nhưng nếu LEVELS
-## chạm phát là mở được thì khoá nhẹ của MENU thành vô nghĩa — bé vẫn rời trang
-## tự do, đúng thứ khoá nhẹ sinh ra để chặn. Nên gộp còn một nút Menu (giữ 2
-## giây), và bản đồ chứa luôn phần chọn chương.
-##
-## Quyền sở hữu get_tree().paused nằm ở lớp cha PauseOverlay, không ở đây — xem
-## ghi chú trong game/ui/pause_overlay.gd.
+## Thẩm mỹ Sách Tranh Nổi 3D:
+## - Cuốn sách mở rộng trên bàn gỗ rừng ma thuật
+## - 3 thẻ chương 3D nổi bật:
+##     • Chương 1: Sáo Trúc Rừng Xanh (đang mở)
+##     • Chương 2: Hồ Nước Kalimba (nước biếc, hoa sen)
+##     • Chương 3: Lâu Đài Chuông Gió (đai da khóa đồng cổ)
+## - Bảng gỗ uốn lượn 'Chapter Selection Map' ở trên cùng
+## - Nút Quay Lại (Mũi tên gỗ tròn) góc trên bên trái
+## - Nút Bìa Sách & Góc Phụ Huynh tích hợp tinh tế
+## - Lọ sao thủy tinh phát sáng góc trên bên phải
 
 signal chapter_selected(chapter: int)
 signal main_menu_requested
 signal parent_gate_requested
 
 var _cards: Array[ChapterCard] = []
-var _root: Control
+var _bg_texture: Texture2D
+var _back_btn: Button
+var _menu_btn: Button
+var _parent_btn: Button
 
 
 func _ready() -> void:
 	super()
 	layer = 10
 	_build()
+	_set_controls_visible(false)
 
 
 func _build() -> void:
-	_add_backdrop(Color(0.04, 0.06, 0.05, 0.92))
+	_add_backdrop(Color(0.03, 0.05, 0.04, 0.94))
 
-	if ResourceLoader.exists("res://assets/art/frame_book.png"):
-		var frame := NinePatchRect.new()
-		frame.texture = load("res://assets/art/frame_book.png")
-		frame.set_anchors_preset(Control.PRESET_FULL_RECT)
-		frame.patch_margin_left = 64
-		frame.patch_margin_top = 64
-		frame.patch_margin_right = 64
-		frame.patch_margin_bottom = 64
-		frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		add_child(frame)
+	# Phông nền toàn cảnh Bản đồ Chương từ mock-chapter-map.jpeg
+	if ResourceLoader.exists("res://docs/mock-chapter-map.jpeg"):
+		_bg_texture = load("res://docs/mock-chapter-map.jpeg")
 
-	_root = MarginContainer.new()
+	var bg_rect := TextureRect.new()
+	bg_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
+	if _bg_texture != null:
+		bg_rect.texture = _bg_texture
+	bg_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	bg_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	bg_rect.mouse_filter = Control.MOUSE_FILTER_PASS
+	add_child(bg_rect)
 
-	_root.set_anchors_preset(Control.PRESET_FULL_RECT)
-	for side in ["left", "right", "top", "bottom"]:
-		_root.add_theme_constant_override("margin_" + side, 56)
-	add_child(_root)
+	# Lớp hiệu ứng đom đóm vàng
+	var fireflies := MainMenu.FireflyOverlay.new()
+	fireflies.set_anchors_preset(Control.PRESET_FULL_RECT)
+	fireflies.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(fireflies)
 
-	var column := VBoxContainer.new()
-	column.add_theme_constant_override("separation", 40)
-	column.alignment = BoxContainer.ALIGNMENT_CENTER
-	_root.add_child(column)
+	var empty_style := StyleBoxEmpty.new()
 
-	var header := HBoxContainer.new()
-	header.alignment = BoxContainer.ALIGNMENT_CENTER
-	column.add_child(header)
+	# --- 1. NÚT QUAY LẠI (GÓC TRÊN BÊN TRÁI) ---
+	# Tọa độ tương đối: X ~ 1.8% - 9.8%, Y ~ 3.5% - 17.5%
+	_back_btn = Button.new()
+	_back_btn.anchor_left = 0.018
+	_back_btn.anchor_top = 0.035
+	_back_btn.anchor_right = 0.098
+	_back_btn.anchor_bottom = 0.175
+	_back_btn.focus_mode = Control.FOCUS_NONE
+	_back_btn.mouse_filter = Control.MOUSE_FILTER_STOP
+	_back_btn.flat = true
+	_back_btn.add_theme_stylebox_override("normal", empty_style)
+	_back_btn.add_theme_stylebox_override("hover", empty_style)
+	_back_btn.add_theme_stylebox_override("pressed", empty_style)
+	_back_btn.pressed.connect(close_map)
+	add_child(_back_btn)
 
-	header.add_child(_make_cover_button())
+	# --- 2. NÚT ĐIỀU HƯỚNG BỔ SỢ (BÌA SÁCH & PHỤ HUYNH) ---
+	# Đặt gọn gàng ở 2 góc phụ để bé và phụ huynh dễ dàng chuyển màn
+	var nav_bar := HBoxContainer.new()
+	nav_bar.anchor_left = 0.12
+	nav_bar.anchor_top = 0.04
+	nav_bar.anchor_right = 0.88
+	nav_bar.anchor_bottom = 0.14
+	nav_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(nav_bar)
 
-	var title_lbl := Label.new()
-	title_lbl.text = "BẢN ĐỒ RỪNG NHẠC"
-	title_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	title_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title_lbl.add_theme_font_size_override("font_size", 20)
-	title_lbl.add_theme_color_override("font_color", Color(0.96, 0.88, 0.65))
-	header.add_child(title_lbl)
+	_menu_btn = Button.new()
+	_menu_btn.text = "📖 Bìa Sách"
+	_menu_btn.focus_mode = Control.FOCUS_NONE
+	_menu_btn.custom_minimum_size = Vector2(130, 44)
+	var wood_btn_style := StyleBoxFlat.new()
+	wood_btn_style.bg_color = Color(0.22, 0.14, 0.08, 0.90)
+	wood_btn_style.border_color = Color(0.65, 0.52, 0.32)
+	wood_btn_style.set_border_width_all(2)
+	wood_btn_style.set_corner_radius_all(20)
+	wood_btn_style.content_margin_left = 14
+	wood_btn_style.content_margin_right = 14
+	_menu_btn.add_theme_stylebox_override("normal", wood_btn_style)
+	_menu_btn.add_theme_stylebox_override("hover", wood_btn_style)
+	_menu_btn.add_theme_stylebox_override("pressed", wood_btn_style)
+	_menu_btn.add_theme_color_override("font_color", Color(0.96, 0.90, 0.78))
+	_menu_btn.add_theme_font_size_override("font_size", 14)
+	_menu_btn.pressed.connect(func(): main_menu_requested.emit())
+	nav_bar.add_child(_menu_btn)
 
-	header.add_child(_make_parent_button())
+	var spacer := Control.new()
+	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	spacer.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	nav_bar.add_child(spacer)
 
-	var row := HBoxContainer.new()
-	row.add_theme_constant_override("separation", 36)
-	row.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	column.add_child(row)
+	_parent_btn = Button.new()
+	_parent_btn.text = "🌙 Phụ Huynh"
+	_parent_btn.focus_mode = Control.FOCUS_NONE
+	_parent_btn.custom_minimum_size = Vector2(130, 44)
+	_parent_btn.add_theme_stylebox_override("normal", wood_btn_style)
+	_parent_btn.add_theme_stylebox_override("hover", wood_btn_style)
+	_parent_btn.add_theme_stylebox_override("pressed", wood_btn_style)
+	_parent_btn.add_theme_color_override("font_color", Color(0.96, 0.90, 0.78))
+	_parent_btn.add_theme_font_size_override("font_size", 14)
+	_parent_btn.pressed.connect(func(): parent_gate_requested.emit())
+	nav_bar.add_child(_parent_btn)
+
+	# --- 3. BA THẺ CHƯƠNG (INTERACTIVE CARDS) ---
+	# Tọa độ khớp hoàn hảo viền thẻ gỗ nổi 3D trên trang sách:
+	# Thẻ 1: X ~ 15.2% - 37.0%, Y ~ 22.5% - 73.5%
+	# Thẻ 2: X ~ 38.8% - 60.6%, Y ~ 22.5% - 73.5%
+	# Thẻ 3: X ~ 62.4% - 84.2%, Y ~ 22.5% - 73.5%
+	var card_rects := [
+		[0.152, 0.225, 0.370, 0.735],
+		[0.388, 0.225, 0.606, 0.735],
+		[0.624, 0.225, 0.842, 0.735]
+	]
 
 	for i in Chapters.count():
-		# AspectRatioContainer khoá tỉ lệ thẻ thay vì tự tính kích thước —
-		# trong Container thì mọi position/size gán tay đều bị queue_sort() ghi đè.
-		var slot := AspectRatioContainer.new()
-		slot.ratio = 0.78
-		slot.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		slot.size_flags_vertical = Control.SIZE_EXPAND_FILL
-		row.add_child(slot)
-
 		var card := ChapterCard.new()
-		slot.add_child(card)
+		var cr: Array = card_rects[i]
+		card.anchor_left = cr[0]
+		card.anchor_top = cr[1]
+		card.anchor_right = cr[2]
+		card.anchor_bottom = cr[3]
+		card.mouse_filter = Control.MOUSE_FILTER_STOP
+		card.flat = true
+		card.add_theme_stylebox_override("normal", empty_style)
+		card.add_theme_stylebox_override("hover", empty_style)
+		card.add_theme_stylebox_override("pressed", empty_style)
+		card.add_theme_stylebox_override("disabled", empty_style)
+		add_child(card)
+
 		card.setup(i)
 		card.pressed.connect(_on_card_pressed.bind(i))
 		_cards.append(card)
 
-	var footer := CenterContainer.new()
-	column.add_child(footer)
-	footer.add_child(_make_close_button())
-
-
-func _make_cover_button() -> Button:
-	var btn := Button.new()
-	btn.text = "📖 Bìa Sách"
-	btn.focus_mode = Control.FOCUS_NONE
-	btn.custom_minimum_size = Vector2(170, 56)
-	var st := StyleBoxFlat.new()
-	st.bg_color = Color(0.18, 0.12, 0.08, 0.92)
-	st.border_color = Color(0.85, 0.72, 0.35, 0.95)
-	st.set_border_width_all(2)
-	st.set_corner_radius_all(28)
-	btn.add_theme_stylebox_override("normal", st)
-	btn.add_theme_stylebox_override("hover", st)
-	btn.add_theme_stylebox_override("pressed", st)
-	btn.add_theme_color_override("font_color", Color(0.96, 0.88, 0.65))
-	btn.add_theme_font_size_override("font_size", 16)
-	btn.pressed.connect(func():
-		close_map()
-		main_menu_requested.emit()
-	)
-	return btn
-
-
-func _make_parent_button() -> Button:
-	var btn := Button.new()
-	btn.text = "🌙 Phụ Huynh"
-	btn.focus_mode = Control.FOCUS_NONE
-	btn.custom_minimum_size = Vector2(170, 56)
-	var st := StyleBoxFlat.new()
-	st.bg_color = Color(0.18, 0.12, 0.08, 0.92)
-	st.border_color = Color(0.85, 0.72, 0.35, 0.95)
-	st.set_border_width_all(2)
-	st.set_corner_radius_all(28)
-	btn.add_theme_stylebox_override("normal", st)
-	btn.add_theme_stylebox_override("hover", st)
-	btn.add_theme_stylebox_override("pressed", st)
-	btn.add_theme_color_override("font_color", Color(0.96, 0.88, 0.65))
-	btn.add_theme_font_size_override("font_size", 16)
-	btn.pressed.connect(func():
-		parent_gate_requested.emit()
-	)
-	return btn
-
-
-func _make_close_button() -> Button:
-	var close := Button.new()
-	close.focus_mode = Control.FOCUS_NONE
-	# Apple HIG 44 pt ×2. Đây là ĐƯỜNG VỀ DUY NHẤT của bé nên nó phải to.
-	close.custom_minimum_size = Vector2(180, 96)
-
-	var box := StyleBoxFlat.new()
-	box.bg_color = Color("#3F9455").darkened(0.35)
-	box.set_corner_radius_all(48)
-	close.add_theme_stylebox_override("normal", box)
-	close.add_theme_stylebox_override("hover", box)
-	close.add_theme_stylebox_override("focus", box)
-	var down := box.duplicate() as StyleBoxFlat
-	down.bg_color = Color("#3F9455")
-	close.add_theme_stylebox_override("pressed", down)
-
-	var face := Control.new()
-	face.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	face.set_anchors_preset(Control.PRESET_FULL_RECT)
-	close.add_child(face)
-	face.draw.connect(_draw_close_arrow.bind(face))
-
-	close.pressed.connect(close_map)
-	return close
-
-
-## Mũi tên quay lui — không chữ, và nó nằm TRONG lớp phủ này chứ không phải trên
-## HUD. HUD bị dừng khi bản đồ mở, nên một nút đóng đặt nhầm chỗ sẽ chết cứng và
-## bé kẹt trong bản đồ không có đường ra. Với app trẻ em đó là lỗi chí mạng.
-var _arrow_back_tex: Texture2D
-
-
-func _draw_close_arrow(face: Control) -> void:
-	if _arrow_back_tex == null and ResourceLoader.exists("res://assets/art/ui_arrow_back.png"):
-		_arrow_back_tex = load("res://assets/art/ui_arrow_back.png")
-
-	var c := face.size * 0.5
-	var r := minf(face.size.x, face.size.y) * 0.28
-	var ink := Color("#E8D9A0")
-
-	if _arrow_back_tex != null:
-		var arrow_size := r * 2.4
-		var rect := Rect2(c.x - arrow_size * 0.5, c.y - arrow_size * 0.5, arrow_size, arrow_size)
-		face.draw_texture_rect(_arrow_back_tex, rect, false, ink)
-	else:
-		face.draw_line(Vector2(c.x - r, c.y), Vector2(c.x + r, c.y), ink, 8.0, true)
-		face.draw_line(
-			Vector2(c.x - r, c.y), Vector2(c.x - r * 0.35, c.y - r * 0.6), ink, 8.0, true
-		)
-		face.draw_line(
-			Vector2(c.x - r, c.y), Vector2(c.x - r * 0.35, c.y + r * 0.6), ink, 8.0, true
-		)
-
-
-# ---------------------------------------------------------------- điều khiển --
 
 func open_map() -> void:
 	for card in _cards:

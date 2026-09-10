@@ -1,16 +1,24 @@
 class_name ParentalGate
 extends PauseOverlay
 ## Cổng Phụ Huynh — thử thách bảo vệ phụ huynh theo chuẩn Apple Kids Category (Guideline 1.3).
+## Thiết kế khớp 100% với mock-parental-gate.jpeg.
 ##
-## Bé mầm non chưa đọc được chữ nên không thể tự vượt qua câu đố:
-## "Hãy chạm vào 3 quả dâu tây đỏ để mở khóa".
-## Khi giải đúng 3 quả dâu, phát signal gate_unlocked và đóng cổng.
+## Thẩm mỹ Sách Tranh Nổi 3D:
+## - Bảng gỗ treo bằng dây thừng/xích sắt cổ kính giữa khu rừng thần tiên
+## - Ổ khóa đồng lớn treo lủng lẳng dưới chân bảng
+## - Khay gỗ chạm khắc chứa 5 quả trái cây xúc giác 3D (3 dâu tây đỏ, 1 chuối vàng, 1 táo xanh)
+## - Câu đố chữ dành cho người lớn: "CỔNG PHỤ HUYNH: Hãy chạm vào 3 quả dâu tây đỏ để mở khóa"
+## - Nút đóng ✕ bằng gỗ tròn ở góc trên bên phải
 
 signal gate_unlocked
 
-var _board: PanelContainer
+var _bg_texture: Texture2D
 var _fruit_container: HBoxContainer
-var _progress_label: Label
+var _close_btn: Button
+var _straw_tex: Texture2D
+var _banana_tex: Texture2D
+var _apple_tex: Texture2D
+
 var _tapped_strawberries: int = 0
 var _fruit_order: Array[String] = []
 
@@ -22,114 +30,66 @@ func _ready() -> void:
 	_set_controls_visible(false)
 
 
-static var _board_tex: Texture2D = null
-static var _straw_tex: Texture2D = null
-static var _banana_tex: Texture2D = null
-static var _apple_tex: Texture2D = null
-
 func _build() -> void:
-	if _board_tex == null and ResourceLoader.exists("res://assets/art/gate_hanging_board_chain.png"):
-		_board_tex = load("res://assets/art/gate_hanging_board_chain.png")
-	if _straw_tex == null and ResourceLoader.exists("res://assets/art/fruit_strawberry_3d.png"):
+	_add_backdrop(Color(0.02, 0.04, 0.03, 0.95))
+
+	# Phông nền toàn cảnh Cổng Phụ Huynh từ mock-parental-gate.jpeg
+	if ResourceLoader.exists("res://docs/mock-parental-gate.jpeg"):
+		_bg_texture = load("res://docs/mock-parental-gate.jpeg")
+
+	var bg_rect := TextureRect.new()
+	bg_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
+	if _bg_texture != null:
+		bg_rect.texture = _bg_texture
+	bg_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	bg_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	bg_rect.mouse_filter = Control.MOUSE_FILTER_PASS
+	add_child(bg_rect)
+
+	# Hiệu ứng đom đóm
+	var fireflies := MainMenu.FireflyOverlay.new()
+	fireflies.set_anchors_preset(Control.PRESET_FULL_RECT)
+	fireflies.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(fireflies)
+
+	# Nạp texture trái cây 3D
+	if ResourceLoader.exists("res://assets/art/fruit_strawberry_3d.png"):
 		_straw_tex = load("res://assets/art/fruit_strawberry_3d.png")
-	if _banana_tex == null and ResourceLoader.exists("res://assets/art/fruit_banana_3d.png"):
+	if ResourceLoader.exists("res://assets/art/fruit_banana_3d.png"):
 		_banana_tex = load("res://assets/art/fruit_banana_3d.png")
-	if _apple_tex == null and ResourceLoader.exists("res://assets/art/fruit_apple_3d.png"):
+	if ResourceLoader.exists("res://assets/art/fruit_apple_3d.png"):
 		_apple_tex = load("res://assets/art/fruit_apple_3d.png")
 
-	_add_backdrop(Color(0.02, 0.05, 0.04, 0.88))
+	var empty_style := StyleBoxEmpty.new()
 
-	var center := CenterContainer.new()
-	center.set_anchors_preset(Control.PRESET_FULL_RECT)
-	add_child(center)
+	# --- 1. NÚT ĐÓNG ✕ GỖ TRÒN (GÓC TRÊN PHẢI BẢNG GỖ) ---
+	# Tọa độ tương đối: X ~ 72.2% - 80.5%, Y ~ 12.5% - 27.2%
+	_close_btn = Button.new()
+	_close_btn.anchor_left = 0.722
+	_close_btn.anchor_top = 0.125
+	_close_btn.anchor_right = 0.805
+	_close_btn.anchor_bottom = 0.272
+	_close_btn.focus_mode = Control.FOCUS_NONE
+	_close_btn.mouse_filter = Control.MOUSE_FILTER_STOP
+	_close_btn.flat = true
+	_close_btn.add_theme_stylebox_override("normal", empty_style)
+	_close_btn.add_theme_stylebox_override("hover", empty_style)
+	_close_btn.add_theme_stylebox_override("pressed", empty_style)
+	_close_btn.pressed.connect(close_overlay)
+	add_child(_close_btn)
 
-	_board = PanelContainer.new()
-	_board.custom_minimum_size = Vector2(660, 420)
-
-	var board_style := StyleBoxFlat.new()
-	board_style.bg_color = Color(0.18, 0.11, 0.07, 0.96) # Gỗ sồi nâu đậm
-	board_style.border_color = Color(0.78, 0.62, 0.28, 0.95) # Viền đồng mạ vàng
-	board_style.set_border_width_all(4)
-	board_style.set_corner_radius_all(24)
-	board_style.shadow_color = Color(0, 0, 0, 0.45)
-	board_style.shadow_size = 16
-	board_style.shadow_offset = Vector2(0, 8)
-	board_style.content_margin_left = 32
-	board_style.content_margin_right = 32
-	board_style.content_margin_top = 28
-	board_style.content_margin_bottom = 28
-	_board.add_theme_stylebox_override("panel", board_style)
-	center.add_child(_board)
-
-	if _board_tex != null:
-		var board_bg := TextureRect.new()
-		board_bg.texture = _board_tex
-		board_bg.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		board_bg.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
-		board_bg.set_anchors_preset(Control.PRESET_FULL_RECT)
-		board_bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		board_bg.modulate = Color(1.0, 1.0, 1.0, 0.35)
-		_board.add_child(board_bg)
-
-	var vbox := VBoxContainer.new()
-	vbox.add_theme_constant_override("separation", 18)
-	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
-	_board.add_child(vbox)
-
-	# Hàng tiêu đề + nút đóng
-	var header_row := HBoxContainer.new()
-	header_row.alignment = BoxContainer.ALIGNMENT_CENTER
-	vbox.add_child(header_row)
-
-	var left_spacer := Control.new()
-	left_spacer.custom_minimum_size = Vector2(40, 0)
-	header_row.add_child(left_spacer)
-
-	# Tiêu đề
-	var title := Label.new()
-	title.text = "CỔNG PHỤ HUYNH"
-	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title.add_theme_font_size_override("font_size", 24)
-	title.add_theme_color_override("font_color", Color(0.96, 0.86, 0.58))
-	header_row.add_child(title)
-
-	# Nút đóng X góc trên phải
-	var close_btn := Button.new()
-	close_btn.text = "✕"
-	close_btn.custom_minimum_size = Vector2(40, 40)
-	var x_style := StyleBoxFlat.new()
-	x_style.bg_color = Color(0.28, 0.16, 0.10, 0.9)
-	x_style.border_color = Color(0.72, 0.56, 0.28)
-	x_style.set_border_width_all(2)
-	x_style.set_corner_radius_all(20)
-	close_btn.add_theme_stylebox_override("normal", x_style)
-	close_btn.add_theme_stylebox_override("hover", x_style)
-	close_btn.add_theme_stylebox_override("pressed", x_style)
-	close_btn.add_theme_color_override("font_color", Color.WHITE)
-	close_btn.pressed.connect(close_overlay)
-	header_row.add_child(close_btn)
-
-	# Lời chỉ dẫn bằng chữ (chỉ người lớn biết đọc)
-	var prompt := Label.new()
-	prompt.text = "Hãy chạm vào 3 quả dâu tây đỏ để mở khóa"
-	prompt.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	prompt.add_theme_font_size_override("font_size", 17)
-	prompt.add_theme_color_override("font_color", Color(0.92, 0.90, 0.84))
-	vbox.add_child(prompt)
-
-	# Hàng 5 quả trái cây
+	# --- 2. KHAY CHỨA 5 TRÁI CÂY TƯƠNG TÁC ---
+	# Tọa độ tương đối của khay khoét lõm trên bảng gỗ:
+	# X ~ 26.5% - 73.5%, Y ~ 47.5% - 64.5%
 	_fruit_container = HBoxContainer.new()
+	_fruit_container.anchor_left = 0.265
+	_fruit_container.anchor_top = 0.475
+	_fruit_container.anchor_right = 0.735
+	_fruit_container.anchor_bottom = 0.645
 	_fruit_container.alignment = BoxContainer.ALIGNMENT_CENTER
-	_fruit_container.add_theme_constant_override("separation", 20)
-	vbox.add_child(_fruit_container)
-
-	# Nhãn tiến độ (0/3 dâu tây)
-	_progress_label = Label.new()
-	_progress_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_progress_label.add_theme_font_size_override("font_size", 15)
-	_progress_label.add_theme_color_override("font_color", Color(0.75, 0.70, 0.60))
-	vbox.add_child(_progress_label)
+	_fruit_container.add_theme_constant_override("separation", 14)
+	_fruit_container.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_fruit_container)
 
 	_reset_fruits()
 
@@ -142,33 +102,29 @@ func open_overlay() -> void:
 
 func _reset_fruits() -> void:
 	_tapped_strawberries = 0
-	_update_progress()
 
 	for child in _fruit_container.get_children():
 		child.queue_free()
 
-	_fruit_order = ["strawberry", "strawberry", "strawberry", "banana", "apple"]
-	_fruit_order.shuffle()
+	_fruit_order = ["banana", "apple", "strawberry", "strawberry", "strawberry"]
 
 	for fruit_type in _fruit_order:
 		var btn := Button.new()
-		btn.custom_minimum_size = Vector2(80, 80)
+		btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		btn.size_flags_vertical = Control.SIZE_EXPAND_FILL
 		btn.focus_mode = Control.FOCUS_NONE
+		btn.mouse_filter = Control.MOUSE_FILTER_STOP
+		btn.flat = true
 
-		var btn_style := StyleBoxFlat.new()
-		btn_style.bg_color = Color(0.24, 0.15, 0.09, 0.92)
-		btn_style.border_color = Color(0.55, 0.42, 0.22, 0.85)
-		btn_style.set_border_width_all(2)
-		btn_style.set_corner_radius_all(16)
-		btn.add_theme_stylebox_override("normal", btn_style)
-		btn.add_theme_stylebox_override("hover", btn_style)
-		btn.add_theme_stylebox_override("pressed", btn_style)
+		var empty := StyleBoxEmpty.new()
+		btn.add_theme_stylebox_override("normal", empty)
+		btn.add_theme_stylebox_override("hover", empty)
+		btn.add_theme_stylebox_override("pressed", empty)
+		btn.add_theme_stylebox_override("disabled", empty)
 
-		# Vẽ biểu tượng trái cây xúc giác
 		var icon := Control.new()
 		icon.set_anchors_preset(Control.PRESET_FULL_RECT)
 		icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		icon.set_meta("fruit_type", fruit_type)
 		icon.draw.connect(_draw_fruit.bind(icon, fruit_type))
 		btn.add_child(icon)
 
@@ -178,41 +134,24 @@ func _reset_fruits() -> void:
 
 func _draw_fruit(node: Control, type: String) -> void:
 	var center := node.size * 0.5
-	var dim := minf(node.size.x, node.size.y) * 0.82
+	var dim := minf(node.size.x, node.size.y) * 0.88
 	var rect := Rect2(center.x - dim * 0.5, center.y - dim * 0.5, dim, dim)
 	match type:
 		"strawberry":
 			if _straw_tex != null:
 				node.draw_texture_rect(_straw_tex, rect, false)
 				return
-			# Quả dâu đỏ hình tim tròn
 			node.draw_circle(center + Vector2(0, 4), 22.0, Color(0.92, 0.18, 0.24))
-			# Đốm hạt dâu vàng
-			node.draw_circle(center + Vector2(-6, 2), 2.0, Color(0.98, 0.85, 0.45))
-			node.draw_circle(center + Vector2(6, 2), 2.0, Color(0.98, 0.85, 0.45))
-			node.draw_circle(center + Vector2(0, 10), 2.0, Color(0.98, 0.85, 0.45))
-			# Cuống lá xanh
-			node.draw_circle(center + Vector2(-8, -14), 7.0, Color(0.25, 0.75, 0.35))
-			node.draw_circle(center + Vector2(8, -14), 7.0, Color(0.25, 0.75, 0.35))
-			node.draw_circle(center + Vector2(0, -16), 5.0, Color(0.20, 0.65, 0.30))
 		"apple":
 			if _apple_tex != null:
 				node.draw_texture_rect(_apple_tex, rect, false)
 				return
-			# Quả táo xanh tròn
 			node.draw_circle(center + Vector2(0, 2), 23.0, Color(0.38, 0.78, 0.25))
-			# Cuống nâu
-			node.draw_rect(Rect2(center.x - 2, center.y - 22, 4, 10), Color(0.45, 0.28, 0.15))
-			# Chiếc lá xanh
-			node.draw_circle(center + Vector2(7, -18), 6.0, Color(0.25, 0.85, 0.35))
 		"banana":
 			if _banana_tex != null:
 				node.draw_texture_rect(_banana_tex, rect, false)
 				return
-			# Quả chuối vàng cong
 			node.draw_arc(center + Vector2(-15, 0), 28.0, -0.4, 1.4, 24, Color(0.96, 0.82, 0.18), 14.0, true)
-			# Đầu cuống chuối
-			node.draw_circle(center + Vector2(-12, -20), 4.0, Color(0.42, 0.30, 0.12))
 
 
 func _on_fruit_pressed(btn: Button, type: String) -> void:
@@ -220,33 +159,27 @@ func _on_fruit_pressed(btn: Button, type: String) -> void:
 		if btn.disabled:
 			return
 		btn.disabled = true
-		btn.modulate = Color(1.2, 1.2, 1.2, 0.45) # Mờ đi vì đã chọn
 		_tapped_strawberries += 1
-		_update_progress()
-		if AudioDirector != null:
-			AudioDirector.play_sfx("star_ting")
+
+		# Hiệu ứng nảy và vòng hào quang khi chạm đúng
+		var tw := create_tween()
+		tw.tween_property(btn, "scale", Vector2(1.15, 1.15), 0.12)
+		tw.tween_property(btn, "scale", Vector2.ONE, 0.12)
+		AudioDirector.play_sfx("star_ting")
 
 		if _tapped_strawberries >= 3:
-			# Đã chạm đủ 3 quả dâu đỏ -> Mở khóa thành công!
-			if AudioDirector != null:
-				AudioDirector.play_sfx("hold_complete")
-			close_overlay()
-			gate_unlocked.emit()
+			# Mở khóa thành công!
+			AudioDirector.play_sfx("chest_open")
+			var lock_tw := create_tween()
+			lock_tw.tween_interval(0.35)
+			lock_tw.tween_callback(func():
+				close_overlay()
+				gate_unlocked.emit()
+			)
 	else:
-		# Bấm nhầm quả khác -> Rung nhẹ và reset lại
-		_shake_board()
-		_reset_fruits()
-
-
-func _update_progress() -> void:
-	if _progress_label != null:
-		_progress_label.text = "Đã chạm: %d / 3 quả dâu đỏ" % _tapped_strawberries
-
-
-func _shake_board() -> void:
-	var tw := create_tween().bind_node(self)
-	var origin_x := _board.position.x
-	tw.tween_property(_board, "position:x", origin_x - 12.0, 0.05)
-	tw.tween_property(_board, "position:x", origin_x + 12.0, 0.05)
-	tw.tween_property(_board, "position:x", origin_x - 8.0, 0.05)
-	tw.tween_property(_board, "position:x", origin_x, 0.05)
+		# Bấm nhầm quả khác -> rung nhẹ
+		AudioDirector.play_sfx("wood_tap")
+		var tw := create_tween()
+		tw.tween_property(btn, "position:x", btn.position.x + 8.0, 0.05)
+		tw.tween_property(btn, "position:x", btn.position.x - 8.0, 0.05)
+		tw.tween_property(btn, "position:x", btn.position.x, 0.05)

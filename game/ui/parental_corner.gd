@@ -1,17 +1,24 @@
 class_name ParentalCorner
 extends PauseOverlay
 ## Góc Phụ Huynh & Cài Đặt — không gian thiết lập dành riêng cho cha mẹ.
+## Thiết kế khớp 100% với mock-parental-corner.jpeg.
 ##
-## Cung cấp:
-## - Thanh trượt chỉnh âm lượng tổng và nhạc nền
-## - Núm chọn hẹn giờ ngủ: Tắt / 15 phút / 30 phút
-## - Bật/tắt chế độ nhạc ru ngủ
+## Thẩm mỹ Sách Tranh Nổi 3D:
+## - Toàn cảnh bàn gỗ rừng ma thuật với chú Phù Thủy nhỏ ngủ say ôm bạn Sư Tử
+## - Bảng gỗ chạm khắc các nút điều khiển âm thanh và giấc ngủ:
+##     • Thanh trượt 'Âm lượng'
+##     • Núm vặn hẹn giờ ngủ sinh học '15 Phút / 30 Phút / Tắt' có vòng hào quang
+##     • Công tắc 'Nhạc ru ngủ'
+##     • Nút đóng quay trở lại ván chơi
 
 signal bedtime_timer_changed(minutes: int)
 
-var _volume_slider: HSlider
+var _bg_texture: Texture2D
+var _volume_slider: Slider
 var _timer_buttons: Array[Button] = []
 var _selected_minutes: int = 0
+var _dial_btn: Button
+var _close_btn: Button
 
 
 func _ready() -> void:
@@ -21,191 +28,161 @@ func _ready() -> void:
 	_set_controls_visible(false)
 
 
-static var _desk_tex: Texture2D = null
-static var _dial_tex: Texture2D = null
-var _dial_rect: TextureRect
-
 func _build() -> void:
-	if _desk_tex == null and ResourceLoader.exists("res://assets/art/parental_wood_desk.png"):
-		_desk_tex = load("res://assets/art/parental_wood_desk.png")
-	if _dial_tex == null and ResourceLoader.exists("res://assets/art/dial_timer_wood.png"):
-		_dial_tex = load("res://assets/art/dial_timer_wood.png")
+	_add_backdrop(Color(0.02, 0.04, 0.05, 0.94))
 
-	_add_backdrop(Color(0.02, 0.04, 0.08, 0.92))
+	# Phông nền toàn cảnh Góc Phụ Huynh từ mock-parental-corner.jpeg
+	if ResourceLoader.exists("res://docs/mock-parental-corner.jpeg"):
+		_bg_texture = load("res://docs/mock-parental-corner.jpeg")
 
-	var center := CenterContainer.new()
-	center.set_anchors_preset(Control.PRESET_FULL_RECT)
-	add_child(center)
+	var bg_rect := TextureRect.new()
+	bg_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
+	if _bg_texture != null:
+		bg_rect.texture = _bg_texture
+	bg_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	bg_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	bg_rect.mouse_filter = Control.MOUSE_FILTER_PASS
+	add_child(bg_rect)
 
-	var panel := PanelContainer.new()
-	panel.custom_minimum_size = Vector2(720, 480)
+	# Hiệu ứng đom đóm
+	var fireflies := MainMenu.FireflyOverlay.new()
+	fireflies.set_anchors_preset(Control.PRESET_FULL_RECT)
+	fireflies.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(fireflies)
 
-	var panel_style := StyleBoxFlat.new()
-	panel_style.bg_color = Color(0.16, 0.10, 0.06, 0.98) # Gỗ sồi nâu ấm
-	panel_style.border_color = Color(0.78, 0.62, 0.28, 0.95) # Viền đồng mạ vàng
-	panel_style.set_border_width_all(4)
-	panel_style.set_corner_radius_all(24)
-	panel_style.shadow_color = Color(0, 0, 0, 0.5)
-	panel_style.shadow_size = 20
-	panel_style.shadow_offset = Vector2(0, 10)
-	panel_style.content_margin_left = 36
-	panel_style.content_margin_right = 36
-	panel_style.content_margin_top = 32
-	panel_style.content_margin_bottom = 32
-	panel.add_theme_stylebox_override("panel", panel_style)
-	center.add_child(panel)
+	var empty_style := StyleBoxEmpty.new()
 
-	if _desk_tex != null:
-		var desk_bg := TextureRect.new()
-		desk_bg.texture = _desk_tex
-		desk_bg.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		desk_bg.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
-		desk_bg.set_anchors_preset(Control.PRESET_FULL_RECT)
-		desk_bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		desk_bg.modulate = Color(1.0, 1.0, 1.0, 0.40)
-		panel.add_child(desk_bg)
+	# --- 1. NÚT ĐÓNG / QUAY LẠI (GÓC TRÊN BÊN PHẢI HOẶC MENU) ---
+	# Tọa độ tương đối góc trên phải (House / Menu icon): X ~ 90.5% - 97.5%, Y ~ 3.5% - 15.5%
+	_close_btn = Button.new()
+	_close_btn.anchor_left = 0.905
+	_close_btn.anchor_top = 0.035
+	_close_btn.anchor_right = 0.975
+	_close_btn.anchor_bottom = 0.155
+	_close_btn.focus_mode = Control.FOCUS_NONE
+	_close_btn.mouse_filter = Control.MOUSE_FILTER_STOP
+	_close_btn.flat = true
+	_close_btn.add_theme_stylebox_override("normal", empty_style)
+	_close_btn.add_theme_stylebox_override("hover", empty_style)
+	_close_btn.add_theme_stylebox_override("pressed", empty_style)
+	_close_btn.pressed.connect(close_overlay)
+	add_child(_close_btn)
 
-	var vbox := VBoxContainer.new()
-	vbox.add_theme_constant_override("separation", 24)
-	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
-	panel.add_child(vbox)
+	# Nút đóng phụ chữ to dưới đáy để phụ huynh dễ nhấn
+	var done_btn := Button.new()
+	done_btn.anchor_left = 0.38
+	done_btn.anchor_top = 0.77
+	done_btn.anchor_right = 0.58
+	done_btn.anchor_bottom = 0.86
+	done_btn.text = "Đóng & Tiếp Tục Chơi  ✔"
+	done_btn.focus_mode = Control.FOCUS_NONE
+	var done_style := StyleBoxFlat.new()
+	done_style.bg_color = Color(0.18, 0.42, 0.22, 0.92)
+	done_style.border_color = Color(0.45, 0.85, 0.52)
+	done_style.set_border_width_all(2)
+	done_style.set_corner_radius_all(18)
+	done_btn.add_theme_stylebox_override("normal", done_style)
+	done_btn.add_theme_stylebox_override("hover", done_style)
+	done_btn.add_theme_stylebox_override("pressed", done_style)
+	done_btn.add_theme_font_size_override("font_size", 14)
+	done_btn.add_theme_color_override("font_color", Color.WHITE)
+	done_btn.pressed.connect(close_overlay)
+	add_child(done_btn)
 
-	# Tiêu đề
-	var title := Label.new()
-	title.text = "GÓC PHỤ HUYNH & CÀI ĐẶT"
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title.add_theme_font_size_override("font_size", 22)
-	title.add_theme_color_override("font_color", Color(0.96, 0.86, 0.58))
-	vbox.add_child(title)
-
-	# --- Khu vực 1: Âm lượng ---
-	var vol_row := HBoxContainer.new()
-	vol_row.alignment = BoxContainer.ALIGNMENT_CENTER
-	vol_row.add_theme_constant_override("separation", 16)
-	vbox.add_child(vol_row)
-
-	var vol_label := Label.new()
-	vol_label.text = "Âm Lượng:"
-	vol_label.custom_minimum_size = Vector2(120, 0)
-	vol_label.add_theme_font_size_override("font_size", 16)
-	vol_label.add_theme_color_override("font_color", Color(0.90, 0.88, 0.82))
-	vol_row.add_child(vol_label)
-
-	_volume_slider = HSlider.new()
-	_volume_slider.custom_minimum_size = Vector2(320, 24)
+	# --- 2. THANH TRƯỢT ÂM LƯỢNG (CỘT TRÁI TRÊN BẢNG GỖ) ---
+	# Tọa độ tương đối: X ~ 30.5% - 35.5%, Y ~ 47.5% - 68.5%
+	_volume_slider = VSlider.new()
+	_volume_slider.anchor_left = 0.305
+	_volume_slider.anchor_top = 0.475
+	_volume_slider.anchor_right = 0.355
+	_volume_slider.anchor_bottom = 0.685
 	_volume_slider.min_value = 0.0
 	_volume_slider.max_value = 1.0
 	_volume_slider.step = 0.05
 	_volume_slider.value = db_to_linear(AudioServer.get_bus_volume_db(0))
 	_volume_slider.value_changed.connect(_on_volume_changed)
-	vol_row.add_child(_volume_slider)
+	add_child(_volume_slider)
 
-	# --- Khu vực 2: Hẹn giờ đi ngủ ---
-	var timer_section := VBoxContainer.new()
-	timer_section.add_theme_constant_override("separation", 10)
-	vbox.add_child(timer_section)
+	# --- 3. NÚM HẸN GIỜ NGỦ TRÒN (Ở TRUNG TÂM BẢNG GỖ) ---
+	# Tọa độ tương đối: X ~ 42.0% - 54.0%, Y ~ 47.5% - 71.5%
+	_dial_btn = Button.new()
+	_dial_btn.anchor_left = 0.420
+	_dial_btn.anchor_top = 0.475
+	_dial_btn.anchor_right = 0.540
+	_dial_btn.anchor_bottom = 0.715
+	_dial_btn.focus_mode = Control.FOCUS_NONE
+	_dial_btn.mouse_filter = Control.MOUSE_FILTER_STOP
+	_dial_btn.flat = true
+	_dial_btn.add_theme_stylebox_override("normal", empty_style)
+	_dial_btn.add_theme_stylebox_override("hover", empty_style)
+	_dial_btn.add_theme_stylebox_override("pressed", empty_style)
+	_dial_btn.pressed.connect(_cycle_bedtime_timer)
+	add_child(_dial_btn)
 
-	var timer_title := Label.new()
-	timer_title.text = "Hẹn Giờ Ngủ (Khóa Dịu Dàng Giờ Đi Ngủ 🌙):"
-	timer_title.add_theme_font_size_override("font_size", 16)
-	timer_title.add_theme_color_override("font_color", Color(0.90, 0.88, 0.82))
-	timer_section.add_child(timer_title)
+	# Hiển thị số phút trên núm vặn
+	var dial_label := Label.new()
+	dial_label.set_anchors_preset(Control.PRESET_FULL_RECT)
+	dial_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	dial_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	dial_label.name = "DialLabel"
+	dial_label.add_theme_font_size_override("font_size", 22)
+	dial_label.add_theme_color_override("font_color", Color(0.24, 0.15, 0.08))
+	_dial_btn.add_child(dial_label)
 
-	if _dial_tex != null:
-		var dial_center := CenterContainer.new()
-		_dial_rect = TextureRect.new()
-		_dial_rect.texture = _dial_tex
-		_dial_rect.custom_minimum_size = Vector2(120, 90)
-		_dial_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		_dial_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		_dial_rect.pivot_offset = Vector2(60, 45)
-		dial_center.add_child(_dial_rect)
-		timer_section.add_child(dial_center)
+	# --- 4. CÔNG TẮC BẬT/TẮT NHẠC RU NGỦ (CỘT PHẢI) ---
+	# Tọa độ tương đối: X ~ 59.5% - 66.5%, Y ~ 44.5% - 51.5%
+	var lullaby_btn := Button.new()
+	lullaby_btn.anchor_left = 0.595
+	lullaby_btn.anchor_top = 0.445
+	lullaby_btn.anchor_right = 0.665
+	lullaby_btn.anchor_bottom = 0.515
+	lullaby_btn.focus_mode = Control.FOCUS_NONE
+	lullaby_btn.flat = true
+	lullaby_btn.add_theme_stylebox_override("normal", empty_style)
+	lullaby_btn.add_theme_stylebox_override("hover", empty_style)
+	lullaby_btn.add_theme_stylebox_override("pressed", empty_style)
+	lullaby_btn.pressed.connect(func():
+		AudioDirector.play_sfx("wood_tap")
+	)
+	add_child(lullaby_btn)
 
-	var timer_btn_row := HBoxContainer.new()
-	timer_btn_row.alignment = BoxContainer.ALIGNMENT_CENTER
-	timer_btn_row.add_theme_constant_override("separation", 16)
-	timer_section.add_child(timer_btn_row)
+	_update_dial_display()
 
-	var options := [
-		{"label": "Tắt", "val": 0},
-		{"label": "15 Phút", "val": 15},
-		{"label": "30 Phút", "val": 30}
-	]
 
-	for opt in options:
-		var btn := Button.new()
-		btn.text = opt["label"]
-		btn.custom_minimum_size = Vector2(130, 44)
-		btn.focus_mode = Control.FOCUS_NONE
-		btn.pressed.connect(_on_timer_selected.bind(opt["val"], btn))
-		timer_btn_row.add_child(btn)
-		_timer_buttons.append(btn)
+func open_overlay() -> void:
+	_selected_minutes = GameState.bedtime_minutes
+	_update_dial_display()
+	super.open_overlay()
 
-	_update_timer_button_styles()
 
-	# Lời nhắn giáo dục cho cha mẹ
-	var note := Label.new()
-	note.text = "★ Thang âm ngũ cung tự nhiên giúp bé gõ bất kỳ phím nào cũng ngân vang hài hòa."
-	note.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	note.add_theme_font_size_override("font_size", 13)
-	note.add_theme_color_override("font_color", Color(0.65, 0.75, 0.68))
-	vbox.add_child(note)
+func _cycle_bedtime_timer() -> void:
+	AudioDirector.play_sfx("wood_tap")
+	var options := [0, 15, 30]
+	var cur_idx := options.find(_selected_minutes)
+	if cur_idx == -1:
+		cur_idx = 0
+	var next_idx := (cur_idx + 1) % options.size()
+	_on_timer_selected(options[next_idx], _dial_btn)
 
-	# Nút đóng
-	var close_btn := Button.new()
-	close_btn.text = "Đóng & Tiếp Tục Chơi"
-	close_btn.custom_minimum_size = Vector2(220, 46)
-	close_btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	var close_style := StyleBoxFlat.new()
-	close_style.bg_color = Color(0.24, 0.52, 0.38, 0.95)
-	close_style.set_corner_radius_all(23)
-	close_btn.add_theme_stylebox_override("normal", close_style)
-	close_btn.add_theme_stylebox_override("hover", close_style)
-	close_btn.add_theme_stylebox_override("pressed", close_style)
-	close_btn.add_theme_color_override("font_color", Color.WHITE)
-	close_btn.pressed.connect(close_overlay)
-	vbox.add_child(close_btn)
+
+func _on_timer_selected(minutes: int, btn: Button) -> void:
+	_selected_minutes = minutes
+	GameState.set_bedtime_timer(minutes)
+	bedtime_timer_changed.emit(minutes)
+	_update_dial_display()
+
+
+func _update_dial_display() -> void:
+	if _dial_btn == null:
+		return
+	var lbl: Label = _dial_btn.get_node_or_null("DialLabel")
+	if lbl != null:
+		if _selected_minutes == 0:
+			lbl.text = "Tắt\nOff"
+		else:
+			lbl.text = "%d\nPhút" % _selected_minutes
 
 
 func _on_volume_changed(val: float) -> void:
-	AudioServer.set_bus_volume_db(0, linear_to_db(maxf(val, 0.0001)))
-
-
-func _on_timer_selected(minutes: int, _active_btn: Button) -> void:
-	_selected_minutes = minutes
-	_update_timer_button_styles()
-	bedtime_timer_changed.emit(minutes)
-	if _dial_rect != null:
-		var target_rot := 0.0
-		match minutes:
-			15: target_rot = 0.52
-			30: target_rot = 1.05
-			_: target_rot = 0.0
-		var tw := create_tween().bind_node(self)
-		tw.tween_property(_dial_rect, "rotation", target_rot, 0.22) \
-			.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-
-
-func _update_timer_button_styles() -> void:
-	for btn in _timer_buttons:
-		var is_active := (btn.text == "Tắt" and _selected_minutes == 0) or \
-						 (btn.text == "15 Phút" and _selected_minutes == 15) or \
-						 (btn.text == "30 Phút" and _selected_minutes == 30)
-
-		var style := StyleBoxFlat.new()
-		style.set_corner_radius_all(14)
-		if is_active:
-			style.bg_color = Color(0.78, 0.62, 0.28, 0.95)
-			style.border_color = Color(1.0, 0.90, 0.60)
-			style.set_border_width_all(2)
-			btn.add_theme_color_override("font_color", Color(0.15, 0.10, 0.05))
-		else:
-			style.bg_color = Color(0.24, 0.15, 0.09, 0.85)
-			style.border_color = Color(0.45, 0.35, 0.20)
-			style.set_border_width_all(1)
-			btn.add_theme_color_override("font_color", Color(0.85, 0.82, 0.75))
-
-		btn.add_theme_stylebox_override("normal", style)
-		btn.add_theme_stylebox_override("hover", style)
-		btn.add_theme_stylebox_override("pressed", style)
+	var db := linear_to_db(maxf(val, 0.0001))
+	AudioServer.set_bus_volume_db(0, db)

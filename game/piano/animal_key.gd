@@ -207,14 +207,32 @@ func set_hint_active(active: bool) -> void:
 	if _hint_tween != null and _hint_tween.is_valid():
 		_hint_tween.kill()
 
+	var base_token_y := size.y * 0.28
+
 	if not active:
 		_glow_overlay.color.a = 0.0
+		if _token != null and _has_token:
+			_token.position.y = base_token_y
+			_token.scale = Vector2.ONE
 		return
 
 	_glow_overlay.color = _badge_color
 	_glow_overlay.color.a = 0.12
 	_hint_tween = create_tween().bind_node(self).set_loops()
-	_hint_tween.tween_property(_glow_overlay, "color:a", 0.45, 0.35) \
+
+	# 1. Hào quang phát sáng nhịp nhàng
+	_hint_tween.tween_property(_glow_overlay, "color:a", 0.52, 0.35) \
 		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	if _token != null and _has_token:
+		_hint_tween.parallel().tween_property(_token, "position:y", base_token_y - 12.0, 0.35) \
+			.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+		_hint_tween.parallel().tween_property(_token, "scale", Vector2(1.08, 0.94), 0.35) \
+			.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+
 	_hint_tween.tween_property(_glow_overlay, "color:a", 0.12, 0.35) \
 		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	if _token != null and _has_token:
+		_hint_tween.parallel().tween_property(_token, "position:y", base_token_y, 0.35) \
+			.set_trans(Tween.TRANS_BOUNCE).set_ease(Tween.EASE_OUT)
+		_hint_tween.parallel().tween_property(_token, "scale", Vector2.ONE, 0.35) \
+			.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)

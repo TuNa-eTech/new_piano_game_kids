@@ -70,10 +70,14 @@ func _ready() -> void:
 
 
 func _on_free_play_changed(enabled: bool) -> void:
-	if enabled and _wiz_party_tex != null:
-		_wizard.texture = _wiz_party_tex
-	elif _wiz_normal_tex != null:
-		_wizard.texture = _wiz_normal_tex
+	if enabled:
+		if _wiz_party_tex != null:
+			_wizard.texture = _wiz_party_tex
+		set_speech_text("Thỏa thích sáng tác nhạc nào! ♫")
+	else:
+		if _wiz_normal_tex != null:
+			_wizard.texture = _wiz_normal_tex
+		set_speech_text("♫ ♪ ♫")
 
 
 func _setup_textures() -> void:
@@ -138,11 +142,12 @@ func _update_layout() -> void:
 	_crystal_magenta.pivot_offset = Vector2(cry_w * 0.5, cry_h * 0.5)
 	_crystal_cyan.pivot_offset = Vector2(cry_w * 0.5, cry_h * 0.5)
 
-	# Rương báu nhỏ trên cỏ ở góc phải ngoài cuốn sách (đặt cạnh thạch anh hồng)
+	# Rương báu nay đã được đặt ngự trên đỉnh Cây Đậu Thần (Beanstalk) theo đúng ảnh mock
 	var chest_dim := minf(size.x * 0.10, 85.0)
 	_chest_ground.size = Vector2(chest_dim, chest_dim)
 	_chest_ground.position = Vector2(size.x - cry_w - chest_dim - 24.0, size.y - chest_dim - 18.0)
 	_chest_ground.pivot_offset = Vector2(chest_dim * 0.5, chest_dim * 0.5)
+	_chest_ground.visible = false
 
 	# Trang sách phải uốn cong (PageCurl)
 	if _page_curl != null:
@@ -420,7 +425,12 @@ func flip_page(duration: float = 0.95) -> void:
 
 func set_speech_text(text: String) -> void:
 	if _speech_label != null:
-		_speech_label.text = text
+		if "C4" in text or "Sư tử" in text or "Giai điệu" in text or "Lắng nghe" in text:
+			_speech_label.text = "♫  ♪  ♫"
+		elif "nở hoa" in text or "Cây thần" in text:
+			_speech_label.text = "★  ✦  ★"
+		else:
+			_speech_label.text = text
 
 
 func on_note_played(_note_idx: int) -> void:

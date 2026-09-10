@@ -58,6 +58,14 @@ func _on_page_turn_started() -> void:
 func _on_prompt_updated(text: String) -> void:
 	if _diorama != null:
 		_diorama.set_speech_text(text)
+	if _ribbon != null and _tree != null and _keyboard != null:
+		var exp_note := _call_response.expected_note()
+		if exp_note >= 0:
+			var from_pos := _tree.global_position + _tree.get_leaf_position(exp_note)
+			var to_pos := _keyboard.get_key_global_position(exp_note)
+			_ribbon.set_guiding_stream(from_pos, to_pos, Notes.color_of(exp_note))
+		else:
+			_ribbon.clear_guiding_stream()
 
 
 func _on_key_note_played(key: int) -> void:
