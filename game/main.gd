@@ -34,9 +34,16 @@ func _ready() -> void:
 	_map.closed.connect(_on_map_closed)
 	GameState.chapter_completed.connect(_on_chapter_completed)
 	_keyboard.note_played.connect(_on_key_note_played)
+	_call_response.prompt_updated.connect(_on_prompt_updated)
+
+
+func _on_prompt_updated(text: String) -> void:
+	if _diorama != null:
+		_diorama.set_speech_text(text)
 
 
 func _on_key_note_played(key: int) -> void:
+
 	if _ribbon != null and _tree != null:
 		var from_pos := _keyboard.get_key_global_position(key)
 		var to_pos := _tree.global_position + _tree.get_leaf_position(key)

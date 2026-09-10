@@ -12,6 +12,7 @@ extends Node
 ## chờ tiếp — bé thử lại bao nhiêu lần cũng được.
 
 signal page_completed(page_index: int)
+signal prompt_updated(prompt_text: String)
 
 ## FREE là Chơi Tự Do: không hát gọi, không gợi ý, không chuỗi — chỉ đàn, con
 ## vật và cây mọc theo mỗi nốt (Quyết định 03). Nó là một TRẠNG THÁI chứ không
@@ -58,13 +59,13 @@ func setup(tree: MagicTree, keyboard: PianoKeyboard) -> void:
 	GameState.free_play_changed.connect(_on_free_play_changed)
 	# Bé chọn chương trên bản đồ thì trang đổi mà không ai báo cho vòng chơi.
 	GameState.page_changed.connect(_on_page_changed)
-	_begin_page()
+	_begin_page(true)
 	set_process(true)
 
 
 # ------------------------------------------------------------------ vòng đời --
 
-func _begin_page() -> void:
+func _begin_page(first: bool = false) -> void:
 	_page = GameState.page_index
 	_sequence = Melodies.for_page(_page)
 	_step = 0
@@ -72,6 +73,9 @@ func _begin_page() -> void:
 	_idle = 0.0
 	_tree.reset_page()
 	_tree.set_sequence(_sequence)
+	# Trang đầu tiên của phiên không có gì để "lật" — chỉ kêu khi thật sự sang trang.
+	if not first:
+		AudioDirector.play_sfx("page_turn")
 	_enter(State.FREE if GameState.free_play else State.LEAD_IN)
 
 
@@ -95,8 +99,18 @@ func _enter(next: State) -> void:
 	_state = next
 	_timer = 0.0
 	match next:
+		State.LEAD_IN:
+			_tree.clear_singing()
+			_tree.clear_hint()
+			if _keyboard != null:
+				_keyboard.clear_hint_key()
+			prompt_updated.emit("Lắng nghe khu rừng nào... ♫")
 		State.SINGING:
 			_sing_index = 0
+			_tree.clear_hint()
+			if _keyboard != null:
+				_keyboard.clear_hint_key()
+			prompt_updated.emit("Giai điệu đang ngân vang! ♫")
 		State.WAITING:
 			_tree.clear_singing()
 			_idle = 0.0
@@ -104,12 +118,24 @@ func _enter(next: State) -> void:
 		State.FRUITING:
 			_replay_index = 0
 			_tree.fruit()
+			_tree.clear_hint()
+			if _keyboard != null:
+				_keyboard.clear_hint_key()
+			AudioDirector.play_sfx("chest_open")
+			prompt_updated.emit("Cây thần nở hoa rồi! ★")
 		State.PAGE_TURN:
-			pass
+			_tree.clear_hint()
+			if _keyboard != null:
+				_keyboard.clear_hint_key()
+			prompt_updated.emit("Lật sang trang mới...")
 		State.FREE:
 			_tree.clear_singing()
 			_tree.clear_hint()
+			if _keyboard != null:
+				_keyboard.clear_hint_key()
 			_step = 0
+			prompt_updated.emit("Bé thỏa thích chơi đàn! ♬")
+
 
 
 func _process(delta: float) -> void:
@@ -198,7 +224,17 @@ func _on_note_played(note_index: int) -> void:
 
 func _refresh_hint() -> void:
 	if _step < _sequence.size():
-		_tree.set_hint(_sequence[_step])
+		var n: int = _sequence[_step]
+		_tree.set_hint(n)
+		if _keyboard != null:
+			_keyboard.set_hint_key(n)
+		prompt_updated.emit("Chạm bạn %s (%s) nhé!" % [Notes.animal_of(n), Notes.note_of(n)])
+	else:
+		_tree.clear_hint()
+		if _keyboard != null:
+			_keyboard.clear_hint_key()
+
+
 
 
 # ----------------------------------------------------------------- chẩn đoán --
