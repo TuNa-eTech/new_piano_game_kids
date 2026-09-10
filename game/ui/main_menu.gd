@@ -17,6 +17,7 @@ func _ready() -> void:
 	super()
 	layer = 25
 	_build()
+	_set_controls_visible(false)
 
 
 func _build() -> void:
@@ -124,6 +125,6 @@ func _build() -> void:
 
 func _on_play_pressed() -> void:
 	if AudioDirector != null:
-		AudioDirector.play_sfx("sfx_page_turn")
+		AudioDirector.play_sfx("page_turn")
 	close_overlay()
 	play_pressed.emit()

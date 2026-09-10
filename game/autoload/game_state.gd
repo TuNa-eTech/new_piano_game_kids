@@ -9,13 +9,6 @@ extends Node
 signal page_changed(page_index: int)
 signal stars_changed(total: int)
 signal free_play_changed(enabled: bool)
-signal bedtime_triggered
-
-## Thời gian hẹn giờ ngủ còn lại (giây). 0 = Tắt hẹn giờ.
-var bedtime_remaining_seconds: float = 0.0
-
-## Đã qua màn hình giới thiệu bìa sách lần đầu (FTUE) chưa
-var has_completed_ftue: bool = false
 
 ## Bé vừa đi hết trang cuối của một chương. Phát SAU khi page_index đã nhảy sang
 ## trang đầu chương mới, để màn kết chương mở ra trên một ván chơi đã dựng xong
@@ -109,18 +102,6 @@ func apply_saved(saved_page: int, saved_max_page: int, saved_stars: int) -> void
 	set_page(saved_page)
 
 
-func set_bedtime_limit(minutes: int) -> void:
-	bedtime_remaining_seconds = float(minutes * 60)
-
-
-func _process(delta: float) -> void:
-	if bedtime_remaining_seconds > 0.0:
-		bedtime_remaining_seconds -= delta
-		if bedtime_remaining_seconds <= 0.0:
-			bedtime_remaining_seconds = 0.0
-			bedtime_triggered.emit()
-
-
 ## Chỉ dùng cho máy đo: đưa mọi thứ về mặc định để phép đo không phụ thuộc vào
 ## file lưu của lần chạy trước.
 func reset_all() -> void:
@@ -129,7 +110,5 @@ func reset_all() -> void:
 	max_page_reached = 0
 	stars = 0
 	notes_played_this_session = 0
-	bedtime_remaining_seconds = 0.0
 	stars_changed.emit(stars)
 	page_changed.emit(page_index)
-

@@ -19,6 +19,7 @@ func _ready() -> void:
 	super()
 	layer = 20
 	_build()
+	_set_controls_visible(false)
 
 
 func _build() -> void:
@@ -179,11 +180,13 @@ func _on_fruit_pressed(btn: Button, type: String) -> void:
 		btn.modulate = Color(1.2, 1.2, 1.2, 0.45) # Mờ đi vì đã chọn
 		_tapped_strawberries += 1
 		_update_progress()
+		if AudioDirector != null:
+			AudioDirector.play_sfx("star_ting")
 
 		if _tapped_strawberries >= 3:
 			# Đã chạm đủ 3 quả dâu đỏ -> Mở khóa thành công!
 			if AudioDirector != null:
-				AudioDirector.play_sfx("sfx_hold_complete")
+				AudioDirector.play_sfx("hold_complete")
 			close_overlay()
 			gate_unlocked.emit()
 	else:

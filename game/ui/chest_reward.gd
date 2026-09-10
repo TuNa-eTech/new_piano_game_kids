@@ -16,6 +16,7 @@ func _ready() -> void:
 	super()
 	layer = 12
 	_build()
+	_set_controls_visible(false)
 
 
 func _build() -> void:
@@ -137,6 +138,6 @@ func show_reward(badge_idx: int) -> void:
 
 func _on_claim_pressed() -> void:
 	if AudioDirector != null:
-		AudioDirector.play_sfx("sfx_chest_open")
+		AudioDirector.play_sfx("chest_open")
 	close_overlay()
 	reward_claimed.emit(_current_badge)

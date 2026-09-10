@@ -18,6 +18,7 @@ func _ready() -> void:
 	super()
 	layer = 15
 	_build()
+	_set_controls_visible(false)
 
 
 func _build() -> void:

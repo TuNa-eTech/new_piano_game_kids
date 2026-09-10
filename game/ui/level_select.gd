@@ -20,6 +20,7 @@ func _ready() -> void:
 	super()
 	layer = 11
 	_build()
+	_set_controls_visible(false)
 
 
 func _build() -> void:
@@ -154,7 +155,7 @@ func open_for_chapter(chapter: int) -> void:
 
 func _on_level_btn_pressed(page: int) -> void:
 	if AudioDirector != null:
-		AudioDirector.play_sfx("sfx_chapter_select")
+		AudioDirector.play_sfx("chapter_select")
 	close_overlay()
 	level_selected.emit(page)
 
