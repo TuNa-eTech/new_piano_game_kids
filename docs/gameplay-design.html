@@ -136,6 +136,22 @@ ul.clean li::marker{color:var(--rule-strong)}
   display:flex;flex-direction:column;gap:8px}
 .panel h3{font-size:1rem}
 .panel p{font-size:.93rem;color:var(--ink-2)}
+
+/* ---- 10-screen gallery & master flow ---- */
+.gallery{display:grid;grid-template-columns:repeat(auto-fit,minmax(310px,1fr));gap:20px;margin-top:14px}
+.screen-card{background:var(--surface);border:1px solid var(--rule);border-radius:8px;overflow:hidden;
+  display:flex;flex-direction:column;box-shadow:var(--shadow);transition:transform .15s ease}
+.screen-card:hover{transform:translateY(-2px)}
+.screen-card img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block;border-bottom:1px solid var(--rule)}
+.screen-info{padding:16px 18px;display:flex;flex-direction:column;gap:8px}
+.screen-badge{font-family:"IBM Plex Mono",monospace;font-size:.7rem;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--gold);background:var(--gold-soft);padding:2px 8px;border-radius:4px;width:fit-content}
+.screen-title{font-size:1.05rem;font-weight:700;color:var(--ink);margin:0}
+.screen-desc{font-size:.9rem;color:var(--ink-2);line-height:1.5;margin:0}
+.screen-rules{font-size:.82rem;color:var(--magic);font-family:"IBM Plex Mono",monospace;background:var(--magic-soft);padding:6px 10px;border-radius:4px;margin-top:4px}
+.flow-container{background:var(--surface);border:1px solid var(--rule);border-radius:8px;padding:24px;display:flex;flex-direction:column;gap:14px;box-shadow:var(--shadow);overflow-x:auto}
+.flow-diagram{font-family:"IBM Plex Mono",monospace;font-size:.82rem;line-height:1.6;color:var(--ink-2);background:var(--surface-2);padding:18px;border-radius:6px;white-space:pre}
+
 footer{margin-top:72px;border-top:1px solid var(--rule);padding-top:20px;
   font-family:"IBM Plex Mono",monospace;font-size:.75rem;color:var(--ink-3);
   display:flex;gap:16px;flex-wrap:wrap}
@@ -245,6 +261,180 @@ footer{margin-top:72px;border-top:1px solid var(--rule);padding-top:20px;
   </div>
 </section>
 
+<section id="screens">
+  <div class="sec-head">
+    <div class="sec-num">Quyết định 05</div>
+    <h2>Kiến trúc 10 Màn hình &amp; Bản đồ điều hướng Master Flow</h2>
+  </div>
+  <div class="col"><p>Từ ảnh mock ban đầu, toàn bộ trò chơi đã được nâng cấp và quy chuẩn hóa thành <strong>10 màn hình / không gian trải nghiệm 3D Pop-up Diorama liền mạch</strong>, vận hành theo tiêu chuẩn Apple Kids Category và tâm lý học phát triển mầm non (2–5 tuổi).</p></div>
+
+  <div class="decision col">
+    <div class="tag">Năm Nguyên Tắc Vận Hành Logic Đã Chuẩn Hóa</div>
+    <p><strong>1. Khởi động mượt mà (FTUE vs Resume):</strong> Lần đầu cài app mở ra Trang Bìa Sách (Màn 1) với nút CHƠI khóa son khổng lồ. Các lần mở sau app tự động lật thẳng vào trang sách bé đang chơi dở (Zero-friction launch).</p>
+    <p><strong>2. Chống chạm nhầm góc trên:</strong> Màn chơi chính chỉ giữ duy nhất 1 nút Menu gỗ giữ 2.0 giây. Bỏ cụm nút MENU + LEVELS cạnh nhau trên góc phải để trẻ không bao giờ bị văng màn hình lúc chơi đàn.</p>
+    <p><strong>3. Khóa thoát giờ ngủ tuyệt đối (Sleep Lockout):</strong> Màn Chúc Bé Ngủ Ngon (Màn 10) khi hết giờ chơi bắt buộc phải qua Cổng Phụ Huynh (chạm 3 quả dâu) mới thoát được ra ngoài — phụ huynh làm chủ hoàn toàn thời gian ngủ của bé.</p>
+    <p><strong>4. Thưởng Dopamine hữu hình:</strong> Hoàn thành chương hoặc chạm rương báu mở ra Màn 6 với Huy Hiệu Thú Cưng 3D sưu tầm thay cho các con số điểm vô nghĩa.</p>
+    <p><strong>5. Thang âm Ngũ Cung Pentatonic:</strong> Toàn bộ 7 phím đàn giữ chuẩn nốt <span class="mono">C - D - E - G - A - C - D</span>, gõ bất kỳ tổ hợp nào cũng hài hòa, triệt tiêu hoàn toàn quãng nghịch tai.</p>
+  </div>
+
+  <div class="flow-container col">
+    <h3>Bản Đồ Điều Hướng Tổng Thể (Master Flowchart)</h3>
+    <pre class="flow-diagram">┌─────────────────────────────────────────────────────────────┐
+│  [Màn 1: MENU CHÍNH / BÌA SÁCH CỔ TÍCH]                     │
+│  • Lần đầu mở app: Hiện bìa sách + Nút CHƠI Khóa Son        │
+│  • Các lần sau: Tự động Resume thẳng vào Sân Khấu Chính      │
+└──────────────┬───────────────────────────────┬──────────────┘
+               │ (Bấm CHƠI)                    │ (Bấm Phụ Huynh)
+               ▼                               ▼
+┌──────────────────────────────────────┐  ┌───────────────────┐
+│  [Màn 2: SÂN KHẤU CHÍNH (GỌI - ĐÁP)] │  │ [Màn 8: CỔNG PHỤ  │
+│  • Cây thần 8 nốt · Phù thủy nhỏ     │  │  HUYNH BẢO VỆ]    │
+│  • Bàn phím cơ học 7 thú Pentatonic  │  │  • Chạm 3 quả dâu │
+│  • Nút Menu gỗ giữ 2.0s góc trái     │  └─────────┬─────────┘
+└──────┬───────────────┬───────────────┘            │ (Giải đúng)
+       │ (Bật Tự Do)   │ (Giữ Menu 2s)              ▼
+       │               │                  ┌───────────────────┐
+       ▼               ▼                  │ [Màn 9: GÓC PHỤ   │
+┌──────────────┐ ┌──────────────────────┐ │  HUYNH & HẸN GIỜ] │
+│ [Màn 3: CHƠI │ │ [Màn 4: BẢN ĐỒ 3     │ │  • Thanh âm lượng │
+│  TỰ DO JAM]  │ │  CHƯƠNG SÁCH NỔI]    │ │  • Hẹn giờ 15 phút│
+│ • 4 Nhạc cụ  │ │ • Sáo Trúc / Kalimba │ └─────────┬─────────┘
+│ • Sóng cầu   │ │ • Lâu Đài Chuông Gió │           │
+│   vồng phím  │ └──────────┬───────────┘           │ (Hết 15 phút)
+└──────────────┘            │ (Chọn 1 Chương)       ▼
+                            ▼             ┌───────────────────┐
+                 ┌──────────────────────┐ │ [Màn 10: CHÚC BÉ  │
+                 │ [Màn 5: CHỌN MÀN     │ │  NGỦ NGON]        │
+                 │  CHƠI (5 BỤC GỖ)]    │ │  • Rừng đêm tắt   │
+                 │ • Level 1-5 đá lát   │ │    đèn, phù thủy  │
+                 │ • Bạn Thỏ mời vào    │ │    ngủ say        │
+                 └──────────┬───────────┘ │  • Muốn thoát:     │
+                            │ (Vào chơi)  │    Bắt buộc qua   │
+                            ▼             │    Cổng Phụ Huynh!│
+                 [Vào Màn 2 Chơi Đàn]     └───────────────────┘
+                            │ (Hết trang 5)
+                            ▼
+                 ┌────────────────────────────────────────────┐
+                 │ [Màn 6: MỞ RƯƠNG THẦN & NHẬN HUY HIỆU THÚ] │
+                 │ • Bung nắp rương báu, trao huy hiệu bạn thú│
+                 └──────────────────┬─────────────────────────┘
+                                    │ (Bấm Nhận Thưởng)
+                                    ▼
+                 ┌────────────────────────────────────────────┐
+                 │ [Màn 7: ĐẠI HOAN CA / BẾ MẠC CHƯƠNG]       │
+                 │ • 7 Bạn thú + Phù thủy hòa tấu 12 giây     │
+                 │ • Xuất video lưu niệm kỷ niệm cho bố mẹ    │
+                 └────────────────────────────────────────────┘</pre>
+  </div>
+
+  <div class="sec-head" style="border-top:none;padding-top:10px">
+    <div class="sec-num">Bộ sưu tập trực quan</div>
+    <h2>Thư viện 10 Màn hình 3D Pop-up Diorama</h2>
+  </div>
+
+  <div class="gallery">
+    <div class="screen-card">
+      <img src="mock-main-menu.jpeg" alt="Màn 1: Menu Chính - Bìa Sách Rừng Nhạc">
+      <div class="screen-info">
+        <span class="screen-badge">Màn 01 · Bìa Sách</span>
+        <h3 class="screen-title">Menu Khởi Đầu</h3>
+        <p class="screen-desc">Cuốn sách bọc da dập nổi chữ 'RỪNG NHẠC' mạ vàng, nốt nhạc bay quanh. Phù thủy vẫy tay chào và nút 'CHƠI' khóa son khổng lồ.</p>
+        <span class="screen-rules">FTUE · Khởi động lần đầu</span>
+      </div>
+    </div>
+
+    <div class="screen-card">
+      <img src="mock-game-play.jpeg" alt="Màn 2: Sân Khấu Chơi Chính">
+      <div class="screen-info">
+        <span class="screen-badge">Màn 02 · Trọng Tâm 85%</span>
+        <h3 class="screen-title">Sân Khấu Chơi Chính</h3>
+        <p class="screen-desc">Cuốn sách mở 2 trang: Phù thủy chơi mini piano trang trái, Cây thần nốt nhạc trang phải. Bàn phím cơ học 7 phím thú 3D.</p>
+        <span class="screen-rules">Gọi-đáp · Không phạt · 0ms latency</span>
+      </div>
+    </div>
+
+    <div class="screen-card">
+      <img src="mock-free-play.jpeg" alt="Màn 3: Sân Khấu Chơi Tự Do">
+      <div class="screen-info">
+        <span class="screen-badge">Màn 03 · Sáng Tạo</span>
+        <h3 class="screen-title">Chơi Tự Do (Jam Party)</h3>
+        <p class="screen-desc">Phù thủy đeo kính sao, nốt nhạc bong bóng xà phòng ngũ sắc. Bộ chọn 4 nhạc cụ: Đại cầm, Kalimba, Chuông pha lê, Giọng thú.</p>
+        <span class="screen-rules">Phím cầu vồng · Đổi 4 âm sắc</span>
+      </div>
+    </div>
+
+    <div class="screen-card">
+      <img src="mock-chapter-map.jpeg" alt="Màn 4: Bản Đồ 3 Chương Sách Nổi">
+      <div class="screen-info">
+        <span class="screen-badge">Màn 04 · Mục Lục</span>
+        <h3 class="screen-title">Bản Đồ 3 Chương</h3>
+        <p class="screen-desc">3 thẻ chương gỗ 3D nổi bật: Sáo Trúc Rừng Xanh (đã hoàn thành), Hồ Nước Kalimba, và Lâu Đài Chuông Gió có khóa đồng.</p>
+        <span class="screen-rules">Mở bằng nút Menu giữ 2.0s</span>
+      </div>
+    </div>
+
+    <div class="screen-card">
+      <img src="mock-level-select.jpeg" alt="Màn 5: Chọn 5 Màn Chơi">
+      <div class="screen-info">
+        <span class="screen-badge">Màn 05 · Lộ Trình</span>
+        <h3 class="screen-title">Chọn 5 Màn Chơi (Level)</h3>
+        <p class="screen-desc">Con đường đá rêu xanh với 5 bục gỗ âm nhạc. Bạn Thỏ trắng nhún nhảy ở Màn 4 đang chơi; Màn 5 là rương báu lấp lánh.</p>
+        <span class="screen-rules">3 sao tích lũy · Không áp lực</span>
+      </div>
+    </div>
+
+    <div class="screen-card">
+      <img src="mock-chest-reward.jpeg" alt="Màn 6: Mở Rương Thần & Nhận Huy Hiệu">
+      <div class="screen-info">
+        <span class="screen-badge">Màn 06 · Dopamine Peak</span>
+        <h3 class="screen-title">Mở Rương Báu Thần</h3>
+        <p class="screen-desc">Rương thần bung nắp tỏa hào quang vàng, trao tặng Huy hiệu 3D 'Sư Tử Nhạc Sĩ' đội vương miện. Phù thủy vỗ tay reo vui.</p>
+        <span class="screen-rules">Sưu tầm 7 bạn thú vương giả</span>
+      </div>
+    </div>
+
+    <div class="screen-card">
+      <img src="mock-grand-finale.jpeg" alt="Màn 7: Đại Hoan Ca Kết Chương">
+      <div class="screen-info">
+        <span class="screen-badge">Màn 07 · Hoan Ca</span>
+        <h3 class="screen-title">Buổi Diễn Rừng Xanh</h3>
+        <p class="screen-desc">Cây thần vươn đại thụ, rương báu bung nắp đỉnh ngọn cây. 7 bạn thú và Phù thủy cùng đứng trên bục hòa tấu bản nhạc 12 giây.</p>
+        <span class="screen-rules">Tự lặp hòa tấu · Xuất video 9:16</span>
+      </div>
+    </div>
+
+    <div class="screen-card">
+      <img src="mock-parental-gate.jpeg" alt="Màn 8: Cổng Phụ Huynh Bảo Vệ">
+      <div class="screen-info">
+        <span class="screen-badge">Màn 08 · Bảo Vệ Trẻ</span>
+        <h3 class="screen-title">Cổng Phụ Huynh</h3>
+        <p class="screen-desc">Bảng gỗ treo ổ khóa đồng cổ điển với thử thách chữ: 'Hãy chạm vào 3 quả dâu tây đỏ để mở khóa' giữa 5 loại trái cây gỗ xúc giác.</p>
+        <span class="screen-rules">Chuẩn Apple Guideline 1.3</span>
+      </div>
+    </div>
+
+    <div class="screen-card">
+      <img src="mock-parental-corner.jpeg" alt="Màn 9: Góc Phụ Huynh & Hẹn Giờ">
+      <div class="screen-info">
+        <span class="screen-badge">Màn 09 · Dành Cho Bố Mẹ</span>
+        <h3 class="screen-title">Góc Phụ Huynh &amp; Cài Đặt</h3>
+        <p class="screen-desc">Bàn gỗ rừng đêm êm dịu, núm xoay hẹn giờ ngủ 15/30 phút hình trăng sao, thanh trượt âm lượng và công tắc nhạc ru ngủ nhẹ nhàng.</p>
+        <span class="screen-rules">Bảo vệ giấc ngủ mầm non</span>
+      </div>
+    </div>
+
+    <div class="screen-card">
+      <img src="mock-goodnight-bedtime.jpeg" alt="Màn 10: Chúc Bé Ngủ Ngon">
+      <div class="screen-info">
+        <span class="screen-badge">Màn 10 · Ngủ Ngoan</span>
+        <h3 class="screen-title">Chúc Bé Ngủ Ngon</h3>
+        <p class="screen-desc">Rừng đêm tắt đèn ấm áp, phù thủy nhỏ ngủ say ôm gấu bông sư tử dưới chăn lá. Bàn phím yên lặng, giúp bé tự nguyện đi ngủ.</p>
+        <span class="screen-rules">Thoát ra bắt buộc qua Cổng Mẹ</span>
+      </div>
+    </div>
+  </div>
+</section>
+
 <section id="viral">
   <div class="sec-head">
     <div class="sec-num">Động cơ lan truyền</div>
@@ -303,19 +493,34 @@ footer{margin-top:72px;border-top:1px solid var(--rule);padding-top:20px;
   </div>
   <pre><b>Main</b> <i>(Node2D)</i>
 ├── <b>AudioDirector</b> <i>(autoload) — pool 16 AudioStreamPlayer, preload toàn bộ wav</i>
-├── <b>GameState</b> <i>(autoload) — chương/trang hiện tại, chuỗi nốt, lọ sao, tên bé</i>
-├── ForestBackground <i>(ParallaxBackground, 3 lớp)</i>
-├── <b>StoryPanel</b> <i>(Control) — chỉ hiển thị, KHÔNG nhận input</i>
-│   ├── MagicTree <i>(AnimatedSprite2D, 8 giai đoạn)</i>
-│   ├── LeafSlots <i>(7 Marker2D + Sprite lá, màu khớp phím)</i>
-│   ├── WizardSprite
-│   └── SpeechBubble
-├── <b>PianoKeyboard</b> <i>(Control) — bề mặt input duy nhất</i>
-│   └── AnimalKey ×7 <i>(TouchScreenButton + AnimatedSprite2D)</i>
-├── HUD <i>(CanvasLayer)</i>
-│   ├── StarJar · ChapterProgress · MenuButton <i>(giữ 2s)</i> · LevelsButton
-├── <b>ParentGate</b> <i>(CanvasLayer, ẩn) — chỉ dùng cho luồng lưu clip</i>
-└── <b>ShareRenderer</b> <i>(SubViewport 1080×1920, chỉ bật khi dựng clip)</i></pre>
+├── <b>GameState</b> <i>(autoload) — tiến độ 3 chương, chuỗi nốt, lọ sao, timer ngủ</i>
+├── <b>SaveStore</b> <i>(autoload) — tự động sao lưu user://save.cfg và cứu hộ .bak</i>
+├── <b>UI</b> <i>(CanvasLayer)</i>
+│   ├── <b>DioramaStage</b> <i>(Control, mouse_filter=2) — Hậu cảnh rừng 3 lớp + Sách mở 2 trang</i>
+│   │   ├── BGFar, BGMid, BGNear <i>(3 lớp Parallax rừng cổ tích)</i>
+│   │   ├── BookSpread <i>(Cuốn sách mạ vàng)</i>
+│   │   │   ├── Wizard <i>(Phù thủy nhún nhảy chơi đàn mini)</i>
+│   │   │   └── SpeechBubble <i>(Bong bóng thoại hướng dẫn động)</i>
+│   │   └── CrystalCyan, CrystalMagenta, ChestGround <i>(Thạch anh thở nhịp + Rương báu)</i>
+│   ├── <b>MagicTree</b> <i>(Control, mouse_filter=2) — Cây thần 8 giai đoạn + 7 lá ngũ cung</i>
+│   ├── <b>PianoKeyboard</b> <i>(Control) — Bề mặt input duy nhất, phím cơ học 3D</i>
+│   │   └── AnimalKey ×7 <i>(Sư tử C, Gấu D, Thỏ E, Mèo G, Khỉ A, Voi C, Cú D)</i>
+│   ├── <b>MagicRibbon</b> <i>(Control, mouse_filter=2) — Dải ruy băng nhạc sáng Bezier 3D</i>
+│   ├── <b>MainMenu</b> <i>(Control, ẩn sau FTUE) — Bìa sách 'Rừng Nhạc' + Nút CHƠI</i>
+│   ├── <b>FreePlayOverlay</b> <i>(Control, ẩn) — Kính sao phù thủy + Bộ chọn 4 nhạc cụ</i>
+│   ├── <b>ChapterMap</b> <i>(Control, ẩn) — 3 thẻ chương 3D pop-up gỗ</i>
+│   ├── <b>LevelSelect</b> <i>(Control, ẩn) — 5 bục gỗ âm nhạc theo đường mòn</i>
+│   ├── <b>ChestReward</b> <i>(Control, ẩn) — Rương bung nắp + Huy hiệu 3D con vật</i>
+│   ├── <b>ChapterEnd</b> <i>(Control, ẩn) — Buổi Diễn Rừng Xanh 12s cùng 7 bạn thú</i>
+│   ├── <b>ParentalGate</b> <i>(Control, ẩn) — Thử thách chạm 3 quả dâu bảo vệ</i>
+│   ├── <b>ParentalCorner</b> <i>(Control, ẩn) — Bảng gỗ chỉnh âm lượng & hẹn giờ ngủ</i>
+│   └── <b>GoodnightScreen</b> <i>(Control, ẩn) — Rừng đêm tắt đèn, phù thủy ngủ say</i>
+├── <b>HUD</b> <i>(CanvasLayer)</i>
+│   ├── StarJar <i>(Lọ thủy tinh 3D đựng hạt sao)</i>
+│   ├── Menu <i>(HoldButton, nẹp gỗ sồi giữ 2.0s để mở Bản đồ)</i>
+│   ├── ChapterProgress <i>(Thanh nhạc cụ mạ vàng 5 trang)</i>
+│   └── FreePlay <i>(Nút nốt nhạc tím bật chế độ tự do)</i>
+└── <b>ShareRenderer</b> <i>(SubViewport 1080×1920, chỉ bật khi dựng clip 9:16)</i></pre>
 
   <div class="grid2">
     <div class="panel"><h3>Audio — sai ở đây là hỏng cả game</h3><p>Tạo sẵn pool <code>AudioStreamPlayer</code> lúc khởi động và tái sử dụng; <strong>không bao giờ</strong> <code>instantiate()</code> tại thời điểm chạm. Dùng <code>.wav</code> (không <code>.ogg</code>) cho nốt đàn để bỏ chi phí giải mã. Sample phải có attack cực ngắn (&lt;10 ms). Đặt <code>audio/driver/output_latency=15</code> — <em>đã kiểm: 15 vốn là mặc định của Godot 4.7, không phải chỉnh gì, và Godot không ghi khoá này vào project.godot.</em> Mục tiêu: dưới 60 ms từ ngón tay đến âm thanh.</p></div>
