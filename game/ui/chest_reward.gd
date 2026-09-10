@@ -56,23 +56,33 @@ func _build() -> void:
 	title.add_theme_color_override("font_color", Color(0.96, 0.86, 0.58))
 	vbox.add_child(title)
 
-	# Rương mở + Huy hiệu bay lên
+	# Rương mở + Huy hiệu bay lên + Hào quang
 	var reward_box := Control.new()
-	reward_box.custom_minimum_size = Vector2(180, 180)
+	reward_box.custom_minimum_size = Vector2(220, 200)
 	vbox.add_child(reward_box)
+
+	if ResourceLoader.exists("res://assets/art/fx_golden_burst.png"):
+		var burst := TextureRect.new()
+		burst.texture = load("res://assets/art/fx_golden_burst.png")
+		burst.custom_minimum_size = Vector2(240, 220)
+		burst.position = Vector2(-10, -40)
+		burst.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		burst.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		burst.modulate.a = 0.85
+		reward_box.add_child(burst)
 
 	if ResourceLoader.exists("res://assets/art/chest_open.png"):
 		var chest := TextureRect.new()
 		chest.texture = load("res://assets/art/chest_open.png")
-		chest.custom_minimum_size = Vector2(140, 140)
-		chest.position = Vector2(20, 40)
+		chest.custom_minimum_size = Vector2(150, 150)
+		chest.position = Vector2(35, 45)
 		chest.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		chest.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		reward_box.add_child(chest)
 
 	_badge_rect = TextureRect.new()
 	_badge_rect.custom_minimum_size = Vector2(110, 110)
-	_badge_rect.position = Vector2(35, -15)
+	_badge_rect.position = Vector2(55, -10)
 	_badge_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	_badge_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	reward_box.add_child(_badge_rect)

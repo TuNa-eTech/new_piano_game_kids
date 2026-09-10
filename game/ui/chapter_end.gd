@@ -82,6 +82,16 @@ func _build() -> void:
 	# khung hình thành một mớ chồng chéo. Chỉ ảnh chụp mới lộ ra chuyện này.
 	_add_backdrop(Color(0.03, 0.05, 0.04, 1.0))
 
+	if ResourceLoader.exists("res://assets/art/stage_grand_finale.png"):
+		var stage_bg := TextureRect.new()
+		stage_bg.texture = load("res://assets/art/stage_grand_finale.png")
+		stage_bg.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		stage_bg.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+		stage_bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+		stage_bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		stage_bg.modulate = Color(1.0, 1.0, 1.0, 0.50)
+		add_child(stage_bg)
+
 	var column := VBoxContainer.new()
 	column.set_anchors_preset(Control.PRESET_FULL_RECT)
 	column.add_theme_constant_override("separation", 12)

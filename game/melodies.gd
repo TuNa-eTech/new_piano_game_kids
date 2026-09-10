@@ -13,12 +13,44 @@ extends RefCounted
 ## một nốt".
 
 static var TABLE: Array[PackedInt32Array] = [
-	PackedInt32Array([0, 2, 3]),                 # C  E  G      — đi lên, dễ đoán nhất
-	PackedInt32Array([3, 2, 0, 2]),              # G  E  C  E
-	PackedInt32Array([0, 3, 4, 3, 0]),           # C  G  A  G  C
-	PackedInt32Array([5, 4, 3, 2, 0]),           # C5 A  G  E  C — đi xuống
-	PackedInt32Array([0, 2, 4, 5, 4, 2]),        # C  E  A  C5 A  E
-	PackedInt32Array([3, 5, 6, 5, 3, 2, 0]),     # G  C5 D5 C5 G  E  C
+	# --- CHƯƠNG 1: RỪNG SÁO TRÚC (Tổng 23 nốt cho 5 trang đầu) ---
+	PackedInt32Array([0, 2, 3]),                 # Lv1: Tiếng Chim Buổi Sớm (C, E, G)
+	PackedInt32Array([3, 2, 0, 2]),              # Lv2: Suối Reo Róc Rách (G, E, C, E)
+	PackedInt32Array([0, 3, 4, 3, 0]),           # Lv3: Gió Qua Rặng Tre (C, G, A, G, C)
+	PackedInt32Array([5, 4, 3, 2, 0]),           # Lv4: Bướm Vờn Hoa Dại (C5, A, G, E, C)
+	PackedInt32Array([0, 2, 4, 5, 4, 2]),        # Lv5: Lễ Hội Hạt Sồi (C, E, A, C5, A, E)
+
+	# --- CHƯƠNG 2: HỒ NƯỚC KALIMBA ---
+	PackedInt32Array([2, 3, 5]),                 # Lv6: Mặt Nước Phẳng Lặng (E, G, C5)
+	PackedInt32Array([2, 0, 2, 3]),              # Lv7: Cá Nhảy Đớp Trăng (E, C, E, G)
+	PackedInt32Array([3, 4, 5, 4, 3]),           # Lv8: Đom Đóm Thắp Đèn (G, A, C5, A, G)
+	PackedInt32Array([4, 5, 6, 5, 3]),           # Lv9: Tiếng Mưa Tí Tách (A, C5, D5, C5, G)
+	PackedInt32Array([0, 3, 2, 4, 5, 6]),        # Lv10: Hồ Sen Ngát Hương (C, G, E, A, C5, D5)
+
+	# --- CHƯƠNG 3: LÂU ĐÀI CHUÔNG GIÓ ---
+	PackedInt32Array([0, 2, 3, 5]),              # Lv11: Bậc Thang Mây Trắng (C, E, G, C5)
+	PackedInt32Array([3, 5, 4, 6]),              # Lv12: Cổng Gió Reo Vui (G, C5, A, D5)
+	PackedInt32Array([2, 4, 5, 6, 5]),           # Lv13: Vũ Điệu Sao Băng (E, A, C5, D5, C5)
+	PackedInt32Array([0, 3, 4, 5, 6]),           # Lv14: Dạ Khúc Ánh Trăng (C, G, A, C5, D5)
+	PackedInt32Array([0, 2, 3, 4, 5, 6, 5]),     # Lv15: Khúc Ca Vương Quốc (C, E, G, A, C5, D5, C5)
+]
+
+static var LEVEL_NAMES: Array[String] = [
+	"Tiếng Chim Buổi Sớm",
+	"Suối Reo Róc Rách",
+	"Gió Qua Rặng Tre",
+	"Bướm Vờn Hoa Dại",
+	"Lễ Hội Hạt Sồi",
+	"Mặt Nước Phẳng Lặng",
+	"Cá Nhảy Đớp Trăng",
+	"Đom Đóm Thắp Đèn",
+	"Tiếng Mưa Tí Tách",
+	"Hồ Sen Ngát Hương",
+	"Bậc Thang Mây Trắng",
+	"Cổng Gió Reo Vui",
+	"Vũ Điệu Sao Băng",
+	"Dạ Khúc Ánh Trăng",
+	"Khúc Ca Vương Quốc",
 ]
 
 ## docs/gameplay-design.html · Phạm vi v1: "3 chương × 5 trang".
@@ -29,7 +61,11 @@ static func count() -> int:
 	return TABLE.size()
 
 
-## Giai điệu cho một trang. Số trang vượt quá số giai điệu thì quay vòng —
-## v1 có 15 trang (3 chương × 5) nhưng chỉ 6 giai điệu.
+## Giai điệu cho một trang.
 static func for_page(page_index: int) -> PackedInt32Array:
-	return TABLE[page_index % TABLE.size()]
+	return TABLE[clampi(page_index, 0, TABLE.size() - 1)]
+
+
+static func level_name(page_index: int) -> String:
+	var idx := clampi(page_index, 0, LEVEL_NAMES.size() - 1)
+	return LEVEL_NAMES[idx]

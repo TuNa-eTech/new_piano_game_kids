@@ -22,7 +22,21 @@ func _ready() -> void:
 	_set_controls_visible(false)
 
 
+static var _board_tex: Texture2D = null
+static var _straw_tex: Texture2D = null
+static var _banana_tex: Texture2D = null
+static var _apple_tex: Texture2D = null
+
 func _build() -> void:
+	if _board_tex == null and ResourceLoader.exists("res://assets/art/gate_hanging_board_chain.png"):
+		_board_tex = load("res://assets/art/gate_hanging_board_chain.png")
+	if _straw_tex == null and ResourceLoader.exists("res://assets/art/fruit_strawberry_3d.png"):
+		_straw_tex = load("res://assets/art/fruit_strawberry_3d.png")
+	if _banana_tex == null and ResourceLoader.exists("res://assets/art/fruit_banana_3d.png"):
+		_banana_tex = load("res://assets/art/fruit_banana_3d.png")
+	if _apple_tex == null and ResourceLoader.exists("res://assets/art/fruit_apple_3d.png"):
+		_apple_tex = load("res://assets/art/fruit_apple_3d.png")
+
 	_add_backdrop(Color(0.02, 0.05, 0.04, 0.88))
 
 	var center := CenterContainer.new()
@@ -30,7 +44,7 @@ func _build() -> void:
 	add_child(center)
 
 	_board = PanelContainer.new()
-	_board.custom_minimum_size = Vector2(620, 360)
+	_board.custom_minimum_size = Vector2(660, 420)
 
 	var board_style := StyleBoxFlat.new()
 	board_style.bg_color = Color(0.18, 0.11, 0.07, 0.96) # Gỗ sồi nâu đậm
@@ -47,18 +61,54 @@ func _build() -> void:
 	_board.add_theme_stylebox_override("panel", board_style)
 	center.add_child(_board)
 
+	if _board_tex != null:
+		var board_bg := TextureRect.new()
+		board_bg.texture = _board_tex
+		board_bg.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		board_bg.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+		board_bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+		board_bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		board_bg.modulate = Color(1.0, 1.0, 1.0, 0.35)
+		_board.add_child(board_bg)
+
 	var vbox := VBoxContainer.new()
 	vbox.add_theme_constant_override("separation", 18)
 	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
 	_board.add_child(vbox)
 
+	# Hàng tiêu đề + nút đóng
+	var header_row := HBoxContainer.new()
+	header_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	vbox.add_child(header_row)
+
+	var left_spacer := Control.new()
+	left_spacer.custom_minimum_size = Vector2(40, 0)
+	header_row.add_child(left_spacer)
+
 	# Tiêu đề
 	var title := Label.new()
 	title.text = "CỔNG PHỤ HUYNH"
+	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title.add_theme_font_size_override("font_size", 24)
 	title.add_theme_color_override("font_color", Color(0.96, 0.86, 0.58))
-	vbox.add_child(title)
+	header_row.add_child(title)
+
+	# Nút đóng X góc trên phải
+	var close_btn := Button.new()
+	close_btn.text = "✕"
+	close_btn.custom_minimum_size = Vector2(40, 40)
+	var x_style := StyleBoxFlat.new()
+	x_style.bg_color = Color(0.28, 0.16, 0.10, 0.9)
+	x_style.border_color = Color(0.72, 0.56, 0.28)
+	x_style.set_border_width_all(2)
+	x_style.set_corner_radius_all(20)
+	close_btn.add_theme_stylebox_override("normal", x_style)
+	close_btn.add_theme_stylebox_override("hover", x_style)
+	close_btn.add_theme_stylebox_override("pressed", x_style)
+	close_btn.add_theme_color_override("font_color", Color.WHITE)
+	close_btn.pressed.connect(close_overlay)
+	header_row.add_child(close_btn)
 
 	# Lời chỉ dẫn bằng chữ (chỉ người lớn biết đọc)
 	var prompt := Label.new()
@@ -80,24 +130,6 @@ func _build() -> void:
 	_progress_label.add_theme_font_size_override("font_size", 15)
 	_progress_label.add_theme_color_override("font_color", Color(0.75, 0.70, 0.60))
 	vbox.add_child(_progress_label)
-
-	# Nút đóng X góc trên phải
-	var close_btn := Button.new()
-	close_btn.text = "✕"
-	close_btn.custom_minimum_size = Vector2(42, 42)
-	close_btn.set_anchors_preset(Control.PRESET_TOP_RIGHT)
-	close_btn.position = Vector2(_board.custom_minimum_size.x - 52, 10)
-	var x_style := StyleBoxFlat.new()
-	x_style.bg_color = Color(0.28, 0.16, 0.10, 0.9)
-	x_style.border_color = Color(0.72, 0.56, 0.28)
-	x_style.set_border_width_all(2)
-	x_style.set_corner_radius_all(21)
-	close_btn.add_theme_stylebox_override("normal", x_style)
-	close_btn.add_theme_stylebox_override("hover", x_style)
-	close_btn.add_theme_stylebox_override("pressed", x_style)
-	close_btn.add_theme_color_override("font_color", Color.WHITE)
-	close_btn.pressed.connect(close_overlay)
-	_board.add_child(close_btn)
 
 	_reset_fruits()
 
@@ -146,8 +178,13 @@ func _reset_fruits() -> void:
 
 func _draw_fruit(node: Control, type: String) -> void:
 	var center := node.size * 0.5
+	var dim := minf(node.size.x, node.size.y) * 0.82
+	var rect := Rect2(center.x - dim * 0.5, center.y - dim * 0.5, dim, dim)
 	match type:
 		"strawberry":
+			if _straw_tex != null:
+				node.draw_texture_rect(_straw_tex, rect, false)
+				return
 			# Quả dâu đỏ hình tim tròn
 			node.draw_circle(center + Vector2(0, 4), 22.0, Color(0.92, 0.18, 0.24))
 			# Đốm hạt dâu vàng
@@ -159,6 +196,9 @@ func _draw_fruit(node: Control, type: String) -> void:
 			node.draw_circle(center + Vector2(8, -14), 7.0, Color(0.25, 0.75, 0.35))
 			node.draw_circle(center + Vector2(0, -16), 5.0, Color(0.20, 0.65, 0.30))
 		"apple":
+			if _apple_tex != null:
+				node.draw_texture_rect(_apple_tex, rect, false)
+				return
 			# Quả táo xanh tròn
 			node.draw_circle(center + Vector2(0, 2), 23.0, Color(0.38, 0.78, 0.25))
 			# Cuống nâu
@@ -166,6 +206,9 @@ func _draw_fruit(node: Control, type: String) -> void:
 			# Chiếc lá xanh
 			node.draw_circle(center + Vector2(7, -18), 6.0, Color(0.25, 0.85, 0.35))
 		"banana":
+			if _banana_tex != null:
+				node.draw_texture_rect(_banana_tex, rect, false)
+				return
 			# Quả chuối vàng cong
 			node.draw_arc(center + Vector2(-15, 0), 28.0, -0.4, 1.4, 24, Color(0.96, 0.82, 0.18), 14.0, true)
 			# Đầu cuống chuối

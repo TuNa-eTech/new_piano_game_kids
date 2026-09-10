@@ -13,9 +13,9 @@ extends RefCounted
 ## call_response.gd rồi.
 
 static var TABLE: Array[Dictionary] = [
-	{"name": "Rừng Thức Giấc", "color": Color("#3F9455")},
-	{"name": "Rừng Ban Trưa", "color": Color("#E08A2E")},
-	{"name": "Rừng Hoàng Hôn", "color": Color("#7C5CC4")},
+	{"name": "Rừng Sáo Trúc", "color": Color("#3F9455")},
+	{"name": "Hồ Kalimba", "color": Color("#E08A2E")},
+	{"name": "Lâu Đài Chuông Gió", "color": Color("#7C5CC4")},
 ]
 
 

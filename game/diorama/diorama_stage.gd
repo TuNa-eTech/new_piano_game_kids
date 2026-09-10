@@ -26,6 +26,8 @@ var _wizard_tween: Tween
 var _crystal_tween: Tween
 var _sparkle_particles: Array[Dictionary] = []
 var _sparkle_tex: Texture2D
+var _wiz_normal_tex: Texture2D
+var _wiz_party_tex: Texture2D
 
 
 func _ready() -> void:
@@ -36,6 +38,15 @@ func _ready() -> void:
 	_init_ambient_sparkles()
 	resized.connect(_update_layout)
 	_update_layout()
+	if GameState != null:
+		GameState.free_play_changed.connect(_on_free_play_changed)
+
+
+func _on_free_play_changed(enabled: bool) -> void:
+	if enabled and _wiz_party_tex != null:
+		_wizard.texture = _wiz_party_tex
+	elif _wiz_normal_tex != null:
+		_wizard.texture = _wiz_normal_tex
 
 
 func _setup_textures() -> void:
@@ -49,7 +60,10 @@ func _setup_textures() -> void:
 	if ResourceLoader.exists("res://assets/art/open_book_spread.png"):
 		_book_spread.texture = load("res://assets/art/open_book_spread.png")
 	if ResourceLoader.exists("res://assets/art/wizard_piano.png"):
-		_wizard.texture = load("res://assets/art/wizard_piano.png")
+		_wiz_normal_tex = load("res://assets/art/wizard_piano.png")
+		_wizard.texture = _wiz_normal_tex
+	if ResourceLoader.exists("res://assets/art/wizard_star_party.png"):
+		_wiz_party_tex = load("res://assets/art/wizard_star_party.png")
 
 	if ResourceLoader.exists("res://assets/art/crystal_cyan_stump.png"):
 		_crystal_cyan.texture = load("res://assets/art/crystal_cyan_stump.png")

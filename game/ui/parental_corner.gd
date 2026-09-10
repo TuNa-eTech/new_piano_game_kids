@@ -21,7 +21,16 @@ func _ready() -> void:
 	_set_controls_visible(false)
 
 
+static var _desk_tex: Texture2D = null
+static var _dial_tex: Texture2D = null
+var _dial_rect: TextureRect
+
 func _build() -> void:
+	if _desk_tex == null and ResourceLoader.exists("res://assets/art/parental_wood_desk.png"):
+		_desk_tex = load("res://assets/art/parental_wood_desk.png")
+	if _dial_tex == null and ResourceLoader.exists("res://assets/art/dial_timer_wood.png"):
+		_dial_tex = load("res://assets/art/dial_timer_wood.png")
+
 	_add_backdrop(Color(0.02, 0.04, 0.08, 0.92))
 
 	var center := CenterContainer.new()
@@ -29,7 +38,7 @@ func _build() -> void:
 	add_child(center)
 
 	var panel := PanelContainer.new()
-	panel.custom_minimum_size = Vector2(680, 420)
+	panel.custom_minimum_size = Vector2(720, 480)
 
 	var panel_style := StyleBoxFlat.new()
 	panel_style.bg_color = Color(0.16, 0.10, 0.06, 0.98) # Gỗ sồi nâu ấm
@@ -45,6 +54,16 @@ func _build() -> void:
 	panel_style.content_margin_bottom = 32
 	panel.add_theme_stylebox_override("panel", panel_style)
 	center.add_child(panel)
+
+	if _desk_tex != null:
+		var desk_bg := TextureRect.new()
+		desk_bg.texture = _desk_tex
+		desk_bg.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		desk_bg.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+		desk_bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+		desk_bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		desk_bg.modulate = Color(1.0, 1.0, 1.0, 0.40)
+		panel.add_child(desk_bg)
 
 	var vbox := VBoxContainer.new()
 	vbox.add_theme_constant_override("separation", 24)
@@ -91,6 +110,17 @@ func _build() -> void:
 	timer_title.add_theme_font_size_override("font_size", 16)
 	timer_title.add_theme_color_override("font_color", Color(0.90, 0.88, 0.82))
 	timer_section.add_child(timer_title)
+
+	if _dial_tex != null:
+		var dial_center := CenterContainer.new()
+		_dial_rect = TextureRect.new()
+		_dial_rect.texture = _dial_tex
+		_dial_rect.custom_minimum_size = Vector2(120, 90)
+		_dial_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		_dial_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		_dial_rect.pivot_offset = Vector2(60, 45)
+		dial_center.add_child(_dial_rect)
+		timer_section.add_child(dial_center)
 
 	var timer_btn_row := HBoxContainer.new()
 	timer_btn_row.alignment = BoxContainer.ALIGNMENT_CENTER
@@ -146,6 +176,15 @@ func _on_timer_selected(minutes: int, _active_btn: Button) -> void:
 	_selected_minutes = minutes
 	_update_timer_button_styles()
 	bedtime_timer_changed.emit(minutes)
+	if _dial_rect != null:
+		var target_rot := 0.0
+		match minutes:
+			15: target_rot = 0.52
+			30: target_rot = 1.05
+			_: target_rot = 0.0
+		var tw := create_tween().bind_node(self)
+		tw.tween_property(_dial_rect, "rotation", target_rot, 0.22) \
+			.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
 
 func _update_timer_button_styles() -> void:

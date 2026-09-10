@@ -61,36 +61,36 @@ func refresh() -> void:
 		_face.queue_redraw()
 
 
-static var _card_tex: Texture2D
+static var _ch_textures: Array[Texture2D] = []
+static var _card_tex: Texture2D = null
 
 
 func _draw_face() -> void:
-	if _card_tex == null and ResourceLoader.exists("res://assets/art/card_chapter.png"):
-		_card_tex = load("res://assets/art/card_chapter.png")
+	if _ch_textures.is_empty():
+		for p in [
+			"res://assets/art/card_ch1_flute.png",
+			"res://assets/art/card_ch2_kalimba.png",
+			"res://assets/art/card_ch3_chimes.png"
+		]:
+			_ch_textures.append(load(p) if ResourceLoader.exists(p) else null)
+		if ResourceLoader.exists("res://assets/art/card_chapter.png"):
+			_card_tex = load("res://assets/art/card_chapter.png")
 
 	var w := _face.size.x
 	var h := _face.size.y
 	var accent := Chapters.color_of(chapter)
 	var dim := disabled
 
-	if _card_tex != null:
+	var tex: Texture2D = _ch_textures[chapter] if chapter < _ch_textures.size() else null
+	if tex != null:
+		var card_color := Color(0.35, 0.35, 0.38, 0.8) if dim else Color.WHITE
+		_face.draw_texture_rect(tex, Rect2(Vector2.ZERO, _face.size), false, card_color)
+	elif _card_tex != null:
 		var card_color := Color(0.45, 0.45, 0.45) if dim else accent.lerp(Color.WHITE, 0.25)
 		_face.draw_texture_rect(_card_tex, Rect2(Vector2.ZERO, _face.size), false, card_color)
 
-	# Danh tính chương: 1, 2 hoặc 3 chấm to — đếm được, không cần đọc.
-	var marks := chapter + 1
-	var mark_r := minf(w, h) * 0.085
-	var spacing := mark_r * 2.6
-	var start_x := w * 0.5 - spacing * (marks - 1) * 0.5
-	var mark_y := h * 0.38
-	for i in marks:
-		_face.draw_circle(
-			Vector2(start_x + i * spacing, mark_y), mark_r,
-			Color(0.42, 0.43, 0.45) if dim else accent
-		)
-
 	if dim:
-		_draw_lock(Vector2(w * 0.5, h * 0.68), minf(w, h) * 0.11)
+		_draw_lock(Vector2(w * 0.5, h * 0.5), minf(w, h) * 0.14)
 		return
 
 	# Tiến độ chương: 5 chấm nhỏ = 5 trang, chấm đã qua thì đầy.

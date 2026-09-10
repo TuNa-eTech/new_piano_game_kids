@@ -26,6 +26,13 @@ var _fade_tween: Tween
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	visible = false
+	_set_controls_visible(false)
+
+
+func _set_controls_visible(val: bool) -> void:
+	for child in get_children():
+		if child is Control:
+			child.visible = val
 
 
 ## Nền mờ phủ kín. Gọi từ _build() của lớp con, TRƯỚC khi thêm nội dung, để nó
@@ -44,6 +51,7 @@ func open_overlay() -> void:
 	if visible:
 		return
 	visible = true
+	_set_controls_visible(true)
 	_open_count += 1
 	get_tree().paused = true
 	_fade(0.0, 1.0)
@@ -54,6 +62,7 @@ func close_overlay() -> void:
 	if not visible:
 		return
 	visible = false
+	_set_controls_visible(false)
 	_open_count = maxi(0, _open_count - 1)
 	if _open_count == 0:
 		get_tree().paused = false

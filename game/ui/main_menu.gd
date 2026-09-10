@@ -28,47 +28,79 @@ func _build() -> void:
 	add_child(center)
 
 	var panel := PanelContainer.new()
-	panel.custom_minimum_size = Vector2(860, 520)
+	panel.custom_minimum_size = Vector2(960, 560)
 
 	var panel_style := StyleBoxFlat.new()
-	panel_style.bg_color = Color(0.14, 0.09, 0.05, 0.98) # Bìa da sồi nâu
+	panel_style.bg_color = Color(0.12, 0.08, 0.05, 0.98) # Bìa da sồi nâu đậm
 	panel_style.border_color = Color(0.85, 0.72, 0.35, 0.98) # Viền mạ vàng
 	panel_style.set_border_width_all(5)
 	panel_style.set_corner_radius_all(32)
 	panel_style.shadow_color = Color(0, 0, 0, 0.6)
 	panel_style.shadow_size = 28
-	panel_style.content_margin_left = 44
-	panel_style.content_margin_right = 44
-	panel_style.content_margin_top = 36
-	panel_style.content_margin_bottom = 36
+	panel_style.content_margin_left = 36
+	panel_style.content_margin_right = 36
+	panel_style.content_margin_top = 28
+	panel_style.content_margin_bottom = 28
 	panel.add_theme_stylebox_override("panel", panel_style)
 	center.add_child(panel)
 
+	var hbox := HBoxContainer.new()
+	hbox.add_theme_constant_override("separation", 36)
+	hbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	panel.add_child(hbox)
+
+	# Cột trái: Tranh Bìa Sách 3D Nổi
+	if ResourceLoader.exists("res://assets/art/book_cover_3d.png"):
+		var book_rect := TextureRect.new()
+		book_rect.texture = load("res://assets/art/book_cover_3d.png")
+		book_rect.custom_minimum_size = Vector2(380, 480)
+		book_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		book_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		hbox.add_child(book_rect)
+
+	# Cột phải: Tiêu đề, Chú Phù Thủy và Nút Chơi
 	var vbox := VBoxContainer.new()
-	vbox.add_theme_constant_override("separation", 24)
+	vbox.add_theme_constant_override("separation", 20)
 	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
-	panel.add_child(vbox)
+	vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	hbox.add_child(vbox)
 
 	# Tiêu đề game mạ vàng
 	var title := Label.new()
 	title.text = "♫  RỪNG NHẠC  ♫"
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title.add_theme_font_size_override("font_size", 44)
+	title.add_theme_font_size_override("font_size", 40)
 	title.add_theme_color_override("font_color", Color(0.98, 0.88, 0.55))
 	vbox.add_child(title)
 
 	var subtitle := Label.new()
 	subtitle.text = "Cuốn Sách Tranh Nổi Biết Hát Của Bé"
 	subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	subtitle.add_theme_font_size_override("font_size", 18)
+	subtitle.add_theme_font_size_override("font_size", 16)
 	subtitle.add_theme_color_override("font_color", Color(0.80, 0.85, 0.78))
 	vbox.add_child(subtitle)
 
+	# Khu vực giữa: Phù thủy vẫy tay + Nút CHƠI NGAY Khóa Son
+	var play_box := HBoxContainer.new()
+	play_box.alignment = BoxContainer.ALIGNMENT_CENTER
+	play_box.add_theme_constant_override("separation", 20)
+	vbox.add_child(play_box)
+
+	if ResourceLoader.exists("res://assets/art/wizard_welcome.png"):
+		var wiz_rect := TextureRect.new()
+		wiz_rect.texture = load("res://assets/art/wizard_welcome.png")
+		wiz_rect.custom_minimum_size = Vector2(130, 155)
+		wiz_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		wiz_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		play_box.add_child(wiz_rect)
+
 	# Nút CHƠI khổng lồ ở giữa
 	var play_btn := Button.new()
-	play_btn.text = "▶  CHƠI NGAY"
-	play_btn.custom_minimum_size = Vector2(280, 72)
-	play_btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	play_btn.text = "CHƠI NGAY  ▶"
+	if ResourceLoader.exists("res://assets/art/button_play_treble_clef.png"):
+		play_btn.icon = load("res://assets/art/button_play_treble_clef.png")
+		play_btn.expand_icon = true
+	play_btn.custom_minimum_size = Vector2(260, 80)
 	play_btn.focus_mode = Control.FOCUS_NONE
 
 	var play_style := StyleBoxFlat.new()
@@ -82,21 +114,21 @@ func _build() -> void:
 	play_btn.add_theme_stylebox_override("normal", play_style)
 	play_btn.add_theme_stylebox_override("hover", play_style)
 	play_btn.add_theme_stylebox_override("pressed", play_style)
-	play_btn.add_theme_font_size_override("font_size", 24)
+	play_btn.add_theme_font_size_override("font_size", 22)
 	play_btn.add_theme_color_override("font_color", Color(0.18, 0.12, 0.04))
 	play_btn.pressed.connect(_on_play_pressed)
-	vbox.add_child(play_btn)
+	play_box.add_child(play_btn)
 
 	# Hàng nút phụ bên dưới
 	var bottom_row := HBoxContainer.new()
 	bottom_row.alignment = BoxContainer.ALIGNMENT_CENTER
-	bottom_row.add_theme_constant_override("separation", 32)
+	bottom_row.add_theme_constant_override("separation", 24)
 	vbox.add_child(bottom_row)
 
 	# Nút Levels
 	var levels_btn := Button.new()
 	levels_btn.text = "★ Bản Đồ Chương"
-	levels_btn.custom_minimum_size = Vector2(180, 44)
+	levels_btn.custom_minimum_size = Vector2(170, 44)
 	levels_btn.focus_mode = Control.FOCUS_NONE
 	var sub_style := StyleBoxFlat.new()
 	sub_style.bg_color = Color(0.24, 0.16, 0.10, 0.9)

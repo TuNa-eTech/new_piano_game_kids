@@ -31,26 +31,42 @@ func _build() -> void:
 	add_child(center)
 
 	var panel := PanelContainer.new()
-	panel.custom_minimum_size = Vector2(820, 460)
+	panel.custom_minimum_size = Vector2(940, 480)
 
 	var panel_style := StyleBoxFlat.new()
-	panel_style.bg_color = Color(0.14, 0.10, 0.06, 0.98) # Gỗ sồi mộc mạc
+	panel_style.bg_color = Color(0.12, 0.09, 0.06, 0.98) # Gỗ sồi mộc mạc
 	panel_style.border_color = Color(0.78, 0.62, 0.28, 0.95) # Viền mạ vàng
 	panel_style.set_border_width_all(4)
 	panel_style.set_corner_radius_all(28)
 	panel_style.shadow_color = Color(0, 0, 0, 0.5)
 	panel_style.shadow_size = 20
-	panel_style.content_margin_left = 32
-	panel_style.content_margin_right = 32
-	panel_style.content_margin_top = 28
-	panel_style.content_margin_bottom = 28
+	panel_style.content_margin_left = 28
+	panel_style.content_margin_right = 28
+	panel_style.content_margin_top = 24
+	panel_style.content_margin_bottom = 24
 	panel.add_theme_stylebox_override("panel", panel_style)
 	center.add_child(panel)
 
+	var hbox := HBoxContainer.new()
+	hbox.add_theme_constant_override("separation", 24)
+	hbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	panel.add_child(hbox)
+
+	# Cột trái: Bạn Thỏ dẫn đường vẫy tay
+	if ResourceLoader.exists("res://assets/art/rabbit_guide.png"):
+		var rabbit_rect := TextureRect.new()
+		rabbit_rect.texture = load("res://assets/art/rabbit_guide.png")
+		rabbit_rect.custom_minimum_size = Vector2(170, 380)
+		rabbit_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		rabbit_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		hbox.add_child(rabbit_rect)
+
+	# Cột phải: Hàng tiêu đề + 5 bục gỗ âm nhạc
 	var vbox := VBoxContainer.new()
 	vbox.add_theme_constant_override("separation", 24)
 	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
-	panel.add_child(vbox)
+	vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	hbox.add_child(vbox)
 
 	# Hàng tiêu đề + nút Quay lại
 	var top_row := HBoxContainer.new()
@@ -87,7 +103,7 @@ func _build() -> void:
 	# 5 bục gỗ âm nhạc (Level 1 -> 5)
 	_pad_container = HBoxContainer.new()
 	_pad_container.alignment = BoxContainer.ALIGNMENT_CENTER
-	_pad_container.add_theme_constant_override("separation", 24)
+	_pad_container.add_theme_constant_override("separation", 18)
 	vbox.add_child(_pad_container)
 
 
@@ -108,10 +124,14 @@ func open_for_chapter(chapter: int) -> void:
 	var current_page := GameState.page_index
 	var max_page := GameState.max_page_reached
 
+	var pad_tex: Texture2D = null
+	if ResourceLoader.exists("res://assets/art/stepping_stone_pad.png"):
+		pad_tex = load("res://assets/art/stepping_stone_pad.png")
+
 	for i in Chapters.pages_per_chapter():
 		var page := base_page + i
 		var btn := Button.new()
-		btn.custom_minimum_size = Vector2(110, 150)
+		btn.custom_minimum_size = Vector2(120, 160)
 		btn.focus_mode = Control.FOCUS_NONE
 
 		var is_unlocked := page <= max_page
@@ -140,11 +160,18 @@ func open_for_chapter(chapter: int) -> void:
 		btn.add_theme_stylebox_override("hover", style)
 		btn.add_theme_stylebox_override("pressed", style)
 
-		btn.text = "%d\n\n%s" % [
+		if pad_tex != null:
+			btn.icon = pad_tex
+			btn.expand_icon = true
+			btn.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+
+		var lvl_title := Melodies.level_name(page)
+		btn.text = "%s\nBài %d\n%s" % [
+			lvl_title,
 			i + 1,
-			"★ ★ ★" if (page < current_page) else ("★ Đang chơi" if is_current else ("Rương 🎁" if i == 4 else "Chưa mở"))
+			"★★★" if (page < current_page) else ("★ Đang chơi" if is_current else ("Rương 🎁" if i == 4 else "🔒"))
 		]
-		btn.add_theme_font_size_override("font_size", 18)
+		btn.add_theme_font_size_override("font_size", 13)
 		btn.disabled = not is_unlocked
 
 		btn.pressed.connect(_on_level_btn_pressed.bind(page))
