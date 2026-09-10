@@ -42,6 +42,19 @@ func _run_captures(main) -> void:
 		for i in 50:
 			await get_tree().process_frame
 
+	# 1d. Instrument Switcher dock expanded
+	var switcher: InstrumentSwitcher = main.get_node_or_null("HUD/InstrumentSwitcher")
+	if switcher != null:
+		switcher.open_dock()
+		for i in 20:
+			await get_tree().process_frame
+		await _capture("screen_inst_dock_expanded")
+		switcher.select_mode(Notes.InstrumentMode.KALIMBA)
+		switcher.close_dock()
+		for i in 15:
+			await get_tree().process_frame
+		await _capture("screen_gameplay_kalimba")
+		switcher.select_mode(Notes.InstrumentMode.AUTO)
 
 	# 2. Main menu
 	var menu: MainMenu = MainMenu.new()

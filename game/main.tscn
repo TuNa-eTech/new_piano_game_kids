@@ -13,6 +13,7 @@
 [ext_resource type="Script" uid="uid://duwqkqjikoeej" path="res://game/ui/chapter_end.gd" id="11_end"]
 [ext_resource type="PackedScene" path="res://game/diorama/diorama_stage.tscn" id="12_diorama"]
 [ext_resource type="Script" path="res://game/diorama/magic_ribbon.gd" id="13_ribbon"]
+[ext_resource type="PackedScene" path="res://game/ui/instrument_switcher.tscn" id="14_inst"]
 
 [node name="Main" type="Node2D" unique_id=233447844]
 script = ExtResource("1_emt18")
@@ -126,6 +127,19 @@ offset_bottom = -272.0
 grow_horizontal = 0
 grow_vertical = 0
 script = ExtResource("8_free")
+
+[node name="InstrumentSwitcher" parent="HUD" instance=ExtResource("14_inst")]
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -124.0
+offset_top = -480.0
+offset_right = -28.0
+offset_bottom = -384.0
+grow_horizontal = 0
+grow_vertical = 0
 
 [node name="CallResponse" type="Node" parent="." unique_id=171149372]
 script = ExtResource("6_xkbyp")

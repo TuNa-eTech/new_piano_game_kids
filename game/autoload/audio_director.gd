@@ -61,6 +61,9 @@ var _chapter_instruments: Array[Array] = []
 var _active_inst_streams: Array[AudioStream] = []
 const INST_NOTE_DB := -7.0
 
+## Chế độ nhạc cụ hiện tại (Tính Năng 2: Instrument Mode Switcher)
+var _instrument_mode: int = 0
+
 var _bus: StringName = &"Master"
 
 var _poly_player: AudioStreamPlayer
@@ -105,7 +108,13 @@ func _ready() -> void:
 func _connect_game_state() -> void:
 	if is_instance_valid(GameState):
 		GameState.page_changed.connect(_on_page_changed)
+		GameState.instrument_mode_changed.connect(_on_instrument_mode_changed)
+		_instrument_mode = GameState.instrument_mode
 		set_chapter_instrument(GameState.chapter_index())
+
+
+func _on_instrument_mode_changed(mode: int) -> void:
+	_instrument_mode = mode
 
 
 func _on_page_changed(_page_idx: int) -> void:
@@ -250,23 +259,58 @@ func play_note(index: int) -> void:
 	var pitch := _pitches[index]
 
 	if backend == Backend.POLYPHONIC:
-		var id := _poly.play_stream(
-			stream, 0.0, 0.0, pitch, AudioServer.PLAYBACK_TYPE_DEFAULT, _bus
-		)
-		_recent[_recent_i] = id
-		_recent_i = (_recent_i + 1) % RECENT_IDS
-		# Nhạc cụ mộc của chương (Hướng 3): phát chuẩn cao độ với âm sắc mộc tự nhiên
-		if index < _active_inst_streams.size() and _active_inst_streams[index] != null:
-			_poly.play_stream(
-				_active_inst_streams[index], 0.0, INST_NOTE_DB, 1.0,
-				AudioServer.PLAYBACK_TYPE_DEFAULT, _bus
-			)
-		elif _base_note != null:
-			# Nốt đàn nền chồng dưới giọng thú nếu chưa có sample riêng
-			_poly.play_stream(
-				_base_note, 0.0, BASE_NOTE_DB, pitch,
-				AudioServer.PLAYBACK_TYPE_DEFAULT, _bus
-			)
+		match _instrument_mode:
+			1: # Notes.InstrumentMode.ANIMALS (Thuần giọng 7 con thú rừng)
+				var id := _poly.play_stream(
+					stream, 0.0, 0.0, pitch, AudioServer.PLAYBACK_TYPE_DEFAULT, _bus
+				)
+				_recent[_recent_i] = id
+				_recent_i = (_recent_i + 1) % RECENT_IDS
+				if _base_note != null:
+					_poly.play_stream(
+						_base_note, 0.0, BASE_NOTE_DB, pitch,
+						AudioServer.PLAYBACK_TYPE_DEFAULT, _bus
+					)
+			2: # Notes.InstrumentMode.FLUTE (Thuần Sáo Trúc 0.0 dB)
+				if _chapter_instruments.size() > 0 and index < _chapter_instruments[0].size() and _chapter_instruments[0][index] != null:
+					var id := _poly.play_stream(
+						_chapter_instruments[0][index], 0.0, 0.0, 1.0,
+						AudioServer.PLAYBACK_TYPE_DEFAULT, _bus
+					)
+					_recent[_recent_i] = id
+					_recent_i = (_recent_i + 1) % RECENT_IDS
+			3: # Notes.InstrumentMode.KALIMBA (Thuần Đàn Kalimba 0.0 dB)
+				if _chapter_instruments.size() > 1 and index < _chapter_instruments[1].size() and _chapter_instruments[1][index] != null:
+					var id := _poly.play_stream(
+						_chapter_instruments[1][index], 0.0, 0.0, 1.0,
+						AudioServer.PLAYBACK_TYPE_DEFAULT, _bus
+					)
+					_recent[_recent_i] = id
+					_recent_i = (_recent_i + 1) % RECENT_IDS
+			4: # Notes.InstrumentMode.CHIMES (Thuần Chuông Gió Pha Lê 0.0 dB)
+				if _chapter_instruments.size() > 2 and index < _chapter_instruments[2].size() and _chapter_instruments[2][index] != null:
+					var id := _poly.play_stream(
+						_chapter_instruments[2][index], 0.0, 0.0, 1.0,
+						AudioServer.PLAYBACK_TYPE_DEFAULT, _bus
+					)
+					_recent[_recent_i] = id
+					_recent_i = (_recent_i + 1) % RECENT_IDS
+			_: # 0: Notes.InstrumentMode.AUTO (Theo chương: giọng thú + nhạc cụ chương)
+				var id := _poly.play_stream(
+					stream, 0.0, 0.0, pitch, AudioServer.PLAYBACK_TYPE_DEFAULT, _bus
+				)
+				_recent[_recent_i] = id
+				_recent_i = (_recent_i + 1) % RECENT_IDS
+				if index < _active_inst_streams.size() and _active_inst_streams[index] != null:
+					_poly.play_stream(
+						_active_inst_streams[index], 0.0, INST_NOTE_DB, 1.0,
+						AudioServer.PLAYBACK_TYPE_DEFAULT, _bus
+					)
+				elif _base_note != null:
+					_poly.play_stream(
+						_base_note, 0.0, BASE_NOTE_DB, pitch,
+						AudioServer.PLAYBACK_TYPE_DEFAULT, _bus
+					)
 	else:
 		var p := _pool[_pool_next]
 		_pool_next = (_pool_next + 1) % POOL_SIZE
@@ -274,6 +318,21 @@ func play_note(index: int) -> void:
 		p.pitch_scale = pitch
 		p.play()
 		p.pitch_scale = 1.0
+
+
+## Phát nốt preview phản hồi khi bé chạm đổi nhạc cụ
+func play_mode_preview(mode: int) -> void:
+	match mode:
+		1: # Notes.InstrumentMode.ANIMALS (Tiếng mèo nốt G4)
+			play_note_pitched(3, 1.0, 0.0)
+		2: # Notes.InstrumentMode.FLUTE (Sáo trúc nốt G4)
+			play_instrument_note(0, 3, 0.0)
+		3: # Notes.InstrumentMode.KALIMBA (Kalimba nốt G4)
+			play_instrument_note(1, 3, 0.0)
+		4: # Notes.InstrumentMode.CHIMES (Chuông gió nốt G4)
+			play_instrument_note(2, 3, 0.0)
+		_: # 0: Notes.InstrumentMode.AUTO
+			play_sfx("star_ting")
 
 
 ## Phát riêng nốt của một nhạc cụ theo chương (dùng cho preview trên bản đồ chương / chọn bài)

@@ -9,11 +9,20 @@ extends Node
 signal page_changed(page_index: int)
 signal stars_changed(total: int)
 signal free_play_changed(enabled: bool)
+signal instrument_mode_changed(mode: int)
 
 ## Bé vừa đi hết trang cuối của một chương. Phát SAU khi page_index đã nhảy sang
 ## trang đầu chương mới, để màn kết chương mở ra trên một ván chơi đã dựng xong
 ## và chỉ đang bị dừng — đóng màn kết là chơi tiếp được ngay.
 signal chapter_completed(chapter_index: int)
+
+## Chế độ âm sắc nhạc cụ (Tính Năng 2). 0: AUTO, 1: ANIMALS, 2: FLUTE, 3: KALIMBA, 4: CHIMES
+var instrument_mode: int = 0: # Notes.InstrumentMode.AUTO
+	set(value):
+		if instrument_mode == value:
+			return
+		instrument_mode = value
+		instrument_mode_changed.emit(value)
 
 ## Chơi Tự Do: không gợi ý, không chuỗi — chỉ đàn, con vật và cây mọc theo mỗi
 ## nốt. Tài liệu nói đây là chế độ trẻ ở lại lâu nhất và phụ huynh quay video
@@ -106,6 +115,7 @@ func apply_saved(saved_page: int, saved_max_page: int, saved_stars: int) -> void
 ## file lưu của lần chạy trước.
 func reset_all() -> void:
 	free_play = false
+	instrument_mode = 0
 	page_index = 0
 	max_page_reached = 0
 	stars = 0

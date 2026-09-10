@@ -113,3 +113,58 @@ static func instrument_path(chapter_or_inst: int, note_idx: int) -> String:
 	var note_name: String = TABLE[idx]["note"].to_lower()
 	return "%s%s_%d_%s.wav" % [INSTRUMENT_DIRS[inst], INSTRUMENT_PREFIXES[inst], idx, note_name]
 
+
+## --- Chế Độ Nhạc Cụ Trực Tiếp (Tính Năng 2) ---
+enum InstrumentMode {
+	AUTO = 0,     ## Tự động theo chương (mặc định)
+	ANIMALS = 1,  ## Giọng 7 con thú rừng
+	FLUTE = 2,    ## Sáo Trúc mộc (Chương 1)
+	KALIMBA = 3,  ## Đàn Kalimba mộc (Chương 2)
+	CHIMES = 4,   ## Chuông Gió pha lê (Chương 3)
+}
+
+static var MODE_INFO: Array[Dictionary] = [
+	{
+		"id": InstrumentMode.AUTO,
+		"name": "Theo Chương",
+		"icon": "res://assets/art/ui_inst_auto.png",
+		"color": Color("#E8D9A0"),
+		"desc": "Hát cùng con vật & nhạc cụ câu chuyện"
+	},
+	{
+		"id": InstrumentMode.ANIMALS,
+		"name": "Giọng Thú",
+		"icon": "res://assets/art/ui_inst_animals.png",
+		"color": Color("#E0644F"),
+		"desc": "7 giọng muông thú rừng xanh"
+	},
+	{
+		"id": InstrumentMode.FLUTE,
+		"name": "Sáo Trúc",
+		"icon": "res://assets/art/ui_inst_flute.png",
+		"color": Color("#52B788"),
+		"desc": "Tiếng sáo trúc mộc mạc Chương 1"
+	},
+	{
+		"id": InstrumentMode.KALIMBA,
+		"name": "Kalimba",
+		"icon": "res://assets/art/ui_inst_kalimba.png",
+		"color": Color("#E09F3E"),
+		"desc": "Đàn phím gỗ gõ kim loại Chương 2"
+	},
+	{
+		"id": InstrumentMode.CHIMES,
+		"name": "Chuông Gió",
+		"icon": "res://assets/art/ui_inst_chimes.png",
+		"color": Color("#9B5DE5"),
+		"desc": "Chuông ngân vang pha lê Chương 3"
+	},
+]
+
+static func mode_count() -> int:
+	return MODE_INFO.size()
+
+static func mode_info(mode: int) -> Dictionary:
+	var m := clampi(mode, 0, MODE_INFO.size() - 1)
+	return MODE_INFO[m]
+
