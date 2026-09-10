@@ -109,10 +109,10 @@ func _update_layout() -> void:
 	_crystal_magenta.size = Vector2(cry_w, cry_h)
 	_crystal_magenta.position = Vector2(size.x - cry_w - 10.0, size.y - cry_h - 18.0)
 
-	# Rương báu trên cỏ đặt gần thạch anh tím
-	var chest_dim := minf(size.x * 0.13, 110.0)
+	# Rương báu nhỏ trên cỏ ở góc phải ngoài cuốn sách
+	var chest_dim := minf(size.x * 0.10, 85.0)
 	_chest_ground.size = Vector2(chest_dim, chest_dim)
-	_chest_ground.position = Vector2(size.x - cry_w - chest_dim - 6.0, size.y - chest_dim - 22.0)
+	_chest_ground.position = Vector2(size.x - chest_dim - 8.0, size.y - chest_dim - 18.0)
 
 
 func set_speech_text(text: String) -> void:

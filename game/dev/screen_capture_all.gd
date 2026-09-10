@@ -17,10 +17,20 @@ func _capture(name: String) -> void:
 	print("CAPTURED: ", p)
 
 func _run_captures(main) -> void:
-	# 1. Gameplay screen
+	# 1. Gameplay screen (Stage 0 Sprout)
 	for i in 30:
 		await get_tree().process_frame
 	await _capture("screen_gameplay")
+
+	# 1b. Gameplay screen (Stage 7 Full Magic Tree with bloomed leaves)
+	var tree: MagicTree = main.get_node("UI/MagicTree")
+	if tree != null:
+		for n in Notes.count():
+			tree.bloom(n, Notes.count())
+		for i in 10:
+			await get_tree().process_frame
+		await _capture("screen_gameplay_mature")
+		tree.reset_page()
 
 	# 2. Main menu
 	var menu: MainMenu = MainMenu.new()

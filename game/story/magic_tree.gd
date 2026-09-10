@@ -157,42 +157,56 @@ func leaf_state_of(note_index: int) -> int:
 
 # ------------------------------------------------------------------------- vẽ --
 
-@export var center_ratio_x: float = 0.69
+@export var center_ratio_x: float = 0.72
+
+const LEAF_COORDS: Array[Vector2] = [
+	Vector2(0.29, 0.71), # 0 (C4): low-left branch
+	Vector2(0.69, 0.72), # 1 (D4): low-right branch
+	Vector2(0.28, 0.54), # 2 (E4): mid-left branch
+	Vector2(0.76, 0.53), # 3 (G4): mid-right branch
+	Vector2(0.30, 0.38), # 4 (A4): upper-left branch
+	Vector2(0.75, 0.39), # 5 (C5): upper-right branch
+	Vector2(0.35, 0.23), # 6 (D5): top-left branch
+]
 
 func get_leaf_position(i: int) -> Vector2:
 	return _leaf_anchor(i)
 
 func _leaf_anchor(i: int) -> Vector2:
-	## Lá xếp so le hai bên thân, cao dần theo chỉ số nốt trên trang sách bên phải.
+	## Lá gắn chính xác vào các cành của cây thần ma thuật uốn lượn trên trang phải
 	var tree_cx := size.x * center_ratio_x
-	var base := size.y * 0.88
-	var top := size.y * 0.20
-	var t := (i + 1.0) / (Notes.count() + 1.0)
-	var y := lerpf(base, top, t)
-	var dx := size.x * 0.075 * (1.0 if i % 2 == 0 else -1.0)
-	return Vector2(tree_cx + dx, y)
+	var ground_y := size.y * 0.94
+	var tree_display_h := ground_y * 0.92
+	var tree_display_w := tree_display_h * 0.625
+	var tree_top_left := Vector2(tree_cx - tree_display_w * 0.5, ground_y - tree_display_h + 8.0)
+
+	if i >= 0 and i < LEAF_COORDS.size():
+		var norm := LEAF_COORDS[i]
+		return tree_top_left + Vector2(norm.x * tree_display_w, norm.y * tree_display_h)
+
+	return Vector2(tree_cx, ground_y - tree_display_h * 0.5)
 
 
 func _draw() -> void:
 	var ground_y := size.y * 0.94
+	var tree_cx := size.x * center_ratio_x
+	var tree_display_h := ground_y * 0.92
+	var tree_display_w := tree_display_h * 0.625
+	var tree_rect := Rect2(tree_cx - tree_display_w * 0.5, ground_y - tree_display_h + 8.0, tree_display_w, tree_display_h)
+
 	var has_art := _tree_textures.size() > 0 and _tree_textures[0] != null
 	if not has_art:
 		draw_rect(Rect2(0, ground_y, size.x, size.y - ground_y), _ground_color)
 
 	# Thân cây: 8 giai đoạn rời rạc
 	var st := stage()
-	var full_h := size.y * 0.78
-	var frac := SPROUT_FRACTION + (1.0 - SPROUT_FRACTION) * (float(st) / float(STAGES - 1))
-	var h := full_h * frac
-	var trunk_top := ground_y - h
-	var tree_cx := size.x * center_ratio_x
 
 	if st < _tree_textures.size() and _tree_textures[st] != null:
-		var tree_display_h := ground_y * 0.86
-		var tree_display_w := tree_display_h * 0.625
-		var tree_rect := Rect2(tree_cx - tree_display_w * 0.5, ground_y - tree_display_h + 10.0, tree_display_w, tree_display_h)
 		draw_texture_rect(_tree_textures[st], tree_rect, false)
 	else:
+		var full_h := size.y * 0.78
+		var frac := SPROUT_FRACTION + (1.0 - SPROUT_FRACTION) * (float(st) / float(STAGES - 1))
+		var h := full_h * frac
 		var w := size.x * 0.035
 		if h > 1.0:
 			draw_rect(Rect2(tree_cx - w * 0.5, ground_y - h, w, h), _trunk_color)
@@ -202,53 +216,54 @@ func _draw() -> void:
 		_draw_leaf(i, _leaf_anchor(i))
 
 	if _fruiting:
-		_draw_fruit(Vector2(tree_cx, trunk_top))
+		var fruit_top := Vector2(tree_cx, tree_rect.position.y + 0.16 * tree_display_h)
+		_draw_fruit(fruit_top)
 
 
 ## Vẽ lá: dùng _leaf_texture nếu có, kết hợp vẽ quầng sáng và ký tự nốt nhạc
 func _draw_leaf(i: int, p: Vector2) -> void:
 	var base := Notes.color_of(i)
-	var r := size.y * 0.045
-	var leaf_size := r * 2.2
+	var r := size.y * 0.032
+	var leaf_size := r * 2.1
 	var note_symbols := ["♪", "♫", "♬", "♩", "♪", "♫", "♬"]
 	var sym: String = note_symbols[i % note_symbols.size()]
 	var font := ThemeDB.fallback_font
 
 	match _leaf_state[i]:
 		LeafState.DORMANT:
-			draw_circle(p, r * 0.8, Color(base, 0.20))
+			draw_circle(p, r * 0.85, Color(base, 0.25))
 			if _leaf_texture != null:
-				draw_texture_rect(_leaf_texture, Rect2(p.x - leaf_size * 0.5, p.y - leaf_size * 0.5, leaf_size, leaf_size), false, Color(base, 0.45))
+				draw_texture_rect(_leaf_texture, Rect2(p.x - leaf_size * 0.5, p.y - leaf_size * 0.5, leaf_size, leaf_size), false, Color(base, 0.70))
 			else:
-				draw_circle(p, r, Color(base, 0.30))
-			draw_string(font, p + Vector2(-5, 5), sym, HORIZONTAL_ALIGNMENT_CENTER, -1, 14, Color(1, 1, 1, 0.5))
+				draw_circle(p, r, Color(base, 0.40))
+			draw_string(font, p + Vector2(-5, 5), sym, HORIZONTAL_ALIGNMENT_CENTER, -1, 13, Color(1, 1, 1, 0.85))
 		LeafState.SINGING:
-			draw_circle(p, r * 1.1, Color(base, 0.40))
+			draw_circle(p, r * 1.35, Color(base, 0.45))
 			if _leaf_texture != null:
 				var s := leaf_size * 1.25
-				draw_texture_rect(_leaf_texture, Rect2(p.x - s * 0.5, p.y - s * 0.5, s, s), false, Color(base.lightened(0.2), 1.0))
+				draw_texture_rect(_leaf_texture, Rect2(p.x - s * 0.5, p.y - s * 0.5, s, s), false, Color.WHITE)
 			else:
 				draw_circle(p, r * 1.25, Color(base, 0.95))
-			draw_string(font, p + Vector2(-6, 6), sym, HORIZONTAL_ALIGNMENT_CENTER, -1, 17, Color.WHITE)
+			draw_string(font, p + Vector2(-6, 6), sym, HORIZONTAL_ALIGNMENT_CENTER, -1, 15, Color.WHITE)
 		LeafState.HINT:
-			var pulse := 0.5 + 0.5 * sin(_time * 2.6)
-			draw_circle(p, r * (1.1 + 0.2 * pulse), Color(1, 1, 1, 0.16 + 0.22 * pulse))
+			var pulse := 0.5 + 0.5 * sin(_time * 2.8)
+			draw_circle(p, r * (1.1 + 0.3 * pulse), Color(1, 1, 1, 0.2 + 0.25 * pulse))
 			if _leaf_texture != null:
-				var s := leaf_size * (1.1 + 0.22 * pulse)
-				var c := Color(base.lerp(Color.WHITE, 0.4 * pulse), 0.7 + 0.3 * pulse)
+				var s := leaf_size * (1.05 + 0.2 * pulse)
+				var c := Color(base.lerp(Color.WHITE, 0.45 * pulse), 0.8 + 0.2 * pulse)
 				draw_texture_rect(_leaf_texture, Rect2(p.x - s * 0.5, p.y - s * 0.5, s, s), false, c)
 			else:
-				draw_circle(p, r * (1.0 + 0.22 * pulse), Color(base, 0.45 + 0.5 * pulse))
-			draw_string(font, p + Vector2(-6, 6), sym, HORIZONTAL_ALIGNMENT_CENTER, -1, 16, Color(1, 1, 1, 0.9))
+				draw_circle(p, r * (1.0 + 0.22 * pulse), Color(base, 0.5 + 0.5 * pulse))
+			draw_string(font, p + Vector2(-6, 6), sym, HORIZONTAL_ALIGNMENT_CENTER, -1, 15, Color(1, 1, 1, 0.95))
 		LeafState.BLOOMED:
-			draw_circle(p, r * 1.2, Color("#F2C64B", 0.4))
+			draw_circle(p, r * 1.25, Color("#F2C64B", 0.45))
 			if _leaf_texture != null:
-				var s := leaf_size * 1.2
+				var s := leaf_size * 1.15
 				draw_texture_rect(_leaf_texture, Rect2(p.x - s * 0.5, p.y - s * 0.5, s, s), false, Color("#F2C64B"))
 			else:
-				draw_circle(p, r * 1.42, Color("#F2C64B"))
-				draw_circle(p, r * 1.1, base)
-			draw_string(font, p + Vector2(-7, 7), "★", HORIZONTAL_ALIGNMENT_CENTER, -1, 18, Color.WHITE)
+				draw_circle(p, r * 1.35, Color("#F2C64B"))
+				draw_circle(p, r * 1.05, base)
+			draw_string(font, p + Vector2(-6, 6), "★", HORIZONTAL_ALIGNMENT_CENTER, -1, 15, Color.WHITE)
 
 
 
