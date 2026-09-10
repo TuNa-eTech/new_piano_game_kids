@@ -77,6 +77,8 @@ func save() -> bool:
 	# nhập tên. Để chỗ trống kèm ghi chú còn hơn bịa dữ liệu rồi tin vào nó.
 	cfg.set_value(SECTION_PROGRESS, "animals_unlocked", Notes.count())
 	cfg.set_value(SECTION_PROGRESS, "child_name", "")
+	cfg.set_value(SECTION_PROGRESS, "bedtime_minutes", GameState.bedtime_minutes)
+	cfg.set_value(SECTION_PROGRESS, "instrument_mode", GameState.instrument_mode)
 
 	# Bản sao lưu chụp TRƯỚC khi đè: nếu lần ghi này chết giữa chừng (app bị
 	# giết đúng lúc xuống nền) thì .bak vẫn là một file nguyên vẹn của lần trước.
@@ -114,6 +116,10 @@ func load_into_game_state() -> bool:
 	GameState.apply_saved(
 		data["page_index"], data["max_page_reached"], data["stars"]
 	)
+	if data.has("bedtime_minutes"):
+		GameState.set_bedtime_timer(data["bedtime_minutes"])
+	if data.has("instrument_mode"):
+		GameState.instrument_mode = data["instrument_mode"]
 	return true
 
 
@@ -144,6 +150,8 @@ func _read(path: String) -> Dictionary:
 		),
 		"max_page_reached": max_page,
 		"stars": maxi(0, _int_at(cfg, SECTION_PROGRESS, "stars", 0)),
+		"bedtime_minutes": clampi(_int_at(cfg, SECTION_PROGRESS, "bedtime_minutes", 0), 0, 120),
+		"instrument_mode": clampi(_int_at(cfg, SECTION_PROGRESS, "instrument_mode", 0), 0, 4),
 	}
 
 

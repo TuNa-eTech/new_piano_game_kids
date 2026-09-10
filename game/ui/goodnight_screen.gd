@@ -20,6 +20,17 @@ func _ready() -> void:
 	_set_controls_visible(false)
 
 
+func open_overlay() -> void:
+	super.open_overlay()
+	_start_breathing()
+
+
+func close_overlay() -> void:
+	if _sleep_tween != null and _sleep_tween.is_valid():
+		_sleep_tween.kill()
+	super.close_overlay()
+
+
 static var _bg_night_tex: Texture2D = null
 static var _wizard_sleep_tex: Texture2D = null
 

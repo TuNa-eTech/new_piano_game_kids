@@ -10,6 +10,7 @@ extends Node2D
 
 const DioramaStage = preload("res://game/diorama/diorama_stage.gd")
 const MagicRibbon = preload("res://game/diorama/magic_ribbon.gd")
+const ScreenRouter = preload("res://game/ui/screen_router.gd")
 
 @onready var _keyboard: PianoKeyboard = $UI/PianoKeyboard
 @onready var _tree: MagicTree = $UI/MagicTree
@@ -21,6 +22,7 @@ const MagicRibbon = preload("res://game/diorama/magic_ribbon.gd")
 @onready var _diorama: DioramaStage = $UI/DioramaStage
 @onready var _ribbon: MagicRibbon = $UI/MagicRibbon
 
+var _router: ScreenRouter
 
 
 func _ready() -> void:
@@ -30,12 +32,22 @@ func _ready() -> void:
 	# Node con đã _ready() xong ở thời điểm này, nên trao tham chiếu ở đây là an toàn.
 	_call_response.setup(_tree, _keyboard)
 
+	_router = ScreenRouter.new()
+	_router.name = "ScreenRouter"
+	add_child(_router)
+	_router.setup(_map, _chapter_end)
+
 	_menu.activated.connect(_on_menu_activated)
 	_map.closed.connect(_on_map_closed)
 	GameState.chapter_completed.connect(_on_chapter_completed)
 	_keyboard.note_played.connect(_on_key_note_played)
 	_call_response.prompt_updated.connect(_on_prompt_updated)
 	_call_response.page_turn_started.connect(_on_page_turn_started)
+	if _diorama != null:
+		_diorama.prop_interacted.connect(_on_diorama_prop_interacted)
+
+	if GameState.show_main_menu_on_launch:
+		_router.open_main_menu()
 
 
 func _on_page_turn_started() -> void:
@@ -74,6 +86,12 @@ func _on_map_closed() -> void:
 	_menu.cancel()
 
 
+func _on_diorama_prop_interacted(prop: String) -> void:
+	if prop == "chest" and _router != null:
+		_keyboard.release_all()
+		_router.open_chest_reward(GameState.chapter_index())
+
+
 ## "Buổi Diễn Rừng Xanh" — hết chương thì cả 7 con vật hát lại giai điệu của
 ## chương đó. Ván chơi bên dưới đã sang trang đầu chương mới rồi và chỉ đang bị
 ## dừng, nên đóng màn kết là bé chơi tiếp được ngay.
@@ -83,4 +101,11 @@ func _on_chapter_completed(chapter_index: int) -> void:
 	AudioDirector.play_sfx("chapter_unlock")
 	_keyboard.release_all()
 	_menu.cancel()
-	_chapter_end.play_for_chapter(chapter_index)
+	if _router != null:
+		_router.handle_chapter_completed(chapter_index)
+	else:
+		_chapter_end.play_for_chapter(chapter_index)
+
+
+func router() -> ScreenRouter:
+	return _router

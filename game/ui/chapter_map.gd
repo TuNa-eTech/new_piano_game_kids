@@ -11,6 +11,8 @@ extends PauseOverlay
 ## ghi chú trong game/ui/pause_overlay.gd.
 
 signal chapter_selected(chapter: int)
+signal main_menu_requested
+signal parent_gate_requested
 
 var _cards: Array[ChapterCard] = []
 var _root: Control
@@ -48,6 +50,22 @@ func _build() -> void:
 	column.alignment = BoxContainer.ALIGNMENT_CENTER
 	_root.add_child(column)
 
+	var header := HBoxContainer.new()
+	header.alignment = BoxContainer.ALIGNMENT_CENTER
+	column.add_child(header)
+
+	header.add_child(_make_cover_button())
+
+	var title_lbl := Label.new()
+	title_lbl.text = "BẢN ĐỒ RỪNG NHẠC"
+	title_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	title_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title_lbl.add_theme_font_size_override("font_size", 20)
+	title_lbl.add_theme_color_override("font_color", Color(0.96, 0.88, 0.65))
+	header.add_child(title_lbl)
+
+	header.add_child(_make_parent_button())
+
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 36)
 	row.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -71,6 +89,49 @@ func _build() -> void:
 	var footer := CenterContainer.new()
 	column.add_child(footer)
 	footer.add_child(_make_close_button())
+
+
+func _make_cover_button() -> Button:
+	var btn := Button.new()
+	btn.text = "📖 Bìa Sách"
+	btn.focus_mode = Control.FOCUS_NONE
+	btn.custom_minimum_size = Vector2(170, 56)
+	var st := StyleBoxFlat.new()
+	st.bg_color = Color(0.18, 0.12, 0.08, 0.92)
+	st.border_color = Color(0.85, 0.72, 0.35, 0.95)
+	st.set_border_width_all(2)
+	st.set_corner_radius_all(28)
+	btn.add_theme_stylebox_override("normal", st)
+	btn.add_theme_stylebox_override("hover", st)
+	btn.add_theme_stylebox_override("pressed", st)
+	btn.add_theme_color_override("font_color", Color(0.96, 0.88, 0.65))
+	btn.add_theme_font_size_override("font_size", 16)
+	btn.pressed.connect(func():
+		close_map()
+		main_menu_requested.emit()
+	)
+	return btn
+
+
+func _make_parent_button() -> Button:
+	var btn := Button.new()
+	btn.text = "🌙 Phụ Huynh"
+	btn.focus_mode = Control.FOCUS_NONE
+	btn.custom_minimum_size = Vector2(170, 56)
+	var st := StyleBoxFlat.new()
+	st.bg_color = Color(0.18, 0.12, 0.08, 0.92)
+	st.border_color = Color(0.85, 0.72, 0.35, 0.95)
+	st.set_border_width_all(2)
+	st.set_corner_radius_all(28)
+	btn.add_theme_stylebox_override("normal", st)
+	btn.add_theme_stylebox_override("hover", st)
+	btn.add_theme_stylebox_override("pressed", st)
+	btn.add_theme_color_override("font_color", Color(0.96, 0.88, 0.65))
+	btn.add_theme_font_size_override("font_size", 16)
+	btn.pressed.connect(func():
+		parent_gate_requested.emit()
+	)
+	return btn
 
 
 func _make_close_button() -> Button:

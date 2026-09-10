@@ -15,6 +15,8 @@ signal instrument_mode_changed(mode: int)
 ## trang đầu chương mới, để màn kết chương mở ra trên một ván chơi đã dựng xong
 ## và chỉ đang bị dừng — đóng màn kết là chơi tiếp được ngay.
 signal chapter_completed(chapter_index: int)
+signal bedtime_timer_updated(remaining_seconds: float)
+signal bedtime_expired
 
 ## Chế độ âm sắc nhạc cụ (Tính Năng 2). 0: AUTO, 1: ANIMALS, 2: FLUTE, 3: KALIMBA, 4: CHIMES
 var instrument_mode: int = 0: # Notes.InstrumentMode.AUTO
@@ -48,9 +50,36 @@ var stars: int = 0
 ## Tổng số nốt bấm trong phiên. Chỉ để hiện trên overlay chẩn đoán.
 var notes_played_this_session: int = 0
 
+## Cấu hình phiên & hẹn giờ ngủ (Bedtime Timer)
+var bedtime_minutes: int = 0
+var bedtime_remaining: float = 0.0
+var bedtime_active: bool = false
+var show_main_menu_on_launch: bool = false
+
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
+
+
+func _process(delta: float) -> void:
+	if bedtime_active and bedtime_remaining > 0.0:
+		bedtime_remaining -= delta
+		bedtime_timer_updated.emit(bedtime_remaining)
+		if bedtime_remaining <= 0.0:
+			bedtime_remaining = 0.0
+			bedtime_active = false
+			bedtime_expired.emit()
+
+
+func set_bedtime_timer(minutes: int) -> void:
+	bedtime_minutes = minutes
+	if minutes > 0:
+		bedtime_remaining = float(minutes * 60)
+		bedtime_active = true
+	else:
+		bedtime_remaining = 0.0
+		bedtime_active = false
+	bedtime_timer_updated.emit(bedtime_remaining)
 
 
 func note_was_played(_index: int) -> void:
@@ -120,5 +149,9 @@ func reset_all() -> void:
 	max_page_reached = 0
 	stars = 0
 	notes_played_this_session = 0
+	bedtime_minutes = 0
+	bedtime_remaining = 0.0
+	bedtime_active = false
+	show_main_menu_on_launch = false
 	stars_changed.emit(stars)
 	page_changed.emit(page_index)
