@@ -9,6 +9,8 @@ extends Control
 ## - Bục đàn gỗ và hai cụm tinh thể thạch anh xanh ngọc / hồng tím phát sáng
 ## - Rương gỗ cổ điển trên thảm cỏ
 
+const PageCurl = preload("res://game/diorama/page_curl.gd")
+
 @onready var _bg_far: TextureRect = $BGFar
 @onready var _bg_mid: TextureRect = $BGMid
 @onready var _bg_near: TextureRect = $BGNear
@@ -24,22 +26,26 @@ extends Control
 
 var _wizard_tween: Tween
 var _crystal_tween: Tween
-var _sparkle_particles: Array[Dictionary] = []
 var _sparkle_tex: Texture2D
 var _wiz_normal_tex: Texture2D
 var _wiz_party_tex: Texture2D
+
+var _page_curl: PageCurl
+var _fireflies: CPUParticles2D
 
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_setup_textures()
+	_setup_page_curl()
+	_setup_fireflies()
 	_start_wizard_animation()
 	_start_crystal_glow()
-	_init_ambient_sparkles()
 	resized.connect(_update_layout)
 	_update_layout()
 	if GameState != null:
 		GameState.free_play_changed.connect(_on_free_play_changed)
+
 
 
 func _on_free_play_changed(enabled: bool) -> void:
@@ -114,6 +120,61 @@ func _update_layout() -> void:
 	_chest_ground.size = Vector2(chest_dim, chest_dim)
 	_chest_ground.position = Vector2(size.x - chest_dim - 8.0, size.y - chest_dim - 18.0)
 
+	# Trang sách phải uốn cong (PageCurl)
+	if _page_curl != null:
+		var page_w := book_w * 0.46
+		var page_h := book_h * 0.88
+		_page_curl.size = Vector2(page_w, page_h)
+		_page_curl.position = Vector2(book_w * 0.50, book_h * 0.06)
+
+	# Vùng phát đom đóm bao quanh cuốn sách
+	if _fireflies != null:
+		_fireflies.position = Vector2(size.x * 0.5, size.y * 0.38)
+		_fireflies.emission_rect_extents = Vector2(size.x * 0.45, size.y * 0.28)
+
+
+func _setup_page_curl() -> void:
+	_page_curl = PageCurl.new()
+	_page_curl.name = "PageCurl"
+	_book_spread.add_child(_page_curl)
+
+
+## CPUParticles2D tạo đàn đom đóm và bụi sao thần tiên bay lơ lửng quanh sách
+func _setup_fireflies() -> void:
+	_fireflies = CPUParticles2D.new()
+	_fireflies.name = "AmbientFireflies"
+	_fireflies.amount = 22
+	_fireflies.lifetime = 4.2
+	_fireflies.preprocess = 2.0
+	if _sparkle_tex != null:
+		_fireflies.texture = _sparkle_tex
+
+	_fireflies.emission_shape = CPUParticles2D.EMISSION_SHAPE_RECTANGLE
+	_fireflies.emission_rect_extents = Vector2(500.0, 180.0)
+	_fireflies.direction = Vector2(0, -1)
+	_fireflies.spread = 55.0
+	_fireflies.initial_velocity_min = 6.0
+	_fireflies.initial_velocity_max = 20.0
+	_fireflies.gravity = Vector2(0, -3.5)
+	_fireflies.scale_amount_min = 0.35
+	_fireflies.scale_amount_max = 0.80
+
+	var grad := Gradient.new()
+	grad.set_color(0, Color(1.0, 0.95, 0.70, 0.0))
+	grad.add_point(0.2, Color(1.0, 0.92, 0.55, 0.85))
+	grad.add_point(0.75, Color(0.75, 1.0, 0.75, 0.70))
+	grad.set_color(1, Color(1.0, 0.95, 0.70, 0.0))
+	_fireflies.color_ramp = grad
+
+	add_child(_fireflies)
+
+
+
+## Gọi từ CallResponse khi kết thúc giai điệu để lật sang trang mới
+func flip_page(duration: float = 0.95) -> void:
+	if _page_curl != null:
+		_page_curl.flip_page(duration)
+
 
 func set_speech_text(text: String) -> void:
 	if _speech_label != null:
@@ -131,7 +192,6 @@ func on_note_played(_note_idx: int) -> void:
 
 ## Chú phù thủy nhỏ nhún nhảy chơi đàn mini theo nhịp
 func _start_wizard_animation() -> void:
-
 	if _wizard_tween != null and _wizard_tween.is_valid():
 		_wizard_tween.kill()
 
@@ -162,38 +222,10 @@ func _start_crystal_glow() -> void:
 		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 
 
-## Đom đóm và hạt bụi sao lơ lửng trong không khí
-func _init_ambient_sparkles() -> void:
-	_sparkle_particles.clear()
-	for i in 18:
-		_sparkle_particles.append({
-			"pos": Vector2(randf_range(40.0, 1240.0), randf_range(30.0, 520.0)),
-			"vel": Vector2(randf_range(-10.0, 10.0), randf_range(-14.0, -4.0)),
-			"alpha": randf_range(0.2, 0.8),
-			"size": randf_range(12.0, 24.0),
-			"phase": randf_range(0.0, TAU)
-		})
+func _exit_tree() -> void:
+	if _wizard_tween != null and _wizard_tween.is_valid():
+		_wizard_tween.kill()
+	if _crystal_tween != null and _crystal_tween.is_valid():
+		_crystal_tween.kill()
 
 
-func _process(delta: float) -> void:
-	# Cập nhật đom đóm bay lơ lửng
-	for p in _sparkle_particles:
-		p["pos"] += p["vel"] * delta
-		p["phase"] += delta * 2.0
-		p["alpha"] = 0.35 + 0.35 * sin(p["phase"])
-		if p["pos"].y < 10.0:
-			p["pos"].y = size.y * 0.65
-			p["pos"].x = randf_range(40.0, size.x - 40.0)
-
-	queue_redraw()
-
-
-func _draw() -> void:
-	if _sparkle_tex == null:
-		return
-
-	for p in _sparkle_particles:
-		var s: float = p["size"]
-		var rect := Rect2(p["pos"].x - s * 0.5, p["pos"].y - s * 0.5, s, s)
-		var c := Color(1.0, 0.95, 0.75, p["alpha"])
-		draw_texture_rect(_sparkle_tex, rect, false, c)

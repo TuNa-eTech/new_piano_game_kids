@@ -86,3 +86,30 @@ static func voice_of(index: int) -> String:
 ## Hệ số dịch cao độ từ G4 về nốt của phím này.
 static func pitch_of(index: int) -> float:
 	return TABLE[index]["pitch"] if is_valid(index) else 1.0
+
+
+## --- Nhạc Cụ Mộc Của 3 Chương (Hướng 3) ---
+enum Instrument {
+	FLUTE = 0,    ## Chương 1: Sáo Trúc
+	KALIMBA = 1,  ## Chương 2: Đàn Kalimba
+	CHIMES = 2,   ## Chương 3: Chuông Gió
+}
+
+static var INSTRUMENT_DIRS: Array[String] = [
+	"res://assets/audio/instruments/ch1_flute/",
+	"res://assets/audio/instruments/ch2_kalimba/",
+	"res://assets/audio/instruments/ch3_chimes/",
+]
+
+static var INSTRUMENT_PREFIXES: Array[String] = [
+	"flute",
+	"kalimba",
+	"chimes",
+]
+
+static func instrument_path(chapter_or_inst: int, note_idx: int) -> String:
+	var inst := clampi(chapter_or_inst, 0, INSTRUMENT_DIRS.size() - 1)
+	var idx := clampi(note_idx, 0, count() - 1)
+	var note_name: String = TABLE[idx]["note"].to_lower()
+	return "%s%s_%d_%s.wav" % [INSTRUMENT_DIRS[inst], INSTRUMENT_PREFIXES[inst], idx, note_name]
+

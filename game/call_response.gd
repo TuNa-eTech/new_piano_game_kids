@@ -13,6 +13,7 @@ extends Node
 
 signal page_completed(page_index: int)
 signal prompt_updated(prompt_text: String)
+signal page_turn_started
 
 ## FREE là Chơi Tự Do: không hát gọi, không gợi ý, không chuỗi — chỉ đàn, con
 ## vật và cây mọc theo mỗi nốt (Quyết định 03). Nó là một TRẠNG THÁI chứ không
@@ -128,6 +129,7 @@ func _enter(next: State) -> void:
 			if _keyboard != null:
 				_keyboard.clear_hint_key()
 			prompt_updated.emit("Lật sang trang mới...")
+			page_turn_started.emit()
 		State.FREE:
 			_tree.clear_singing()
 			_tree.clear_hint()

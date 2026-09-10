@@ -35,6 +35,12 @@ func _ready() -> void:
 	GameState.chapter_completed.connect(_on_chapter_completed)
 	_keyboard.note_played.connect(_on_key_note_played)
 	_call_response.prompt_updated.connect(_on_prompt_updated)
+	_call_response.page_turn_started.connect(_on_page_turn_started)
+
+
+func _on_page_turn_started() -> void:
+	if _diorama != null:
+		_diorama.flip_page()
 
 
 func _on_prompt_updated(text: String) -> void:

@@ -216,3 +216,12 @@ Nếu có lấy file từ thư viện ngoài, luật giấy phép:
 | `sfx_chapter_unlock.wav` | Python synth | A bright unlocking sparkle arpeggio | MIT / In-house | Antigravity | 2026-09-09 |
 | `sfx_free_play_toggle.wav` | Python synth | A light playful toggle chime | MIT / In-house | Antigravity | 2026-09-09 |
 
+### 5. Nhạc cụ mộc 3 chương (Hướng 3 — Acoustic Sampling)
+
+| Tên file | Nhạc cụ | Cao độ | Đặc tính âm thanh | Giấy phép | Tác giả | Ngày tạo |
+|---|---|---|---|---|---|---|
+| `flute_0_c4.wav` .. `flute_6_d5.wav` (7 files) | Sáo Trúc (Bamboo Flute) | C4, D4, E4, G4, A4, C5, D5 | Sóng mộc, breath chiff lọc thông dải 2.2kHz, vibrato 5Hz | MIT / In-house | Antigravity | 2026-09-10 |
+| `kalimba_0_c4.wav` .. `kalimba_6_d5.wav` (7 files) | Đàn Kalimba (Thumb Piano) | C4, D4, E4, G4, A4, C5, D5 | Xung gõ phiến kim loại 12ms, họa âm phiến 5.8x, vang thùng gỗ 175Hz | MIT / In-house | Antigravity | 2026-09-10 |
+| `chimes_0_c4.wav` .. `chimes_6_d5.wav` (7 files) | Chuông Gió & Celesta (Wind Chimes) | C4, D4, E4, G4, A4, C5, D5 | Búa gõ pha lê, chùm họa âm ống kim loại (1.0, 2.76, 5.4, 8.9), beating chorus | MIT / In-house | Antigravity | 2026-09-10 |
+
+

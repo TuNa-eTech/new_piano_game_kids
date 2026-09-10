@@ -144,6 +144,7 @@ func _on_card_pressed(chapter: int) -> void:
 	if not GameState.chapter_unlocked(chapter):
 		return
 	AudioDirector.play_sfx("chapter_select")
+	AudioDirector.play_instrument_note(chapter, 3, 0.0)
 	GameState.select_chapter(chapter)
 	chapter_selected.emit(chapter)
 	close_map()

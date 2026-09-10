@@ -53,6 +53,14 @@ var _streams: Array[AudioStream] = []
 var _pitches: PackedFloat32Array = PackedFloat32Array()
 ## Nốt đàn nền phát chồng dưới giọng thú cho dày tiếng. Chưa có thì bỏ qua.
 var _base_note: AudioStream = null
+
+## Nhạc cụ mộc 3 chương (Hướng 3: Sáo Trúc, Kalimba, Chuông Gió)
+## _chapter_instruments[chapter][note_idx] -> AudioStream (nạp sẵn 21 stream)
+var _chapter_instruments: Array[Array] = []
+## Con trỏ tới bộ stream nhạc cụ mộc của chương đang mở. Đường nóng tra O(1).
+var _active_inst_streams: Array[AudioStream] = []
+const INST_NOTE_DB := -7.0
+
 var _bus: StringName = &"Master"
 
 var _poly_player: AudioStreamPlayer
@@ -91,6 +99,25 @@ func _ready() -> void:
 	_setup_sfx()
 
 	refresh_latency()
+	call_deferred("_connect_game_state")
+
+
+func _connect_game_state() -> void:
+	if is_instance_valid(GameState):
+		GameState.page_changed.connect(_on_page_changed)
+		set_chapter_instrument(GameState.chapter_index())
+
+
+func _on_page_changed(_page_idx: int) -> void:
+	if is_instance_valid(GameState):
+		set_chapter_instrument(GameState.chapter_index())
+
+
+## Đổi nhạc cụ mộc theo chương. Tra bảng O(1), không cấp phát, không if-else trên đường nóng.
+func set_chapter_instrument(chapter_idx: int) -> void:
+	var ch := clampi(chapter_idx, 0, _chapter_instruments.size() - 1)
+	if ch < _chapter_instruments.size():
+		_active_inst_streams = _chapter_instruments[ch]
 
 
 ## Bước 3 thả bảy file voice_<con vật>_g4.wav vào assets/audio/ là tự chuyển
@@ -122,6 +149,21 @@ func _preload_samples() -> void:
 	var base_path := "%snote_base_g4.wav" % SFX_DIR
 	if ResourceLoader.exists(base_path):
 		_base_note = load(base_path)
+
+	# Nạp 21 sample nhạc cụ mộc thật cho 3 chương (Hướng 3)
+	_chapter_instruments.resize(3)
+	for ch in 3:
+		var streams_for_ch: Array[AudioStream] = []
+		streams_for_ch.resize(Notes.count())
+		for i in Notes.count():
+			var p := Notes.instrument_path(ch, i)
+			if ResourceLoader.exists(p):
+				var stream: AudioStream = load(p)
+				streams_for_ch[i] = stream
+		_chapter_instruments[ch] = streams_for_ch
+
+	set_chapter_instrument(0)
+
 
 
 func _setup_polyphonic() -> void:
@@ -213,8 +255,14 @@ func play_note(index: int) -> void:
 		)
 		_recent[_recent_i] = id
 		_recent_i = (_recent_i + 1) % RECENT_IDS
-		if _base_note != null:
-			# Nốt đàn nền chồng dưới giọng thú, nhỏ hơn hẳn để không át giọng.
+		# Nhạc cụ mộc của chương (Hướng 3): phát chuẩn cao độ với âm sắc mộc tự nhiên
+		if index < _active_inst_streams.size() and _active_inst_streams[index] != null:
+			_poly.play_stream(
+				_active_inst_streams[index], 0.0, INST_NOTE_DB, 1.0,
+				AudioServer.PLAYBACK_TYPE_DEFAULT, _bus
+			)
+		elif _base_note != null:
+			# Nốt đàn nền chồng dưới giọng thú nếu chưa có sample riêng
 			_poly.play_stream(
 				_base_note, 0.0, BASE_NOTE_DB, pitch,
 				AudioServer.PLAYBACK_TYPE_DEFAULT, _bus
@@ -226,6 +274,22 @@ func play_note(index: int) -> void:
 		p.pitch_scale = pitch
 		p.play()
 		p.pitch_scale = 1.0
+
+
+## Phát riêng nốt của một nhạc cụ theo chương (dùng cho preview trên bản đồ chương / chọn bài)
+func play_instrument_note(chapter: int, index: int, volume_db: float = 0.0) -> void:
+	if chapter < 0 or chapter >= _chapter_instruments.size():
+		return
+	var ch_streams: Array[AudioStream] = _chapter_instruments[chapter]
+	if index < 0 or index >= ch_streams.size():
+		return
+	var stream: AudioStream = ch_streams[index]
+	if stream == null or _poly == null:
+		return
+	_poly.play_stream(
+		stream, 0.0, volume_db, 1.0, AudioServer.PLAYBACK_TYPE_DEFAULT, _bus
+	)
+
 
 
 ## Biến thể có cao độ và âm lượng riêng — dùng cho tiếng "ting" của hạt sao và
@@ -364,6 +428,12 @@ func _exit_tree() -> void:
 		p.stream = null
 
 	_streams.clear()
+
+	for ch in _chapter_instruments:
+		ch.clear()
+	_chapter_instruments.clear()
+	_active_inst_streams.clear()
+
 
 
 func _notification(what: int) -> void:

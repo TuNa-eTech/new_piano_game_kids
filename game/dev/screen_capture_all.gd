@@ -32,6 +32,17 @@ func _run_captures(main) -> void:
 		await _capture("screen_gameplay_mature")
 		tree.reset_page()
 
+	# 1c. Page flip transition in progress (mid-curl)
+	var diorama: DioramaStage = main.get_node("UI/DioramaStage")
+	if diorama != null:
+		diorama.flip_page(1.2)
+		for i in 25:
+			await get_tree().process_frame
+		await _capture("screen_page_flip_mid")
+		for i in 50:
+			await get_tree().process_frame
+
+
 	# 2. Main menu
 	var menu: MainMenu = MainMenu.new()
 	add_child(menu)
