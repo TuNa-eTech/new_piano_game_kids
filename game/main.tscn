@@ -6,26 +6,40 @@
 [ext_resource type="Script" uid="uid://c45vjgh7yssp2" path="res://game/story/magic_tree.gd" id="3_dgpao"]
 [ext_resource type="Script" uid="uid://db68jfyytks35" path="res://game/hud/star_jar.gd" id="5_wjctj"]
 [ext_resource type="Script" uid="uid://d0v2gcbg8rggx" path="res://game/call_response.gd" id="6_xkbyp"]
-[ext_resource type="Script" path="res://game/ui/hold_button.gd" id="7_menu"]
-[ext_resource type="Script" path="res://game/ui/free_play_button.gd" id="8_free"]
-[ext_resource type="Script" path="res://game/hud/chapter_progress.gd" id="9_prog"]
-[ext_resource type="Script" path="res://game/ui/chapter_map.gd" id="10_map"]
-[ext_resource type="Script" path="res://game/ui/chapter_end.gd" id="11_end"]
+[ext_resource type="Script" uid="uid://dcvtyb1q3bjml" path="res://game/ui/hold_button.gd" id="7_menu"]
+[ext_resource type="Script" uid="uid://d4lvt15blcsu2" path="res://game/ui/free_play_button.gd" id="8_free"]
+[ext_resource type="Script" uid="uid://cydpqigqyfvca" path="res://game/hud/chapter_progress.gd" id="9_prog"]
+[ext_resource type="Script" uid="uid://bpf7wirwv1rjl" path="res://game/ui/chapter_map.gd" id="10_map"]
+[ext_resource type="Script" uid="uid://duwqkqjikoeej" path="res://game/ui/chapter_end.gd" id="11_end"]
+[ext_resource type="PackedScene" path="res://game/diorama/diorama_stage.tscn" id="12_diorama"]
+[ext_resource type="Script" path="res://game/diorama/magic_ribbon.gd" id="13_ribbon"]
 
-[node name="Main" type="Node2D"]
+[node name="Main" type="Node2D" unique_id=233447844]
 script = ExtResource("1_emt18")
 
-[node name="UI" type="CanvasLayer" parent="."]
+[node name="UI" type="CanvasLayer" parent="." unique_id=523709048]
 
-[node name="StoryPanel" type="ColorRect" parent="UI"]
+[node name="DioramaStage" parent="UI" instance=ExtResource("12_diorama")]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_bottom = -260.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
-color = Color(0.11372549, 0.16862746, 0.12941177, 1)
 
-[node name="PianoKeyboard" parent="UI" instance=ExtResource("2_vop5m")]
+[node name="MagicTree" type="Control" parent="UI" unique_id=771866160]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_bottom = -260.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("3_dgpao")
+
+[node name="PianoKeyboard" parent="UI" unique_id=1269896662 instance=ExtResource("2_vop5m")]
 anchors_preset = 12
 anchor_top = 1.0
 anchor_right = 1.0
@@ -34,28 +48,31 @@ offset_top = -260.0
 grow_horizontal = 2
 grow_vertical = 0
 
-[node name="MagicTree" type="Control" parent="UI"]
+[node name="MagicRibbon" type="Control" parent="UI"]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_bottom = -260.0
-script = ExtResource("3_dgpao")
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("13_ribbon")
 
-[node name="LatencyProbe" type="CanvasLayer" parent="."]
+
+[node name="LatencyProbe" type="CanvasLayer" parent="." unique_id=749262378]
 script = ExtResource("3_5un7r")
 
-[node name="Panel" type="PanelContainer" parent="LatencyProbe"]
+[node name="Panel" type="PanelContainer" parent="LatencyProbe" unique_id=389855993]
 visible = false
 offset_left = 16.0
 offset_top = 16.0
 
-[node name="Label" type="Label" parent="LatencyProbe/Panel"]
+[node name="Label" type="Label" parent="LatencyProbe/Panel" unique_id=1994198617]
 layout_mode = 2
 
-[node name="HUD" type="CanvasLayer" parent="."]
+[node name="HUD" type="CanvasLayer" parent="." unique_id=1258399898]
 
-[node name="StarJar" type="Control" parent="HUD"]
+[node name="StarJar" type="Control" parent="HUD" unique_id=101396196]
 layout_mode = 3
 anchors_preset = 1
 anchor_left = 1.0
@@ -64,9 +81,10 @@ offset_left = -112.0
 offset_top = 34.0
 offset_right = -46.0
 offset_bottom = 124.0
+grow_horizontal = 0
 script = ExtResource("5_wjctj")
 
-[node name="Count" type="Label" parent="HUD/StarJar"]
+[node name="Count" type="Label" parent="HUD/StarJar" unique_id=472409040]
 modulate = Color(1, 1, 1, 0.45)
 layout_mode = 0
 anchor_top = 1.0
@@ -75,7 +93,7 @@ anchor_bottom = 1.0
 offset_bottom = 22.0
 horizontal_alignment = 1
 
-[node name="Menu" type="Control" parent="HUD"]
+[node name="Menu" type="Control" parent="HUD" unique_id=417452215]
 layout_mode = 3
 anchors_preset = 0
 offset_left = 28.0
@@ -85,7 +103,7 @@ offset_bottom = 124.0
 mouse_filter = 2
 script = ExtResource("7_menu")
 
-[node name="ChapterProgress" type="Control" parent="HUD"]
+[node name="ChapterProgress" type="Control" parent="HUD" unique_id=2031637127]
 layout_mode = 3
 anchors_preset = 0
 offset_left = 148.0
@@ -95,8 +113,7 @@ offset_bottom = 100.0
 mouse_filter = 2
 script = ExtResource("9_prog")
 
-[node name="FreePlay" type="Button" parent="HUD"]
-layout_mode = 3
+[node name="FreePlay" type="Button" parent="HUD" unique_id=223425106]
 anchors_preset = 3
 anchor_left = 1.0
 anchor_top = 1.0
@@ -110,11 +127,11 @@ grow_horizontal = 0
 grow_vertical = 0
 script = ExtResource("8_free")
 
-[node name="CallResponse" type="Node" parent="."]
+[node name="CallResponse" type="Node" parent="." unique_id=171149372]
 script = ExtResource("6_xkbyp")
 
-[node name="ChapterMap" type="CanvasLayer" parent="."]
+[node name="ChapterMap" type="CanvasLayer" parent="." unique_id=1861623910]
 script = ExtResource("10_map")
 
-[node name="ChapterEnd" type="CanvasLayer" parent="."]
+[node name="ChapterEnd" type="CanvasLayer" parent="." unique_id=1442709340]
 script = ExtResource("11_end")

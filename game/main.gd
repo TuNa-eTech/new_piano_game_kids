@@ -8,6 +8,9 @@ extends Node2D
 ## Node này chỉ làm một việc: nối dây. Toàn bộ luật chơi nằm trong CallResponse,
 ## toàn bộ hiển thị nằm trong MagicTree, StarJar và ChapterProgress.
 
+const DioramaStage = preload("res://game/diorama/diorama_stage.gd")
+const MagicRibbon = preload("res://game/diorama/magic_ribbon.gd")
+
 @onready var _keyboard: PianoKeyboard = $UI/PianoKeyboard
 @onready var _tree: MagicTree = $UI/MagicTree
 @onready var _call_response: CallResponse = $CallResponse
@@ -15,6 +18,9 @@ extends Node2D
 @onready var _menu: HoldButton = $HUD/Menu
 @onready var _map: ChapterMap = $ChapterMap
 @onready var _chapter_end: ChapterEnd = $ChapterEnd
+@onready var _diorama: DioramaStage = $UI/DioramaStage
+@onready var _ribbon: MagicRibbon = $UI/MagicRibbon
+
 
 
 func _ready() -> void:
@@ -27,6 +33,17 @@ func _ready() -> void:
 	_menu.activated.connect(_on_menu_activated)
 	_map.closed.connect(_on_map_closed)
 	GameState.chapter_completed.connect(_on_chapter_completed)
+	_keyboard.note_played.connect(_on_key_note_played)
+
+
+func _on_key_note_played(key: int) -> void:
+	if _ribbon != null and _tree != null:
+		var from_pos := _keyboard.get_key_global_position(key)
+		var to_pos := _tree.global_position + _tree.get_leaf_position(key)
+		_ribbon.emit_ribbon(from_pos, to_pos, Notes.color_of(key))
+	if _diorama != null:
+		_diorama.on_note_played(key)
+
 
 
 func _on_menu_activated() -> void:
@@ -46,6 +63,9 @@ func _on_map_closed() -> void:
 ## chương đó. Ván chơi bên dưới đã sang trang đầu chương mới rồi và chỉ đang bị
 ## dừng, nên đóng màn kết là bé chơi tiếp được ngay.
 func _on_chapter_completed(chapter_index: int) -> void:
+	# Đi hết một chương CHÍNH LÀ lúc chương sau mở khoá — xem
+	# GameState.chapter_unlocked(): nó so max_page_reached với trang đầu chương.
+	AudioDirector.play_sfx("chapter_unlock")
 	_keyboard.release_all()
 	_menu.cancel()
 	_chapter_end.play_for_chapter(chapter_index)

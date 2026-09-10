@@ -87,7 +87,16 @@ func _layout_keys() -> void:
 	_black_layer.queue_redraw()
 
 
+var _black_key_tex: Texture2D
+var _piano_body_tex: Texture2D
+
+
 func _draw_black_keys() -> void:
+	if _black_key_tex == null and ResourceLoader.exists("res://assets/art/piano_key_black.png"):
+		_black_key_tex = load("res://assets/art/piano_key_black.png")
+	if _piano_body_tex == null and ResourceLoader.exists("res://assets/art/piano_body.png"):
+		_piano_body_tex = load("res://assets/art/piano_body.png")
+
 	# Phím đen chỉ trang trí — không nằm trong _key_rects nên không thể chạm.
 	if _key_rects.is_empty():
 		return
@@ -98,10 +107,28 @@ func _draw_black_keys() -> void:
 		if slot + 1 >= _key_rects.size():
 			continue
 		var boundary: float = _key_rects[slot].end.x + KEY_GAP * 0.5
+		var rect := Rect2(Vector2(boundary - bw * 0.5, 0.0), Vector2(bw, bh))
+
+		# 3D drop shadow behind and below black key
 		_black_layer.draw_rect(
-			Rect2(Vector2(boundary - bw * 0.5, 0.0), Vector2(bw, bh)),
-			Color(0.09, 0.08, 0.12, 0.95)
+			Rect2(rect.position.x - 2.0, rect.position.y + 2.0, rect.size.x + 4.0, rect.size.y + 8.0),
+			Color(0, 0, 0, 0.35),
+			true, -1, false
 		)
+
+		if _black_key_tex != null:
+			_black_layer.draw_texture_rect(_black_key_tex, rect, false)
+		else:
+			_black_layer.draw_rect(rect, Color(0.12, 0.10, 0.14, 0.98))
+
+	# Nẹp gỗ thân đàn 3D ở cạnh trên bàn phím với bóng đổ
+	var beam_h := 16.0
+	_black_layer.draw_rect(Rect2(0, beam_h, size.x, 6.0), Color(0, 0, 0, 0.40))
+	if _piano_body_tex != null:
+		_black_layer.draw_texture_rect(_piano_body_tex, Rect2(0, 0, size.x, beam_h), false)
+	else:
+		_black_layer.draw_rect(Rect2(0, 0, size.x, beam_h), Color("#6C3C24"))
+
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -173,3 +200,29 @@ func release_all() -> void:
 
 func fingers_down() -> int:
 	return _finger_to_key.size()
+
+
+var _hint_key: int = -1
+
+func set_hint_key(key_index: int) -> void:
+	if _hint_key == key_index:
+		return
+	if _hint_key >= 0 and _hint_key < _keys.size():
+		_keys[_hint_key].set_hint_active(false)
+	_hint_key = key_index
+	if _hint_key >= 0 and _hint_key < _keys.size():
+		_keys[_hint_key].set_hint_active(true)
+
+
+func clear_hint_key() -> void:
+	if _hint_key >= 0 and _hint_key < _keys.size():
+		_keys[_hint_key].set_hint_active(false)
+	_hint_key = -1
+
+
+## Trả về toạ độ toàn cục tâm của phím đàn (để bắn dải ruy băng ma thuật từ phím)
+func get_key_global_position(index: int) -> Vector2:
+	if index >= 0 and index < _key_rects.size():
+		return global_position + _key_rects[index].get_center()
+	return global_position
+
