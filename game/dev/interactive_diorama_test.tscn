@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://d3y2p5k8w1q7x"]
+
+[ext_resource type="Script" path="res://game/dev/interactive_diorama_test.gd" id="1_test"]
+
+[node name="InteractiveDioramaTest" type="Node"]
+script = ExtResource("1_test")

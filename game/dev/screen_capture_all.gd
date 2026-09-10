@@ -56,6 +56,36 @@ func _run_captures(main) -> void:
 		await _capture("screen_gameplay_kalimba")
 		switcher.select_mode(Notes.InstrumentMode.AUTO)
 
+	# 1e. Interactive Diorama: Wizard Tap & Magic Sparkles
+	if diorama != null:
+		diorama.interact_wizard()
+		for i in 6:
+			await get_tree().process_frame
+		await _capture("screen_diorama_wizard_tap")
+		for i in 15:
+			await get_tree().process_frame
+
+	# 1f. Interactive Diorama: Crystal & Chest Glow
+	if diorama != null:
+		diorama.interact_crystal_cyan()
+		diorama.interact_crystal_magenta()
+		diorama.interact_chest()
+		for i in 6:
+			await get_tree().process_frame
+		await _capture("screen_diorama_crystals_glow")
+		for i in 15:
+			await get_tree().process_frame
+
+	# 1g. Interactive Star Jar Wiggle & Flash
+	var star_jar = main.get_node_or_null("HUD/StarJar")
+	if star_jar != null:
+		star_jar.wiggle()
+		for i in 6:
+			await get_tree().process_frame
+		await _capture("screen_diorama_star_jar_shake")
+		for i in 15:
+			await get_tree().process_frame
+
 	# 2. Main menu
 	var menu: MainMenu = MainMenu.new()
 	add_child(menu)

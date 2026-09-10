@@ -11,6 +11,16 @@ extends Control
 
 const PageCurl = preload("res://game/diorama/page_curl.gd")
 
+signal prop_interacted(prop_name: String)
+
+const WIZARD_CHEERS: Array[String] = [
+	"Bé đàn hay quá! ✨",
+	"Giai điệu diệu kỳ! 🎶",
+	"Cùng chơi tiếp nào! 🌟",
+	"Khu rừng bừng sáng! 🍃",
+	"Hoan hô bé giỏi! 🎉",
+]
+
 @onready var _bg_far: TextureRect = $BGFar
 @onready var _bg_mid: TextureRect = $BGMid
 @onready var _bg_near: TextureRect = $BGNear
@@ -33,12 +43,23 @@ var _wiz_party_tex: Texture2D
 var _page_curl: PageCurl
 var _fireflies: CPUParticles2D
 
+# Hệ thống hạt particle burst tương tác cho các đạo cụ
+var _wizard_sparkles: CPUParticles2D
+var _cyan_sparkles: CPUParticles2D
+var _magenta_sparkles: CPUParticles2D
+var _chest_sparkles: CPUParticles2D
+var _book_sparkles: CPUParticles2D
+
+var _cheer_index: int = 0
+
 
 func _ready() -> void:
-	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	mouse_filter = Control.MOUSE_FILTER_PASS
 	_setup_textures()
 	_setup_page_curl()
 	_setup_fireflies()
+	_setup_interactive_particles()
+	_setup_interactions()
 	_start_wizard_animation()
 	_start_crystal_glow()
 	resized.connect(_update_layout)
@@ -114,11 +135,14 @@ func _update_layout() -> void:
 	# Cụm thạch anh hồng tím ở góc phải dưới
 	_crystal_magenta.size = Vector2(cry_w, cry_h)
 	_crystal_magenta.position = Vector2(size.x - cry_w - 10.0, size.y - cry_h - 18.0)
+	_crystal_magenta.pivot_offset = Vector2(cry_w * 0.5, cry_h * 0.5)
+	_crystal_cyan.pivot_offset = Vector2(cry_w * 0.5, cry_h * 0.5)
 
-	# Rương báu nhỏ trên cỏ ở góc phải ngoài cuốn sách
+	# Rương báu nhỏ trên cỏ ở góc phải ngoài cuốn sách (đặt cạnh thạch anh hồng)
 	var chest_dim := minf(size.x * 0.10, 85.0)
 	_chest_ground.size = Vector2(chest_dim, chest_dim)
-	_chest_ground.position = Vector2(size.x - chest_dim - 8.0, size.y - chest_dim - 18.0)
+	_chest_ground.position = Vector2(size.x - cry_w - chest_dim - 24.0, size.y - chest_dim - 18.0)
+	_chest_ground.pivot_offset = Vector2(chest_dim * 0.5, chest_dim * 0.5)
 
 	# Trang sách phải uốn cong (PageCurl)
 	if _page_curl != null:
@@ -131,6 +155,224 @@ func _update_layout() -> void:
 	if _fireflies != null:
 		_fireflies.position = Vector2(size.x * 0.5, size.y * 0.38)
 		_fireflies.emission_rect_extents = Vector2(size.x * 0.45, size.y * 0.28)
+
+
+func _setup_interactive_particles() -> void:
+	# 1. Chùm sao phù thủy
+	_wizard_sparkles = CPUParticles2D.new()
+	_wizard_sparkles.name = "WizardSparkles"
+	_wizard_sparkles.emitting = false
+	_wizard_sparkles.one_shot = true
+	_wizard_sparkles.explosiveness = 0.85
+	_wizard_sparkles.amount = 18
+	_wizard_sparkles.lifetime = 0.9
+	if _sparkle_tex != null:
+		_wizard_sparkles.texture = _sparkle_tex
+	_wizard_sparkles.direction = Vector2(1.0, -0.6)
+	_wizard_sparkles.spread = 45.0
+	_wizard_sparkles.initial_velocity_min = 120.0
+	_wizard_sparkles.initial_velocity_max = 240.0
+	_wizard_sparkles.gravity = Vector2(0, 110.0)
+	_wizard_sparkles.scale_amount_min = 0.4
+	_wizard_sparkles.scale_amount_max = 0.95
+	var wiz_grad := Gradient.new()
+	wiz_grad.set_color(0, Color(1.0, 0.9, 0.4, 1.0))
+	wiz_grad.add_point(0.3, Color(0.4, 0.9, 1.0, 0.9))
+	wiz_grad.add_point(0.7, Color(1.0, 0.5, 0.8, 0.8))
+	wiz_grad.set_color(1, Color(1.0, 1.0, 0.5, 0.0))
+	_wizard_sparkles.color_ramp = wiz_grad
+	_wizard.add_child(_wizard_sparkles)
+
+	# 2. Bụi ngọc thạch anh xanh
+	_cyan_sparkles = CPUParticles2D.new()
+	_cyan_sparkles.name = "CyanSparkles"
+	_cyan_sparkles.emitting = false
+	_cyan_sparkles.one_shot = true
+	_cyan_sparkles.explosiveness = 0.8
+	_cyan_sparkles.amount = 14
+	_cyan_sparkles.lifetime = 0.75
+	if _sparkle_tex != null:
+		_cyan_sparkles.texture = _sparkle_tex
+	_cyan_sparkles.direction = Vector2(0, -1)
+	_cyan_sparkles.spread = 60.0
+	_cyan_sparkles.initial_velocity_min = 60.0
+	_cyan_sparkles.initial_velocity_max = 140.0
+	_cyan_sparkles.gravity = Vector2(0, -20.0)
+	_cyan_sparkles.scale_amount_min = 0.35
+	_cyan_sparkles.scale_amount_max = 0.8
+	var cyan_grad := Gradient.new()
+	cyan_grad.set_color(0, Color(0.5, 1.0, 1.0, 1.0))
+	cyan_grad.set_color(1, Color(0.2, 0.8, 0.9, 0.0))
+	_cyan_sparkles.color_ramp = cyan_grad
+	_crystal_cyan.add_child(_cyan_sparkles)
+
+	# 3. Bụi ngọc thạch anh hồng tím
+	_magenta_sparkles = CPUParticles2D.new()
+	_magenta_sparkles.name = "MagentaSparkles"
+	_magenta_sparkles.emitting = false
+	_magenta_sparkles.one_shot = true
+	_magenta_sparkles.explosiveness = 0.8
+	_magenta_sparkles.amount = 14
+	_magenta_sparkles.lifetime = 0.75
+	if _sparkle_tex != null:
+		_magenta_sparkles.texture = _sparkle_tex
+	_magenta_sparkles.direction = Vector2(0, -1)
+	_magenta_sparkles.spread = 60.0
+	_magenta_sparkles.initial_velocity_min = 60.0
+	_magenta_sparkles.initial_velocity_max = 140.0
+	_magenta_sparkles.gravity = Vector2(0, -20.0)
+	_magenta_sparkles.scale_amount_min = 0.35
+	_magenta_sparkles.scale_amount_max = 0.8
+	var mag_grad := Gradient.new()
+	mag_grad.set_color(0, Color(1.0, 0.6, 0.9, 1.0))
+	mag_grad.set_color(1, Color(0.8, 0.3, 0.7, 0.0))
+	_magenta_sparkles.color_ramp = mag_grad
+	_crystal_magenta.add_child(_magenta_sparkles)
+
+	# 4. Sao vàng từ rương báu
+	_chest_sparkles = CPUParticles2D.new()
+	_chest_sparkles.name = "ChestSparkles"
+	_chest_sparkles.emitting = false
+	_chest_sparkles.one_shot = true
+	_chest_sparkles.explosiveness = 0.75
+	_chest_sparkles.amount = 12
+	_chest_sparkles.lifetime = 0.7
+	if _sparkle_tex != null:
+		_chest_sparkles.texture = _sparkle_tex
+	_chest_sparkles.direction = Vector2(0, -1)
+	_chest_sparkles.spread = 50.0
+	_chest_sparkles.initial_velocity_min = 70.0
+	_chest_sparkles.initial_velocity_max = 130.0
+	_chest_sparkles.gravity = Vector2(0, 30.0)
+	_chest_sparkles.scale_amount_min = 0.4
+	_chest_sparkles.scale_amount_max = 0.85
+	var gold_grad := Gradient.new()
+	gold_grad.set_color(0, Color(1.0, 0.92, 0.45, 1.0))
+	gold_grad.set_color(1, Color(1.0, 0.75, 0.2, 0.0))
+	_chest_sparkles.color_ramp = gold_grad
+	_chest_ground.add_child(_chest_sparkles)
+
+
+func _setup_interactions() -> void:
+	_book_spread.mouse_filter = Control.MOUSE_FILTER_PASS
+	_wizard.mouse_filter = Control.MOUSE_FILTER_STOP
+	_crystal_cyan.mouse_filter = Control.MOUSE_FILTER_STOP
+	_crystal_magenta.mouse_filter = Control.MOUSE_FILTER_STOP
+	_chest_ground.mouse_filter = Control.MOUSE_FILTER_STOP
+
+	_wizard.gui_input.connect(_on_wizard_gui_input)
+	_crystal_cyan.gui_input.connect(_on_crystal_cyan_gui_input)
+	_crystal_magenta.gui_input.connect(_on_crystal_magenta_gui_input)
+	_chest_ground.gui_input.connect(_on_chest_gui_input)
+	_book_spread.gui_input.connect(_on_book_gui_input)
+
+
+func _on_wizard_gui_input(event: InputEvent) -> void:
+	if (event is InputEventScreenTouch and event.pressed) or (event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT):
+		interact_wizard()
+		accept_event()
+
+
+func _on_crystal_cyan_gui_input(event: InputEvent) -> void:
+	if (event is InputEventScreenTouch and event.pressed) or (event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT):
+		interact_crystal_cyan()
+		accept_event()
+
+
+func _on_crystal_magenta_gui_input(event: InputEvent) -> void:
+	if (event is InputEventScreenTouch and event.pressed) or (event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT):
+		interact_crystal_magenta()
+		accept_event()
+
+
+func _on_chest_gui_input(event: InputEvent) -> void:
+	if (event is InputEventScreenTouch and event.pressed) or (event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT):
+		interact_chest()
+		accept_event()
+
+
+func _on_book_gui_input(event: InputEvent) -> void:
+	if (event is InputEventScreenTouch and event.pressed) or (event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT):
+		interact_book(event.position)
+
+
+func interact_wizard() -> void:
+	# Nảy nảy và lắc nón vui nhộn
+	var tw := create_tween().bind_node(self).set_parallel(false)
+	tw.tween_property(_wizard, "scale", Vector2(1.22, 0.80), 0.08).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tw.tween_property(_wizard, "scale", Vector2(0.92, 1.15), 0.12).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tw.tween_property(_wizard, "scale", Vector2(1.0, 1.0), 0.20).set_trans(Tween.TRANS_BOUNCE).set_ease(Tween.EASE_OUT)
+
+	var rot_tw := create_tween().bind_node(self)
+	rot_tw.tween_property(_wizard, "rotation", 0.20, 0.08)
+	rot_tw.tween_property(_wizard, "rotation", -0.16, 0.12)
+	rot_tw.tween_property(_wizard, "rotation", 0.0, 0.16)
+
+	# Bắn hạt sao ma thuật
+	if _wizard_sparkles != null:
+		_wizard_sparkles.position = _wizard.size * Vector2(0.65, 0.25)
+		_wizard_sparkles.restart()
+
+	# Đổi câu cổ vũ trên bong bóng thoại
+	_cheer_index = (_cheer_index + 1) % WIZARD_CHEERS.size()
+	set_speech_text(WIZARD_CHEERS[_cheer_index])
+
+	# Âm thanh vui nhộn
+	AudioDirector.play_note_pitched(3, 1.25, -2.0)
+	prop_interacted.emit("wizard")
+
+
+func interact_crystal_cyan() -> void:
+	# Tinh thể bừng sáng
+	var tw := create_tween().bind_node(self).set_parallel(true)
+	tw.tween_property(_crystal_cyan, "modulate", Color(2.5, 2.8, 3.0), 0.08)
+	tw.tween_property(_crystal_cyan, "scale", Vector2(1.18, 0.88), 0.08)
+	tw.chain().tween_property(_crystal_cyan, "modulate", Color(1.0, 1.0, 1.0), 0.45)
+	tw.chain().tween_property(_crystal_cyan, "scale", Vector2(1.0, 1.0), 0.22).set_trans(Tween.TRANS_BOUNCE)
+
+	if _cyan_sparkles != null:
+		_cyan_sparkles.position = _crystal_cyan.size * Vector2(0.5, 0.3)
+		_cyan_sparkles.restart()
+
+	AudioDirector.play_instrument_note(2, 5, 0.0) # Chuông gió C5 thanh khiết
+	prop_interacted.emit("crystal_cyan")
+
+
+func interact_crystal_magenta() -> void:
+	# Tinh thể bừng sáng hồng tím
+	var tw := create_tween().bind_node(self).set_parallel(true)
+	tw.tween_property(_crystal_magenta, "modulate", Color(3.0, 1.8, 2.8), 0.08)
+	tw.tween_property(_crystal_magenta, "scale", Vector2(1.18, 0.88), 0.08)
+	tw.chain().tween_property(_crystal_magenta, "modulate", Color(1.0, 1.0, 1.0), 0.45)
+	tw.chain().tween_property(_crystal_magenta, "scale", Vector2(1.0, 1.0), 0.22).set_trans(Tween.TRANS_BOUNCE)
+
+	if _magenta_sparkles != null:
+		_magenta_sparkles.position = _crystal_magenta.size * Vector2(0.5, 0.3)
+		_magenta_sparkles.restart()
+
+	AudioDirector.play_instrument_note(1, 2, 0.0) # Kalimba E4 mộc ấm
+	prop_interacted.emit("crystal_magenta")
+
+
+func interact_chest() -> void:
+	var tw := create_tween().bind_node(self)
+	var orig_y := _chest_ground.position.y
+	tw.tween_property(_chest_ground, "position:y", orig_y - 14.0, 0.09).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tw.parallel().tween_property(_chest_ground, "rotation", 0.14, 0.09)
+	tw.tween_property(_chest_ground, "position:y", orig_y, 0.16).set_trans(Tween.TRANS_BOUNCE).set_ease(Tween.EASE_OUT)
+	tw.parallel().tween_property(_chest_ground, "rotation", 0.0, 0.16)
+
+	if _chest_sparkles != null:
+		_chest_sparkles.position = _chest_ground.size * Vector2(0.5, 0.3)
+		_chest_sparkles.restart()
+
+	AudioDirector.play_sfx("chest_open")
+	prop_interacted.emit("chest")
+
+
+func interact_book(pos: Vector2) -> void:
+	AudioDirector.play_ting()
+	prop_interacted.emit("book")
 
 
 func _setup_page_curl() -> void:
