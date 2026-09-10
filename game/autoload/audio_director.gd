@@ -20,6 +20,16 @@ const POOL_SIZE := 16
 const POLYPHONY := 32
 const BUS_NOTES := &"Notes"
 const BUS_MUSIC := &"Music"
+const BUS_SFX := &"SFX"
+const BASE_NOTE_DB := -9.0
+
+## Thư mục SFX thật của Bước 3. Thiếu file thì play_sfx() lặng lẽ bỏ qua —
+## game vẫn chơi được suốt quãng thay dần từ art tạm sang art thật.
+const SFX_DIR := "res://assets/audio/"
+static var SFX_NAMES: Array[String] = [
+	"star_ting", "chapter_select", "chest_open", "page_turn",
+	"menu_open", "hold_complete", "chapter_unlock", "free_play_toggle",
+]
 
 ## Pad hoà âm nền — docs/gameplay-design.html · Quyết định 02:
 ## "biến mọi nốt bé bấm thành một phần của bản nhạc, và lấp khoảng lặng khi bé nghĩ".
@@ -37,6 +47,12 @@ var backend: Backend = Backend.POLYPHONIC:
 		_silence_all()
 
 var _streams: Array[AudioStream] = []
+## Cao độ cố định của từng phím. Với giọng thú Bước 3 (tất cả thu ở G4) đây là
+## hệ số dịch; với placeholder Tuần 1 (mỗi file đã đúng cao độ) đây là 1,0.
+## Quyết MỘT LẦN lúc khởi động rồi tra bảng — đường nóng không được có nhánh if.
+var _pitches: PackedFloat32Array = PackedFloat32Array()
+## Nốt đàn nền phát chồng dưới giọng thú cho dày tiếng. Chưa có thì bỏ qua.
+var _base_note: AudioStream = null
 var _bus: StringName = &"Master"
 
 var _poly_player: AudioStreamPlayer
@@ -53,6 +69,11 @@ var _cached_latency_ms: float = 0.0
 
 var _pad_player: AudioStreamPlayer
 
+## tên SFX -> stream đã nạp. Nạp MỘT LẦN lúc khởi động; đường nóng chỉ tra bảng.
+var _sfx: Dictionary = {}
+var _sfx_player: AudioStreamPlayer
+var _sfx_poly: AudioStreamPlaybackPolyphonic
+
 
 func _ready() -> void:
 	# Phải sống qua pause thì mới tắt tiếng được lúc app xuống nền.
@@ -67,18 +88,40 @@ func _ready() -> void:
 	_setup_polyphonic()
 	_setup_pool()
 	_setup_pad()
+	_setup_sfx()
 
 	refresh_latency()
 
 
+## Bước 3 thả bảy file voice_<con vật>_g4.wav vào assets/audio/ là tự chuyển
+## sang giọng thật. Chưa đủ bảy file thì dùng placeholder Tuần 1 — KHÔNG trộn
+## nửa nọ nửa kia, vì bảy phím nửa giọng thật nửa sóng tổng hợp còn khó nghe hơn
+## là bảy phím placeholder đồng đều.
 func _preload_samples() -> void:
 	_streams.resize(Notes.count())
+	_pitches.resize(Notes.count())
+
+	var voice_paths: Array[String] = []
 	for i in Notes.count():
-		var path: String = Notes.TABLE[i]["sample"]
+		voice_paths.append("%svoice_%s_g4.wav" % [SFX_DIR, Notes.voice_of(i)])
+
+	var have_voices := true
+	for path in voice_paths:
+		if not ResourceLoader.exists(path):
+			have_voices = false
+			break
+
+	for i in Notes.count():
+		var path: String = voice_paths[i] if have_voices else Notes.TABLE[i]["sample"]
 		var stream: AudioStream = load(path)
 		if stream == null:
 			push_error("AudioDirector: không nạp được sample %s" % path)
 		_streams[i] = stream
+		_pitches[i] = Notes.pitch_of(i) if have_voices else 1.0
+
+	var base_path := "%snote_base_g4.wav" % SFX_DIR
+	if ResourceLoader.exists(base_path):
+		_base_note = load(base_path)
 
 
 func _setup_polyphonic() -> void:
@@ -103,9 +146,11 @@ func _setup_polyphonic() -> void:
 ## Pad chạy trên bus Music riêng (-18 dB trong default_bus_layout.tres), tách
 ## khỏi bus Notes để sau này chỉnh cân bằng mà không đụng tới tiếng đàn.
 func _setup_pad() -> void:
-	var stream: AudioStream = load(PAD_STREAM)
+	var ogg_path := "%sbgm_forest_loop.ogg" % SFX_DIR
+	var path := ogg_path if ResourceLoader.exists(ogg_path) else PAD_STREAM
+	var stream: AudioStream = load(path)
 	if stream == null:
-		push_error("AudioDirector: không nạp được pad %s" % PAD_STREAM)
+		push_error("AudioDirector: không nạp được pad %s" % path)
 		return
 
 	_pad_player = AudioStreamPlayer.new()
@@ -114,6 +159,30 @@ func _setup_pad() -> void:
 	_pad_player.stream = stream
 	add_child(_pad_player)
 	_pad_player.play()
+
+
+## SFX đi qua một AudioStreamPolyphonic riêng trên bus SFX, tách hẳn khỏi bus
+## Notes: tài liệu chốt "Music không bao giờ được lấn tiếng nốt", và SFX cũng vậy.
+## Chỉnh cân bằng hạt sao sau này không được đụng tới tiếng đàn.
+func _setup_sfx() -> void:
+	var bus := BUS_SFX if AudioServer.get_bus_index(BUS_SFX) != -1 else &"Master"
+
+	var poly := AudioStreamPolyphonic.new()
+	poly.polyphony = 8
+	_sfx_player = AudioStreamPlayer.new()
+	_sfx_player.name = "SfxPlayer"
+	_sfx_player.bus = bus
+	_sfx_player.stream = poly
+	add_child(_sfx_player)
+	_sfx_player.play()
+	_sfx_poly = _sfx_player.get_stream_playback() as AudioStreamPlaybackPolyphonic
+
+	# Bước 3 chưa xong thì thư mục còn trống. Thiếu file KHÔNG phải lỗi —
+	# đừng push_error, nếu không log sẽ đầy tiếng ồn suốt cả giai đoạn chuyển.
+	for name in SFX_NAMES:
+		var path := "%ssfx_%s.wav" % [SFX_DIR, name]
+		if ResourceLoader.exists(path):
+			_sfx[name] = load(path)
 
 
 func _setup_pool() -> void:
@@ -136,17 +205,27 @@ func play_note(index: int) -> void:
 	if stream == null:
 		return
 
+	var pitch := _pitches[index]
+
 	if backend == Backend.POLYPHONIC:
 		var id := _poly.play_stream(
-			stream, 0.0, 0.0, 1.0, AudioServer.PLAYBACK_TYPE_DEFAULT, _bus
+			stream, 0.0, 0.0, pitch, AudioServer.PLAYBACK_TYPE_DEFAULT, _bus
 		)
 		_recent[_recent_i] = id
 		_recent_i = (_recent_i + 1) % RECENT_IDS
+		if _base_note != null:
+			# Nốt đàn nền chồng dưới giọng thú, nhỏ hơn hẳn để không át giọng.
+			_poly.play_stream(
+				_base_note, 0.0, BASE_NOTE_DB, pitch,
+				AudioServer.PLAYBACK_TYPE_DEFAULT, _bus
+			)
 	else:
 		var p := _pool[_pool_next]
 		_pool_next = (_pool_next + 1) % POOL_SIZE
 		p.stream = stream
+		p.pitch_scale = pitch
 		p.play()
+		p.pitch_scale = 1.0
 
 
 ## Biến thể có cao độ và âm lượng riêng — dùng cho tiếng "ting" của hạt sao và
@@ -158,9 +237,14 @@ func play_note_pitched(index: int, pitch: float, volume_db: float = 0.0) -> void
 	if stream == null:
 		return
 
+	# pitch truyền vào là hệ số TƯƠNG ĐỐI so với cao độ thường của phím, nên phải
+	# nhân chứ không thay — nếu không, tiếng ngân nhắc nhẹ sẽ sai nốt khi dùng
+	# giọng thú G4 dùng chung.
+	var absolute := pitch * _pitches[index]
+
 	if backend == Backend.POLYPHONIC:
 		var id := _poly.play_stream(
-			stream, 0.0, volume_db, pitch, AudioServer.PLAYBACK_TYPE_DEFAULT, _bus
+			stream, 0.0, volume_db, absolute, AudioServer.PLAYBACK_TYPE_DEFAULT, _bus
 		)
 		_recent[_recent_i] = id
 		_recent_i = (_recent_i + 1) % RECENT_IDS
@@ -168,16 +252,36 @@ func play_note_pitched(index: int, pitch: float, volume_db: float = 0.0) -> void
 		var p := _pool[_pool_next]
 		_pool_next = (_pool_next + 1) % POOL_SIZE
 		p.stream = stream
-		p.pitch_scale = pitch
+		p.pitch_scale = absolute
 		p.volume_db = volume_db
 		p.play()
 		p.pitch_scale = 1.0
 		p.volume_db = 0.0
 
 
-## Tiếng "ting" khi một hạt sao rơi vào lọ (Quyết định 04). Placeholder: chính
-## nốt cao nhất kéo lên một quãng tám, chưa cần file SFX riêng của Bước 3.
+## Phát một SFX theo tên. Không có file thì im lặng bỏ qua — Bước 3 thả file
+## vào assets/audio/ là tự chạy, không phải sửa một dòng nào ở nơi gọi.
+## Đường nóng: chỉ tra Dictionary, không load(), không nối chuỗi.
+func play_sfx(sfx_name: String) -> void:
+	var stream: AudioStream = _sfx.get(sfx_name)
+	if stream == null or _sfx_poly == null:
+		return
+	_sfx_poly.play_stream(
+		stream, 0.0, 0.0, 1.0, AudioServer.PLAYBACK_TYPE_DEFAULT, BUS_SFX
+	)
+
+
+func has_sfx(sfx_name: String) -> bool:
+	return _sfx.has(sfx_name)
+
+
+## Tiếng "ting" khi một hạt sao rơi vào lọ (Quyết định 04).
+## Có sfx_star_ting.wav thì dùng nó; chưa có thì lùi về placeholder của Tuần 1 —
+## chính nốt cao nhất kéo lên một quãng tám.
 func play_ting() -> void:
+	if _sfx.has("star_ting"):
+		play_sfx("star_ting")
+		return
 	play_note_pitched(Notes.count() - 1, 2.0, -8.0)
 
 

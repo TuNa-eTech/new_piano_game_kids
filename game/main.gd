@@ -60,6 +60,8 @@ func _on_menu_activated() -> void:
 	_map.open_map()
 
 
+
+
 func _on_map_closed() -> void:
 	# Lúc bản đồ mở, HUD bị dừng nên nút Menu không thấy ngón nhả ra. Không dọn
 	# thì lần sau nó tưởng vẫn còn ngón trên màn hình và từ chối nhận lượt giữ mới.

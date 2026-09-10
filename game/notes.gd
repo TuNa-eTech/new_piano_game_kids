@@ -2,7 +2,7 @@ class_name Notes
 extends RefCounted
 ## Bảng nốt — NGUỒN SỰ THẬT DUY NHẤT cho toàn bộ game.
 ##
-## Ánh xạ nốt ↔ con vật ↔ màu ↔ sample được dùng lại ở:
+## Ánh xạ nốt ↔ con vật ↔ màu ↔ tiếng được dùng lại ở:
 ##   - PianoKeyboard (Tuần 1)
 ##   - LeafSlots trên cây thần (Tuần 2)
 ##   - chuỗi giai điệu gọi–đáp (Tuần 3)
@@ -20,30 +20,37 @@ static var TABLE: Array[Dictionary] = [
 	{
 		"note": "C4", "freq": 261.63, "animal": "Sư tử", "color": Color("#E0644F"),
 		"sample": "res://assets/placeholder/notes/note_c4_su_tu.wav",
+		"voice": "lion", "pitch": 0.667,
 	},
 	{
 		"note": "D4", "freq": 293.66, "animal": "Gấu", "color": Color("#E08A2E"),
 		"sample": "res://assets/placeholder/notes/note_d4_gau.wav",
+		"voice": "bear", "pitch": 0.749,
 	},
 	{
 		"note": "E4", "freq": 329.63, "animal": "Thỏ", "color": Color("#D8619A"),
 		"sample": "res://assets/placeholder/notes/note_e4_tho.wav",
+		"voice": "rabbit", "pitch": 0.841,
 	},
 	{
 		"note": "G4", "freq": 392.00, "animal": "Mèo", "color": Color("#3F9455"),
 		"sample": "res://assets/placeholder/notes/note_g4_meo.wav",
+		"voice": "cat", "pitch": 1.000,
 	},
 	{
 		"note": "A4", "freq": 440.00, "animal": "Khỉ", "color": Color("#3877B5"),
 		"sample": "res://assets/placeholder/notes/note_a4_khi.wav",
+		"voice": "monkey", "pitch": 1.122,
 	},
 	{
 		"note": "C5", "freq": 523.25, "animal": "Voi", "color": Color("#7C5CC4"),
 		"sample": "res://assets/placeholder/notes/note_c5_voi.wav",
+		"voice": "elephant", "pitch": 1.335,
 	},
 	{
 		"note": "D5", "freq": 587.33, "animal": "Cú", "color": Color("#C7A017"),
 		"sample": "res://assets/placeholder/notes/note_d5_cu.wav",
+		"voice": "owl", "pitch": 1.498,
 	},
 ]
 
@@ -66,3 +73,16 @@ static func animal_of(index: int) -> String:
 
 static func note_of(index: int) -> String:
 	return TABLE[index]["note"] if is_valid(index) else "?"
+
+
+## Tên file giọng thú của Bước 3: assets/audio/voice_<voice>_g4.wav.
+## Cả bảy giọng thu/sinh ở CÙNG nốt G4 rồi để Godot dịch cao độ — sinh riêng
+## từng cao độ sẽ lệch tông với pad nền theo bảy kiểu khác nhau, và lỗi đó rất
+## khó nghe ra khi thử từng phím một.
+static func voice_of(index: int) -> String:
+	return TABLE[index]["voice"] if is_valid(index) else ""
+
+
+## Hệ số dịch cao độ từ G4 về nốt của phím này.
+static func pitch_of(index: int) -> float:
+	return TABLE[index]["pitch"] if is_valid(index) else 1.0

@@ -112,8 +112,10 @@ func _process(delta: float) -> void:
 			# Phản hồi cho NGƯỜI LỚN: giữ đủ 2 giây thì phải nghe thấy là đã ăn.
 			AudioDirector.play_sfx("hold_complete")
 			activated.emit()
+
 	elif _ratio > 0.0:
 		_ratio = maxf(0.0, _ratio - delta / RELEASE_SECONDS)
+
 
 	if not is_equal_approx(before, _ratio):
 		hold_progress.emit(_ratio)

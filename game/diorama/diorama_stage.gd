@@ -83,7 +83,7 @@ func _update_layout() -> void:
 	var bubble_w := book_w * 0.32
 	var bubble_h := 62.0
 	_speech_bubble.size = Vector2(bubble_w, bubble_h)
-	_speech_bubble.position = Vector2(book_w * 0.13, book_h * 0.18)
+	_speech_bubble.position = Vector2(book_w * 0.13, book_h * 0.27)
 
 	# Cụm thạch anh xanh ngọc ở góc trái dưới bệ đàn
 	var cry_w := minf(size.x * 0.18, 160.0)

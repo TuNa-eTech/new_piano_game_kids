@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://screen_capture_dev"]
+
+[ext_resource type="Script" uid="uid://screen_capture_dev_gd" path="res://game/dev/screen_capture.gd" id="1_cap"]
+
+[node name="ScreenCapture" type="Node2D"]
+script = ExtResource("1_cap")

@@ -14,11 +14,14 @@ const MIN_TOUCH_SIZE := 88.0
 var _face: Control
 
 @onready var _accent := Color("#E8D9A0")
+var _free_play_texture: Texture2D
 
 
 func _ready() -> void:
 	toggle_mode = true
 	focus_mode = Control.FOCUS_NONE
+	if ResourceLoader.exists("res://assets/art/ui_free_play.png"):
+		_free_play_texture = load("res://assets/art/ui_free_play.png")
 	custom_minimum_size = Vector2(MIN_TOUCH_SIZE, MIN_TOUCH_SIZE)
 
 	var box := StyleBoxFlat.new()
@@ -46,6 +49,7 @@ func _ready() -> void:
 
 
 func _on_toggled(pressed_state: bool) -> void:
+	AudioDirector.play_sfx("free_play_toggle")
 	GameState.free_play = pressed_state
 	_face.queue_redraw()
 
@@ -64,22 +68,27 @@ func _draw_face() -> void:
 	var on := GameState.free_play
 	var ink := _accent if on else Color(1, 1, 1, 0.55)
 
-	var head := c + Vector2(-r * 0.16, r * 0.24)
-	var head_r := r * 0.2
-	if on:
-		_face.draw_circle(head, head_r, ink)
+	if _free_play_texture != null:
+		var tex_size := r * 1.15
+		var tex_rect := Rect2(c.x - tex_size * 0.5, c.y - tex_size * 0.5, tex_size, tex_size)
+		_face.draw_texture_rect(_free_play_texture, tex_rect, false, ink)
 	else:
-		_face.draw_arc(head, head_r, 0.0, TAU, 24, ink, 4.0, true)
-	_face.draw_line(
-		head + Vector2(head_r, 0.0),
-		head + Vector2(head_r, -r * 0.78),
-		ink, 4.0, true
-	)
-	_face.draw_line(
-		head + Vector2(head_r, -r * 0.78),
-		head + Vector2(head_r + r * 0.36, -r * 0.62),
-		ink, 4.0, true
-	)
+		var head := c + Vector2(-r * 0.16, r * 0.24)
+		var head_r := r * 0.2
+		if on:
+			_face.draw_circle(head, head_r, ink)
+		else:
+			_face.draw_arc(head, head_r, 0.0, TAU, 24, ink, 4.0, true)
+		_face.draw_line(
+			head + Vector2(head_r, 0.0),
+			head + Vector2(head_r, -r * 0.78),
+			ink, 4.0, true
+		)
+		_face.draw_line(
+			head + Vector2(head_r, -r * 0.78),
+			head + Vector2(head_r + r * 0.36, -r * 0.62),
+			ink, 4.0, true
+		)
 
 	if not on:
 		return

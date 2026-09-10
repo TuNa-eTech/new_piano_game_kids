@@ -51,6 +51,10 @@ var _animals: Control
 var _footer: Control
 var _hint: Label
 var _continue: Button
+var _bgm_player: AudioStreamPlayer
+var _arrow_next_tex: Texture2D
+var _animal_idle_textures: Array[Texture2D] = []
+var _animal_sing_textures: Array[Texture2D] = []
 
 
 func _ready() -> void:
@@ -98,6 +102,18 @@ func _build() -> void:
 	_footer.add_theme_constant_override("separation", 14)
 	_footer.visible = false
 	column.add_child(_footer)
+
+	if ResourceLoader.exists("res://assets/art/ui_arrow_next.png"):
+		_arrow_next_tex = load("res://assets/art/ui_arrow_next.png")
+
+	_animal_idle_textures.clear()
+	_animal_sing_textures.clear()
+	for i in Notes.count():
+		var voice := Notes.voice_of(i)
+		var idle_p := "res://assets/art/animal_%s_idle.png" % voice
+		var sing_p := "res://assets/art/animal_%s_sing.png" % voice
+		_animal_idle_textures.append(load(idle_p) if ResourceLoader.exists(idle_p) else null)
+		_animal_sing_textures.append(load(sing_p) if ResourceLoader.exists(sing_p) else null)
 
 	# Dòng này dành cho NGƯỜI LỚN đọc, không phải cho bé — cùng loại với con số
 	# hạt sao "hiện mờ bên dưới, dành cho phụ huynh nhìn qua vai". Ranh giới "v1
@@ -169,6 +185,7 @@ func _start_show() -> void:
 	_tree.reset_page()
 	_tree.set_sequence(_sequence)
 	_animals.queue_redraw()
+	_play_bgm()
 	set_process(true)
 
 
@@ -199,6 +216,7 @@ func _enter(next: Phase) -> void:
 	match next:
 		Phase.FRUIT:
 			_tree.fruit()
+			AudioDirector.play_sfx("chest_open")
 		Phase.REST:
 			_lit = -1
 			_animals.queue_redraw()
@@ -232,8 +250,31 @@ func _tick_singing() -> void:
 
 
 func _on_continue() -> void:
+	_stop_bgm()
 	close_overlay()
 	set_process(false)
+
+
+func close_overlay() -> void:
+	_stop_bgm()
+	super()
+
+
+func _play_bgm() -> void:
+	var path := "res://assets/audio/bgm_chapter_end.ogg"
+	if ResourceLoader.exists(path):
+		if _bgm_player == null:
+			_bgm_player = AudioStreamPlayer.new()
+			_bgm_player.name = "ChapterEndBGM"
+			_bgm_player.bus = &"Music" if AudioServer.get_bus_index(&"Music") != -1 else &"Master"
+			add_child(_bgm_player)
+		_bgm_player.stream = load(path)
+		_bgm_player.play()
+
+
+func _stop_bgm() -> void:
+	if _bgm_player != null and _bgm_player.playing:
+		_bgm_player.stop()
 
 
 ## Gợi ý quay màn hình có đang hiện không. Máy đo dùng để khẳng định nó KHÔNG
@@ -270,22 +311,42 @@ func _draw_animals() -> void:
 	for i in n:
 		var colour: Color = Notes.TABLE[i]["color"]
 		var r := ANIMAL_RADIUS
-		if i == _lit:
+		var is_singing := (i == _lit)
+		if is_singing:
 			# Nảy rồi lắng xuống — cùng ngôn ngữ chuyển động với phím đàn.
 			r *= lerpf(ANIMAL_POP, 1.0, minf(1.0, _lit_age / NOTE_INTERVAL))
 		else:
 			colour = colour.darkened(0.35)
-		_animals.draw_circle(Vector2(start + i * gap, y), r, colour)
+
+		var center := Vector2(start + i * gap, y)
+		_animals.draw_circle(center, r * 1.05, colour)
+
+		var tex: Texture2D = null
+		if is_singing and i < _animal_sing_textures.size():
+			tex = _animal_sing_textures[i]
+		elif i < _animal_idle_textures.size():
+			tex = _animal_idle_textures[i]
+
+		if tex != null:
+			var sprite_size := r * 2.2
+			var rect := Rect2(center.x - sprite_size * 0.5, center.y - sprite_size * 0.5, sprite_size, sprite_size)
+			_animals.draw_texture_rect(tex, rect, false)
 
 
 func _draw_continue_arrow(face: Control) -> void:
 	var c := face.size * 0.5
 	var r := minf(face.size.x, face.size.y) * 0.28
 	var ink := Color("#E8D9A0")
-	face.draw_line(Vector2(c.x - r, c.y), Vector2(c.x + r, c.y), ink, 8.0, true)
-	face.draw_line(
-		Vector2(c.x + r, c.y), Vector2(c.x + r * 0.35, c.y - r * 0.6), ink, 8.0, true
-	)
-	face.draw_line(
-		Vector2(c.x + r, c.y), Vector2(c.x + r * 0.35, c.y + r * 0.6), ink, 8.0, true
-	)
+
+	if _arrow_next_tex != null:
+		var arrow_size := r * 2.4
+		var rect := Rect2(c.x - arrow_size * 0.5, c.y - arrow_size * 0.5, arrow_size, arrow_size)
+		face.draw_texture_rect(_arrow_next_tex, rect, false, ink)
+	else:
+		face.draw_line(Vector2(c.x - r, c.y), Vector2(c.x + r, c.y), ink, 8.0, true)
+		face.draw_line(
+			Vector2(c.x + r, c.y), Vector2(c.x + r * 0.35, c.y - r * 0.6), ink, 8.0, true
+		)
+		face.draw_line(
+			Vector2(c.x + r, c.y), Vector2(c.x + r * 0.35, c.y + r * 0.6), ink, 8.0, true
+		)

@@ -61,11 +61,21 @@ func refresh() -> void:
 		_face.queue_redraw()
 
 
+static var _card_tex: Texture2D
+
+
 func _draw_face() -> void:
+	if _card_tex == null and ResourceLoader.exists("res://assets/art/card_chapter.png"):
+		_card_tex = load("res://assets/art/card_chapter.png")
+
 	var w := _face.size.x
 	var h := _face.size.y
 	var accent := Chapters.color_of(chapter)
 	var dim := disabled
+
+	if _card_tex != null:
+		var card_color := Color(0.45, 0.45, 0.45) if dim else accent.lerp(Color.WHITE, 0.25)
+		_face.draw_texture_rect(_card_tex, Rect2(Vector2.ZERO, _face.size), false, card_color)
 
 	# Danh tính chương: 1, 2 hoặc 3 chấm to — đếm được, không cần đọc.
 	var marks := chapter + 1
@@ -101,11 +111,22 @@ func _draw_face() -> void:
 			_face.draw_arc(centre, dot_r, 0.0, TAU, 20, Color(1, 1, 1, 0.3), 2.0, true)
 
 
+static var _lock_tex: Texture2D
+
+
 func _draw_lock(centre: Vector2, r: float) -> void:
-	var body := Color(0.55, 0.56, 0.58)
-	_face.draw_rect(
-		Rect2(centre - Vector2(r, r * 0.1), Vector2(r * 2.0, r * 1.5)), body
-	)
-	_face.draw_arc(
-		centre - Vector2(0.0, r * 0.1), r * 0.66, PI, TAU, 20, body, r * 0.42, true
-	)
+	if _lock_tex == null and ResourceLoader.exists("res://assets/art/ui_lock.png"):
+		_lock_tex = load("res://assets/art/ui_lock.png")
+
+	if _lock_tex != null:
+		var lock_size := r * 3.0
+		var rect := Rect2(centre.x - lock_size * 0.5, centre.y - lock_size * 0.5, lock_size, lock_size)
+		_face.draw_texture_rect(_lock_tex, rect, false, Color(1, 1, 1, 0.75))
+	else:
+		var body := Color(0.55, 0.56, 0.58)
+		_face.draw_rect(
+			Rect2(centre - Vector2(r, r * 0.1), Vector2(r * 2.0, r * 1.5)), body
+		)
+		_face.draw_arc(
+			centre - Vector2(0.0, r * 0.1), r * 0.66, PI, TAU, 20, body, r * 0.42, true
+		)
