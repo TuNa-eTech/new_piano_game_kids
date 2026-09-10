@@ -23,9 +23,21 @@ func _ready() -> void:
 
 
 func _build() -> void:
-	_add_backdrop(Color(0.04, 0.06, 0.05, 0.88))
+	_add_backdrop(Color(0.04, 0.06, 0.05, 0.92))
+
+	if ResourceLoader.exists("res://assets/art/frame_book.png"):
+		var frame := NinePatchRect.new()
+		frame.texture = load("res://assets/art/frame_book.png")
+		frame.set_anchors_preset(Control.PRESET_FULL_RECT)
+		frame.patch_margin_left = 64
+		frame.patch_margin_top = 64
+		frame.patch_margin_right = 64
+		frame.patch_margin_bottom = 64
+		frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		add_child(frame)
 
 	_root = MarginContainer.new()
+
 	_root.set_anchors_preset(Control.PRESET_FULL_RECT)
 	for side in ["left", "right", "top", "bottom"]:
 		_root.add_theme_constant_override("margin_" + side, 56)
@@ -90,17 +102,29 @@ func _make_close_button() -> Button:
 ## Mũi tên quay lui — không chữ, và nó nằm TRONG lớp phủ này chứ không phải trên
 ## HUD. HUD bị dừng khi bản đồ mở, nên một nút đóng đặt nhầm chỗ sẽ chết cứng và
 ## bé kẹt trong bản đồ không có đường ra. Với app trẻ em đó là lỗi chí mạng.
+var _arrow_back_tex: Texture2D
+
+
 func _draw_close_arrow(face: Control) -> void:
+	if _arrow_back_tex == null and ResourceLoader.exists("res://assets/art/ui_arrow_back.png"):
+		_arrow_back_tex = load("res://assets/art/ui_arrow_back.png")
+
 	var c := face.size * 0.5
 	var r := minf(face.size.x, face.size.y) * 0.28
 	var ink := Color("#E8D9A0")
-	face.draw_line(Vector2(c.x - r, c.y), Vector2(c.x + r, c.y), ink, 8.0, true)
-	face.draw_line(
-		Vector2(c.x - r, c.y), Vector2(c.x - r * 0.35, c.y - r * 0.6), ink, 8.0, true
-	)
-	face.draw_line(
-		Vector2(c.x - r, c.y), Vector2(c.x - r * 0.35, c.y + r * 0.6), ink, 8.0, true
-	)
+
+	if _arrow_back_tex != null:
+		var arrow_size := r * 2.4
+		var rect := Rect2(c.x - arrow_size * 0.5, c.y - arrow_size * 0.5, arrow_size, arrow_size)
+		face.draw_texture_rect(_arrow_back_tex, rect, false, ink)
+	else:
+		face.draw_line(Vector2(c.x - r, c.y), Vector2(c.x + r, c.y), ink, 8.0, true)
+		face.draw_line(
+			Vector2(c.x - r, c.y), Vector2(c.x - r * 0.35, c.y - r * 0.6), ink, 8.0, true
+		)
+		face.draw_line(
+			Vector2(c.x - r, c.y), Vector2(c.x - r * 0.35, c.y + r * 0.6), ink, 8.0, true
+		)
 
 
 # ---------------------------------------------------------------- điều khiển --
@@ -108,6 +132,7 @@ func _draw_close_arrow(face: Control) -> void:
 func open_map() -> void:
 	for card in _cards:
 		card.refresh()
+	AudioDirector.play_sfx("menu_open")
 	open_overlay()
 
 
@@ -118,6 +143,7 @@ func close_map() -> void:
 func _on_card_pressed(chapter: int) -> void:
 	if not GameState.chapter_unlocked(chapter):
 		return
+	AudioDirector.play_sfx("chapter_select")
 	GameState.select_chapter(chapter)
 	chapter_selected.emit(chapter)
 	close_map()
