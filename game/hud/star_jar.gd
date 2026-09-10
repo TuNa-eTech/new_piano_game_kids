@@ -17,8 +17,17 @@ var _flash: float = 0.0
 @onready var _label: Label = $Count
 
 
+var _jar_tex: Texture2D
+var _star_tex: Texture2D
+
+
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	if ResourceLoader.exists("res://assets/art/ui_star_jar.png"):
+		_jar_tex = load("res://assets/art/ui_star_jar.png")
+	if ResourceLoader.exists("res://assets/art/ui_star.png"):
+		_star_tex = load("res://assets/art/ui_star.png")
+
 	if _label:
 		_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	GameState.stars_changed.connect(_on_stars_changed)
@@ -46,21 +55,34 @@ func _on_stars_changed(total: int) -> void:
 
 
 func _draw() -> void:
-	var glass := Color(1, 1, 1, 0.16 + 0.20 * _flash)
-	var body := Rect2(Vector2.ZERO, Vector2(size.x, size.y * 0.82))
+	var body := Rect2(Vector2.ZERO, Vector2(size.x, size.y * 0.85))
 
-	# Mực sao dâng từ đáy lọ lên.
-	var fh := body.size.y * _fill
+	# Drop shadow beneath glass jar
+	draw_circle(Vector2(body.size.x * 0.5, body.size.y * 0.92), body.size.x * 0.38, Color(0, 0, 0, 0.28))
+
+	# Mực sao dâng từ đáy lọ lên
+	var fh := body.size.y * 0.72 * _fill
 	if fh > 1.0:
+		var fill_rect := Rect2(body.position.x + body.size.x * 0.14, body.position.y + body.size.y * 0.85 - fh, body.size.x * 0.72, fh)
 		draw_rect(
-			Rect2(body.position.x, body.position.y + body.size.y - fh, body.size.x, fh),
-			Color("#F2C64B").lerp(Color.WHITE, 0.25 * _flash)
+			fill_rect,
+			Color("#F2C64B").lerp(Color.WHITE, 0.35 * _flash)
 		)
 
-	# Thành lọ vẽ sau cùng để viền nằm trên mực sao.
-	draw_rect(body, glass, false, 2.0)
-	draw_rect(
-		Rect2(body.position.x + body.size.x * 0.22, -size.y * 0.06,
-			body.size.x * 0.56, size.y * 0.06),
-		glass, false, 2.0
-	)
+	if _jar_tex != null:
+		draw_texture_rect(_jar_tex, body, false, Color(1, 1, 1, 0.95))
+	else:
+		var glass := Color(1, 1, 1, 0.22 + 0.20 * _flash)
+		draw_rect(body, glass, false, 2.0)
+		draw_rect(
+			Rect2(body.position.x + body.size.x * 0.22, -size.y * 0.08,
+				body.size.x * 0.56, size.y * 0.08),
+			Color("#A67C52"), true
+		)
+
+	# Khi có sao mới (flash > 0), vẽ hạt sao nhỏ phát sáng
+	if _flash > 0.0 and _star_tex != null:
+		var star_s := 24.0 * (1.0 + 0.3 * _flash)
+		var star_r := Rect2(body.size.x * 0.72, -star_s * 0.4, star_s, star_s)
+		draw_texture_rect(_star_tex, star_r, false, Color(1, 1, 1, _flash))
+

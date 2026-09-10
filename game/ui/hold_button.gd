@@ -43,11 +43,14 @@ var _ratio: float = 0.0
 
 @onready var _base_color := Color("#2a3a2c")
 @onready var _ring_color := Color("#E8D9A0")
+var _menu_texture: Texture2D
 
 
 func _ready() -> void:
 	# Nút tự hit-test trong _input, nên không cần hệ GUI của Control.
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	if ResourceLoader.exists("res://assets/art/ui_menu.png"):
+		_menu_texture = load("res://assets/art/ui_menu.png")
 	custom_minimum_size = Vector2(MIN_TOUCH_SIZE, MIN_TOUCH_SIZE)
 	if size.x < MIN_TOUCH_SIZE or size.y < MIN_TOUCH_SIZE:
 		push_warning(
@@ -81,18 +84,14 @@ func _on_touch(event: InputEventScreenTouch) -> void:
 	if event.pressed:
 		_touch_count += 1
 		if _touch_count > 1:
-			# Bàn tay trẻ con úp lên màn hình là nhiều điểm chạm cùng lúc. Một
-			# lòng bàn tay đè trúng nút 2 giây KHÔNG được tính là cố ý mở menu —
-			# đó đúng là thứ khoá nhẹ sinh ra để chặn.
-			#
-			# Bỏ lượt giữ nhưng GIỮ NGUYÊN bộ đếm: đặt lại về 0 ở đây thì ngón thứ
-			# ba của cùng bàn tay đó lại thành "ngón duy nhất" và mở được menu.
+
 			_abort_hold()
 			return
 		if _finger == -1 and _contains(event.position):
 			_finger = event.index
 			_held = 0.0
 			get_viewport().set_input_as_handled()
+
 	else:
 		_touch_count = maxi(0, _touch_count - 1)
 		if event.index == _finger:
@@ -110,6 +109,8 @@ func _process(delta: float) -> void:
 			_finger = -1
 			_held = 0.0
 			_ratio = 0.0
+			# Phản hồi cho NGƯỜI LỚN: giữ đủ 2 giây thì phải nghe thấy là đã ăn.
+			AudioDirector.play_sfx("hold_complete")
 			activated.emit()
 	elif _ratio > 0.0:
 		_ratio = maxf(0.0, _ratio - delta / RELEASE_SECONDS)
@@ -154,25 +155,38 @@ func _draw() -> void:
 	var c := size * 0.5
 	var r := minf(size.x, size.y) * 0.5 - RING_WIDTH
 
-	draw_circle(c, r, _base_color)
-	draw_arc(c, r, 0.0, TAU, 48, _ring_color.darkened(0.55), RING_WIDTH, true)
+	# 3D drop shadow
+	draw_circle(c + Vector2(0, 4), r, Color(0, 0, 0, 0.32))
 
-	# Ba vạch ngang: biểu tượng menu quen thuộc với người lớn, còn bé thì chỉ
-	# thấy một hình tròn không có con vật nào trong đó — không mời gọi chạm.
-	var bar_w := r * 0.9
-	var gap := r * 0.34
-	for i in BAR_COUNT:
-		var y := c.y + (i - 1) * gap
-		draw_line(
-			Vector2(c.x - bar_w * 0.5, y),
-			Vector2(c.x + bar_w * 0.5, y),
-			_ring_color, 4.0, true
-		)
+	# Wooden circle base
+	draw_circle(c, r, Color("#2E2016"))
+	draw_arc(c, r, 0.0, TAU, 48, Color("#D4AF37").darkened(0.4), RING_WIDTH, true)
+	draw_arc(c, r + 2.0, 0.0, TAU, 48, Color("#1A120B"), 1.5, true)
+
+	if _menu_texture != null:
+		var tex_size := r * 1.15
+		var tex_rect := Rect2(c.x - tex_size * 0.5, c.y - tex_size * 0.5, tex_size, tex_size)
+		draw_texture_rect(_menu_texture, tex_rect, false, Color("#E8D9A0"))
+	else:
+		# Ba vạch ngang: biểu tượng menu quen thuộc với người lớn
+		var bar_w := r * 0.9
+		var gap := r * 0.34
+		for i in BAR_COUNT:
+			var y := c.y + (i - 1) * gap
+			draw_line(
+				Vector2(c.x - bar_w * 0.5, y),
+				Vector2(c.x + bar_w * 0.5, y),
+				Color("#E8D9A0"), 4.0, true
+			)
 
 	if _ratio > 0.0:
-		# Chạy từ 12 giờ theo chiều kim đồng hồ — hướng mà mọi đồng hồ đếm ngược
-		# đều chạy, nên không cần ai giải thích.
+		# Vòng tiến trình sáng vàng óng rực rỡ khi giữ nút
 		draw_arc(
 			c, r, -PI * 0.5, -PI * 0.5 + TAU * _ratio,
-			48, _ring_color, RING_WIDTH, true
+			48, Color("#F2C64B"), RING_WIDTH + 1.5, true
 		)
+		draw_arc(
+			c, r, -PI * 0.5, -PI * 0.5 + TAU * _ratio,
+			48, Color.WHITE, 2.0, true
+		)
+
