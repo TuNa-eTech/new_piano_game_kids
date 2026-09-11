@@ -1,6 +1,6 @@
 extends Node2D
 
-var _brain_dir := "/Users/anhtu/.gemini/antigravity-ide/brain/cc7e5692-27fc-4258-ac78-4bed5663171a"
+var _brain_dir := "/Users/anhtu/.gemini/antigravity-ide/brain/49773952-7526-4797-9d56-cef7847b9ac1"
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
