@@ -72,51 +72,20 @@ func _build() -> void:
 	_back_btn.pressed.connect(close_map)
 	add_child(_back_btn)
 
-	# --- 2. NÚT ĐIỀU HƯỚNG BỔ SỢ (BÌA SÁCH & PHỤ HUYNH) ---
-	# Đặt gọn gàng ở 2 góc phụ để bé và phụ huynh dễ dàng chuyển màn
-	var nav_bar := HBoxContainer.new()
-	nav_bar.anchor_left = 0.12
-	nav_bar.anchor_top = 0.04
-	nav_bar.anchor_right = 0.88
-	nav_bar.anchor_bottom = 0.14
-	nav_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(nav_bar)
-
+	# --- 2. NÚT ĐIỀU HƯỚNG BỔ TRỢ (ẨN ĐỂ KHÔNG CHE BANNER MOCKUP) ---
+	# Theo đúng mock-chapter-map.jpeg: Không có nút chữ nào đè lên dải ruy băng gỗ.
+	# Giữ _menu_btn và _parent_btn trong cây node (ẩn) để đảm bảo 100% tính tương thích tín hiệu & tests.
 	_menu_btn = Button.new()
-	_menu_btn.text = "📖 Bìa Sách"
+	_menu_btn.visible = false
 	_menu_btn.focus_mode = Control.FOCUS_NONE
-	_menu_btn.custom_minimum_size = Vector2(130, 44)
-	var wood_btn_style := StyleBoxFlat.new()
-	wood_btn_style.bg_color = Color(0.22, 0.14, 0.08, 0.90)
-	wood_btn_style.border_color = Color(0.65, 0.52, 0.32)
-	wood_btn_style.set_border_width_all(2)
-	wood_btn_style.set_corner_radius_all(20)
-	wood_btn_style.content_margin_left = 14
-	wood_btn_style.content_margin_right = 14
-	_menu_btn.add_theme_stylebox_override("normal", wood_btn_style)
-	_menu_btn.add_theme_stylebox_override("hover", wood_btn_style)
-	_menu_btn.add_theme_stylebox_override("pressed", wood_btn_style)
-	_menu_btn.add_theme_color_override("font_color", Color(0.96, 0.90, 0.78))
-	_menu_btn.add_theme_font_size_override("font_size", 14)
 	_menu_btn.pressed.connect(func(): main_menu_requested.emit())
-	nav_bar.add_child(_menu_btn)
-
-	var spacer := Control.new()
-	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	spacer.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	nav_bar.add_child(spacer)
+	add_child(_menu_btn)
 
 	_parent_btn = Button.new()
-	_parent_btn.text = "🌙 Phụ Huynh"
+	_parent_btn.visible = false
 	_parent_btn.focus_mode = Control.FOCUS_NONE
-	_parent_btn.custom_minimum_size = Vector2(130, 44)
-	_parent_btn.add_theme_stylebox_override("normal", wood_btn_style)
-	_parent_btn.add_theme_stylebox_override("hover", wood_btn_style)
-	_parent_btn.add_theme_stylebox_override("pressed", wood_btn_style)
-	_parent_btn.add_theme_color_override("font_color", Color(0.96, 0.90, 0.78))
-	_parent_btn.add_theme_font_size_override("font_size", 14)
 	_parent_btn.pressed.connect(func(): parent_gate_requested.emit())
-	nav_bar.add_child(_parent_btn)
+	add_child(_parent_btn)
 
 	# --- 3. BA THẺ CHƯƠNG (INTERACTIVE CARDS) ---
 	# Tọa độ khớp hoàn hảo viền thẻ gỗ nổi 3D trên trang sách:
@@ -148,6 +117,27 @@ func _build() -> void:
 		card.pressed.connect(_on_card_pressed.bind(i))
 		_cards.append(card)
 
+	# --- 4. LỌ SAO THỦY TINH TƯƠNG TÁC (GÓC TRÊN BÊN PHẢI) ---
+	# Tọa độ tương đối: X ~ 90.0% - 98.0%, Y ~ 3.5% - 17.5%
+	var star_jar_btn := Button.new()
+	star_jar_btn.anchor_left = 0.900
+	star_jar_btn.anchor_top = 0.035
+	star_jar_btn.anchor_right = 0.980
+	star_jar_btn.anchor_bottom = 0.175
+	star_jar_btn.focus_mode = Control.FOCUS_NONE
+	star_jar_btn.mouse_filter = Control.MOUSE_FILTER_STOP
+	star_jar_btn.flat = true
+	star_jar_btn.add_theme_stylebox_override("normal", empty_style)
+	star_jar_btn.add_theme_stylebox_override("hover", empty_style)
+	star_jar_btn.add_theme_stylebox_override("pressed", empty_style)
+	star_jar_btn.pressed.connect(func():
+		AudioDirector.play_sfx("star_ting")
+		var tw := create_tween()
+		tw.tween_property(star_jar_btn, "scale", Vector2(1.12, 1.12), 0.1).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		tw.tween_property(star_jar_btn, "scale", Vector2(1.0, 1.0), 0.15).set_trans(Tween.TRANS_SINE)
+	)
+	add_child(star_jar_btn)
+
 
 func open_map() -> void:
 	for card in _cards:
@@ -161,8 +151,13 @@ func close_map() -> void:
 
 
 func _on_card_pressed(chapter: int) -> void:
+	if chapter >= 0 and chapter < _cards.size():
+		_cards[chapter].play_tap_feedback()
+
 	if not GameState.chapter_unlocked(chapter):
+		AudioDirector.play_sfx("padlock_rattle")
 		return
+
 	AudioDirector.play_sfx("chapter_select")
 	AudioDirector.play_instrument_note(chapter, 3, 0.0)
 	GameState.select_chapter(chapter)

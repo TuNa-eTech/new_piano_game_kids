@@ -29,6 +29,8 @@ const SFX_DIR := "res://assets/audio/"
 static var SFX_NAMES: Array[String] = [
 	"star_ting", "chapter_select", "chest_open", "page_turn",
 	"menu_open", "hold_complete", "chapter_unlock", "free_play_toggle",
+	"padlock_rattle",
+	"soft_boing", "fairy_dust", "giggle_cute", "soft_plop", "cute_purr",
 ]
 
 ## Pad hoà âm nền — docs/gameplay-design.html · Quyết định 02:
@@ -79,6 +81,8 @@ var _recent_i: int = 0
 var _cached_latency_ms: float = 0.0
 
 var _pad_player: AudioStreamPlayer
+var _music_tween: Tween
+var _current_music_path: String = ""
 
 ## tên SFX -> stream đã nạp. Nạp MỘT LẦN lúc khởi động; đường nóng chỉ tra bảng.
 var _sfx: Dictionary = {}
@@ -197,19 +201,64 @@ func _setup_polyphonic() -> void:
 ## Pad chạy trên bus Music riêng (-18 dB trong default_bus_layout.tres), tách
 ## khỏi bus Notes để sau này chỉnh cân bằng mà không đụng tới tiếng đàn.
 func _setup_pad() -> void:
-	var ogg_path := "%sbgm_forest_loop.ogg" % SFX_DIR
-	var path := ogg_path if ResourceLoader.exists(ogg_path) else PAD_STREAM
-	var stream: AudioStream = load(path)
+	var menu_path := "%sbgm_main_menu_theme.ogg" % SFX_DIR
+	var forest_path := "%sbgm_forest_loop.ogg" % SFX_DIR
+	var is_menu := GameState.show_main_menu_on_launch and ResourceLoader.exists(menu_path)
+	var initial_path := menu_path if is_menu else (forest_path if ResourceLoader.exists(forest_path) else PAD_STREAM)
+	var stream: AudioStream = load(initial_path)
 	if stream == null:
-		push_error("AudioDirector: không nạp được pad %s" % path)
+		push_error("AudioDirector: không nạp được pad %s" % initial_path)
 		return
 
 	_pad_player = AudioStreamPlayer.new()
 	_pad_player.name = "PadPlayer"
 	_pad_player.bus = BUS_MUSIC if AudioServer.get_bus_index(BUS_MUSIC) != -1 else &"Master"
 	_pad_player.stream = stream
+	_pad_player.volume_db = 6.0 if is_menu else 0.0
+	_current_music_path = initial_path
 	add_child(_pad_player)
 	_pad_player.play()
+
+
+## Phát bản nhạc nền chính của màn hình Main Menu (The Magic Music Forest Overture)
+func play_main_menu_music(fade_sec: float = 0.6) -> void:
+	var path := "%sbgm_main_menu_theme.ogg" % SFX_DIR
+	play_music_track(path, fade_sec, 6.0)
+
+
+## Chuyển sang nhạc nền gameplay (Rừng sáo trúc pad loop)
+func play_gameplay_music(fade_sec: float = 0.8) -> void:
+	var path := "%sbgm_forest_loop.ogg" % SFX_DIR
+	play_music_track(path, fade_sec, 0.0)
+
+
+## Chuyển đổi nhạc nền mượt mà với crossfade âm lượng
+func play_music_track(path: String, fade_sec: float = 0.6, target_db: float = 0.0) -> void:
+	if not ResourceLoader.exists(path) or _pad_player == null:
+		return
+	if _current_music_path == path and _pad_player.playing:
+		return
+
+	_current_music_path = path
+	var new_stream: AudioStream = load(path)
+	if new_stream == null:
+		return
+
+	if _music_tween != null and _music_tween.is_valid():
+		_music_tween.kill()
+
+	if fade_sec > 0.0 and _pad_player.playing:
+		_music_tween = create_tween()
+		_music_tween.tween_property(_pad_player, "volume_db", -36.0, fade_sec * 0.5)
+		_music_tween.tween_callback(func():
+			_pad_player.stream = new_stream
+			_pad_player.play()
+		)
+		_music_tween.tween_property(_pad_player, "volume_db", target_db, fade_sec * 0.5)
+	else:
+		_pad_player.volume_db = target_db
+		_pad_player.stream = new_stream
+		_pad_player.play()
 
 
 ## SFX đi qua một AudioStreamPolyphonic riêng trên bus SFX, tách hẳn khỏi bus
@@ -320,6 +369,53 @@ func play_note(index: int) -> void:
 		p.pitch_scale = 1.0
 
 
+## Cao độ chuẩn cho 5 nốt phím đen (Accidentals) so với G4 (1.0):
+## Slot 0: C#4 (0.707107), Slot 1: D#4 (0.793701), Slot 3: F#4 (0.943874), Slot 4: G#4 (1.059463), Slot 5: A#4 (1.189207)
+const BLACK_KEY_PITCHES: Dictionary = {
+	0: 0.707107,
+	1: 0.793701,
+	3: 0.943874,
+	4: 1.059463,
+	5: 1.189207,
+}
+
+func play_black_key(slot: int) -> void:
+	if not BLACK_KEY_PITCHES.has(slot):
+		return
+	var pitch: float = BLACK_KEY_PITCHES[slot]
+
+	if backend == Backend.POLYPHONIC and _poly != null:
+		if _active_inst_streams.size() > 0 and slot < _active_inst_streams.size() and _active_inst_streams[slot] != null:
+			# Dịch nốt của nhạc cụ hiện tại lên nửa cung (x 1.059463)
+			var id := _poly.play_stream(
+				_active_inst_streams[slot], 0.0, INST_NOTE_DB, 1.059463, AudioServer.PLAYBACK_TYPE_DEFAULT, _bus
+			)
+			_recent[_recent_i] = id
+			_recent_i = (_recent_i + 1) % RECENT_IDS
+		elif _base_note != null:
+			var id := _poly.play_stream(
+				_base_note, 0.0, BASE_NOTE_DB, pitch, AudioServer.PLAYBACK_TYPE_DEFAULT, _bus
+			)
+			_recent[_recent_i] = id
+			_recent_i = (_recent_i + 1) % RECENT_IDS
+		elif _streams.size() > 0 and _streams[0] != null:
+			var id := _poly.play_stream(
+				_streams[0], 0.0, 0.0, pitch, AudioServer.PLAYBACK_TYPE_DEFAULT, _bus
+			)
+			_recent[_recent_i] = id
+			_recent_i = (_recent_i + 1) % RECENT_IDS
+	else:
+		var p := _pool[_pool_next]
+		_pool_next = (_pool_next + 1) % POOL_SIZE
+		if _base_note != null:
+			p.stream = _base_note
+		elif _streams.size() > 0 and _streams[0] != null:
+			p.stream = _streams[0]
+		p.pitch_scale = pitch
+		p.play()
+		p.pitch_scale = 1.0
+
+
 ## Phát nốt preview phản hồi khi bé chạm đổi nhạc cụ
 func play_mode_preview(mode: int) -> void:
 	match mode:
@@ -385,12 +481,12 @@ func play_note_pitched(index: int, pitch: float, volume_db: float = 0.0) -> void
 ## Phát một SFX theo tên. Không có file thì im lặng bỏ qua — Bước 3 thả file
 ## vào assets/audio/ là tự chạy, không phải sửa một dòng nào ở nơi gọi.
 ## Đường nóng: chỉ tra Dictionary, không load(), không nối chuỗi.
-func play_sfx(sfx_name: String) -> void:
+func play_sfx(sfx_name: String, volume_db: float = 0.0) -> void:
 	var stream: AudioStream = _sfx.get(sfx_name)
 	if stream == null or _sfx_poly == null:
 		return
 	_sfx_poly.play_stream(
-		stream, 0.0, 0.0, 1.0, AudioServer.PLAYBACK_TYPE_DEFAULT, BUS_SFX
+		stream, 0.0, volume_db, 1.0, AudioServer.PLAYBACK_TYPE_DEFAULT, BUS_SFX
 	)
 
 

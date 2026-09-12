@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://b123autoanimtest"]
+
+[ext_resource type="Script" path="res://game/dev/test_autonomous_animation.gd" id="1_auto"]
+
+[node name="TestAutonomousAnimation" type="Node2D"]
+script = ExtResource("1_auto")

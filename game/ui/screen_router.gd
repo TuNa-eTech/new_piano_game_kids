@@ -29,6 +29,7 @@ var _chapter_end: ChapterEnd
 var _gate_target: GateTarget = GateTarget.PARENTAL_CORNER
 var _pending_chapter_reward: int = 0
 var enable_chest_before_concert: bool = false
+var _parental_return_to_main_menu: bool = false
 
 
 func setup(
@@ -72,12 +73,12 @@ func _connect_signals() -> void:
 	# 1. MainMenu
 	_main_menu.play_pressed.connect(_on_main_menu_play)
 	_main_menu.levels_pressed.connect(_on_main_menu_levels)
-	_main_menu.parent_gate_requested.connect(_on_open_parental_gate_for_corner)
+	_main_menu.parent_gate_requested.connect(_on_main_menu_parent_gate_requested)
 
 	# 2. ChapterMap
 	_chapter_map.chapter_selected.connect(_on_chapter_selected)
 	_chapter_map.main_menu_requested.connect(_on_map_main_menu_requested)
-	_chapter_map.parent_gate_requested.connect(_on_open_parental_gate_for_corner)
+	_chapter_map.parent_gate_requested.connect(_on_map_parent_gate_requested)
 
 	# 3. LevelSelect
 	_level_select.level_selected.connect(_on_level_selected)
@@ -85,9 +86,11 @@ func _connect_signals() -> void:
 
 	# 4. ParentalGate
 	_parental_gate.gate_unlocked.connect(_on_gate_unlocked)
+	_parental_gate.closed.connect(_on_parental_gate_closed)
 
 	# 5. ParentalCorner
 	_parental_corner.bedtime_timer_changed.connect(_on_bedtime_timer_changed)
+	_parental_corner.closed.connect(_on_parental_corner_closed)
 
 	# 6. GoodnightScreen
 	_goodnight_screen.parental_unlock_requested.connect(_on_goodnight_unlock_requested)
@@ -195,9 +198,32 @@ func _on_main_menu_levels() -> void:
 	_chapter_map.open_map()
 
 
+func _on_main_menu_parent_gate_requested() -> void:
+	_parental_return_to_main_menu = true
+	_main_menu.close_overlay()
+	_on_open_parental_gate_for_corner()
+
+
+func _on_map_parent_gate_requested() -> void:
+	_parental_return_to_main_menu = false
+	_on_open_parental_gate_for_corner()
+
+
 func _on_open_parental_gate_for_corner() -> void:
 	_gate_target = GateTarget.PARENTAL_CORNER
 	_parental_gate.open_overlay()
+
+
+func _on_parental_gate_closed() -> void:
+	if _parental_return_to_main_menu and _gate_target == GateTarget.PARENTAL_CORNER and not _parental_corner.is_open():
+		_parental_return_to_main_menu = false
+		_main_menu.open_overlay()
+
+
+func _on_parental_corner_closed() -> void:
+	if _parental_return_to_main_menu:
+		_parental_return_to_main_menu = false
+		_main_menu.open_overlay()
 
 
 func _on_map_main_menu_requested() -> void:

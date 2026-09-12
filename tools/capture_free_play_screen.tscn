@@ -1,0 +1,6 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://tools/capture_free_play_screen.gd" id="1_cap"]
+
+[node name="CaptureFreePlayScreen" type="Node"]
+script = ExtResource("1_cap")

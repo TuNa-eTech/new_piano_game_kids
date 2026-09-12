@@ -175,55 +175,36 @@ const LEAF_COORDS: Array[Vector2] = [
 	Vector2(0.35, 0.23), # 6 (D5): top-left branch
 ]
 
+const CONCEPT_LEAF_COORDS: Array[Vector2] = [
+	Vector2(681.0, 384.0), # 0 (C4): cành thấp bên trái
+	Vector2(837.0, 428.0), # 1 (D4): cành thấp bên phải
+	Vector2(681.0, 271.0), # 2 (E4): cành giữa bên trái
+	Vector2(819.0, 333.0), # 3 (G4): cành giữa bên phải
+	Vector2(744.0, 176.0), # 4 (A4): cành cao bên trái
+	Vector2(844.0, 214.0), # 5 (C5): cành cao bên phải
+	Vector2(794.0, 113.0), # 6 (D5): ngọn cây sát rương vàng
+]
+
 func get_leaf_position(i: int) -> Vector2:
 	return _leaf_anchor(i)
 
 func _leaf_anchor(i: int) -> Vector2:
-	## Lá gắn chính xác vào các cành của cây thần ma thuật uốn lượn trên trang phải
-	var tree_cx := size.x * center_ratio_x
-	var ground_y := size.y * 0.94
-	var tree_display_h := ground_y * 0.92
-	var tree_display_w := tree_display_h * 0.625
-	var tree_top_left := Vector2(tree_cx - tree_display_w * 0.5, ground_y - tree_display_h + 8.0)
-
-	if i >= 0 and i < LEAF_COORDS.size():
-		var norm := LEAF_COORDS[i]
-		return tree_top_left + Vector2(norm.x * tree_display_w, norm.y * tree_display_h)
-
-	return Vector2(tree_cx, ground_y - tree_display_h * 0.5)
+	if i >= 0 and i < CONCEPT_LEAF_COORDS.size():
+		return CONCEPT_LEAF_COORDS[i]
+	return Vector2(size.x * 0.61, size.y * 0.35)
 
 
 func _draw() -> void:
-	var ground_y := size.y * 0.94
-	var tree_cx := size.x * center_ratio_x
-	var tree_display_h := ground_y * 0.92
-	var tree_display_w := tree_display_h * 0.625
-	var tree_rect := Rect2(tree_cx - tree_display_w * 0.5, ground_y - tree_display_h + 8.0, tree_display_w, tree_display_h)
-
-	var has_art := _tree_textures.size() > 0 and _tree_textures[0] != null
-	if not has_art:
-		draw_rect(Rect2(0, ground_y, size.x, size.y - ground_y), _ground_color)
-
-	# Thân cây: 8 giai đoạn rời rạc
-	var st := stage()
-
-	if st < _tree_textures.size() and _tree_textures[st] != null:
-		draw_texture_rect(_tree_textures[st], tree_rect, false)
-	else:
-		var full_h := size.y * 0.78
-		var frac := SPROUT_FRACTION + (1.0 - SPROUT_FRACTION) * (float(st) / float(STAGES - 1))
-		var h := full_h * frac
-		var w := size.x * 0.035
-		if h > 1.0:
-			draw_rect(Rect2(tree_cx - w * 0.5, ground_y - h, w, h), _trunk_color)
-
-	# Cả 7 lá LUÔN hiển thị
+	# Cây Đậu Thần hiển thị nguyên vẹn từ tranh Diorama (không vẽ mô đất đè lên)
+	# Chỉ vẽ hào quang phát sáng và ký hiệu nốt nhạc khi lá hát, gợi ý hoặc nở hoa
 	for i in Notes.count():
-		_draw_leaf(i, _leaf_anchor(i))
+		if _leaf_state[i] != LeafState.DORMANT:
+			_draw_leaf(i, _leaf_anchor(i))
 
-	# Rương báu ngọn cây: luôn ngự trên đỉnh ngọn cây beanstalk leo lên trời
-	var chest_pos := get_chest_position()
-	_draw_chest(chest_pos)
+	# Khi hoàn thành chuỗi (fruiting): vẽ vầng hào quang rương báu nở rộ
+	if _fruiting:
+		var chest_pos := Vector2(765.0, 80.0)
+		_draw_chest(chest_pos)
 
 
 ## Vẽ lá: dùng _leaf_texture nếu có, kết hợp vẽ quầng sáng và ký tự nốt nhạc
@@ -237,39 +218,28 @@ func _draw_leaf(i: int, p: Vector2) -> void:
 
 	match _leaf_state[i]:
 		LeafState.DORMANT:
-			draw_circle(p, r * 0.85, Color(base, 0.25))
-			if _leaf_texture != null:
-				draw_texture_rect(_leaf_texture, Rect2(p.x - leaf_size * 0.5, p.y - leaf_size * 0.5, leaf_size, leaf_size), false, Color(base, 0.70))
-			else:
-				draw_circle(p, r, Color(base, 0.40))
-			draw_string(font, p + Vector2(-5, 5), sym, HORIZONTAL_ALIGNMENT_CENTER, -1, 13, Color(1, 1, 1, 0.85))
+			# Không vẽ đè lên hình minh họa cây đậu thần khi lá đang ngủ
+			pass
 		LeafState.SINGING:
-			draw_circle(p, r * 1.35, Color(base, 0.45))
-			if _leaf_texture != null:
-				var s := leaf_size * 1.25
-				draw_texture_rect(_leaf_texture, Rect2(p.x - s * 0.5, p.y - s * 0.5, s, s), false, Color.WHITE)
-			else:
-				draw_circle(p, r * 1.25, Color(base, 0.95))
-			draw_string(font, p + Vector2(-6, 6), sym, HORIZONTAL_ALIGNMENT_CENTER, -1, 15, Color.WHITE)
+			# Vầng hào quang sáng rực khi lá đang phát ra giai điệu
+			draw_circle(p, r * 1.5, Color(base.r, base.g, base.b, 0.35))
+			draw_circle(p, r * 1.1, Color(base.r, base.g, base.b, 0.85))
+			draw_circle(p, r * 0.65, Color.WHITE)
+			draw_string(font, p + Vector2(-6, 6), sym, HORIZONTAL_ALIGNMENT_CENTER, -1, 16, Color(base.r * 0.4, base.g * 0.4, base.b * 0.4, 1.0))
 		LeafState.HINT:
-			var pulse := 0.5 + 0.5 * sin(_time * 2.8)
-			draw_circle(p, r * (1.1 + 0.3 * pulse), Color(1, 1, 1, 0.2 + 0.25 * pulse))
-			if _leaf_texture != null:
-				var s := leaf_size * (1.05 + 0.2 * pulse)
-				var c := Color(base.lerp(Color.WHITE, 0.45 * pulse), 0.8 + 0.2 * pulse)
-				draw_texture_rect(_leaf_texture, Rect2(p.x - s * 0.5, p.y - s * 0.5, s, s), false, c)
-			else:
-				draw_circle(p, r * (1.0 + 0.22 * pulse), Color(base, 0.5 + 0.5 * pulse))
-			draw_string(font, p + Vector2(-6, 6), sym, HORIZONTAL_ALIGNMENT_CENTER, -1, 15, Color(1, 1, 1, 0.95))
+			# Quầng sáng nhấp nháy theo nhịp thở mời gọi bé bấm đúng nốt
+			var pulse := 0.5 + 0.5 * sin(_time * 3.2)
+			draw_circle(p, r * (1.3 + 0.4 * pulse), Color(base.r, base.g, base.b, 0.35 * pulse))
+			draw_circle(p, r * (0.95 + 0.2 * pulse), Color(base.r, base.g, base.b, 0.75 + 0.25 * pulse))
+			draw_circle(p, r * 0.55, Color(1, 1, 1, 0.9))
+			draw_string(font, p + Vector2(-6, 6), sym, HORIZONTAL_ALIGNMENT_CENTER, -1, 15, Color(base.r * 0.3, base.g * 0.3, base.b * 0.3, 1.0))
 		LeafState.BLOOMED:
-			draw_circle(p, r * 1.25, Color("#F2C64B", 0.45))
-			if _leaf_texture != null:
-				var s := leaf_size * 1.15
-				draw_texture_rect(_leaf_texture, Rect2(p.x - s * 0.5, p.y - s * 0.5, s, s), false, Color("#F2C64B"))
-			else:
-				draw_circle(p, r * 1.35, Color("#F2C64B"))
-				draw_circle(p, r * 1.05, base)
-			draw_string(font, p + Vector2(-6, 6), "★", HORIZONTAL_ALIGNMENT_CENTER, -1, 15, Color.WHITE)
+			# Lá nở hoa vàng kim rực rỡ khi bé bấm trúng
+			draw_circle(p, r * 1.6, Color(1.0, 0.85, 0.3, 0.4))
+			draw_circle(p, r * 1.15, Color("#F2C64B"))
+			draw_circle(p, r * 0.7, Color.WHITE)
+			draw_string(font, p + Vector2(-6, 6), "★", HORIZONTAL_ALIGNMENT_CENTER, -1, 16, Color("#8A5800"))
+
 
 
 func get_chest_position() -> Vector2:

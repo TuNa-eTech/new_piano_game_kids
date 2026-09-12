@@ -54,7 +54,8 @@ var notes_played_this_session: int = 0
 var bedtime_minutes: int = 0
 var bedtime_remaining: float = 0.0
 var bedtime_active: bool = false
-var show_main_menu_on_launch: bool = false
+## Màn 01 Bìa Sách Khởi Đầu xuất hiện khi mở game theo thiết kế chuẩn Screen Flow Guide
+var show_main_menu_on_launch: bool = true
 
 
 func _ready() -> void:

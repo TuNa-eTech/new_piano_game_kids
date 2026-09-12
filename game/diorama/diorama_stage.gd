@@ -43,6 +43,10 @@ var _wiz_party_tex: Texture2D
 var _page_curl: PageCurl
 var _fireflies: CPUParticles2D
 
+# Thành phần Màn 03 Sân Khấu Chơi Tự Do (docs/mock-free-play.jpeg)
+var _beanstalk_freeplay: TextureRect
+var _bubble_particles: CPUParticles2D
+
 # Hệ thống hạt particle burst tương tác cho các đạo cụ
 var _wizard_sparkles: CPUParticles2D
 var _cyan_sparkles: CPUParticles2D
@@ -58,50 +62,118 @@ func _ready() -> void:
 	_setup_textures()
 	_setup_page_curl()
 	_setup_fireflies()
+	_setup_freeplay_elements()
 	_setup_interactive_particles()
 	_setup_interactions()
 	_start_wizard_animation()
 	_start_crystal_glow()
 	resized.connect(_update_layout)
 	_update_layout()
+	set_speech_text("TAP THE MUSICAL LEAVES\nTO FIND THE TREASURE!")
 	if GameState != null:
 		GameState.free_play_changed.connect(_on_free_play_changed)
+		_on_free_play_changed(GameState.free_play)
 
+
+
+func _setup_freeplay_elements() -> void:
+	# 1. Cây Đậu Thần Âm Nhạc trên trang sách phải (docs/mock-free-play.jpeg)
+	_beanstalk_freeplay = TextureRect.new()
+	_beanstalk_freeplay.name = "BeanstalkFreePlay"
+	_beanstalk_freeplay.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_beanstalk_freeplay.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_beanstalk_freeplay.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	if ResourceLoader.exists("res://assets/art/musical_beanstalk_stage.png"):
+		_beanstalk_freeplay.texture = load("res://assets/art/musical_beanstalk_stage.png")
+	_beanstalk_freeplay.visible = false
+	_book_spread.add_child(_beanstalk_freeplay)
+
+	# 2. Bong bóng xà phòng ngũ sắc chứa nốt nhạc bay lơ lửng
+	_bubble_particles = CPUParticles2D.new()
+	_bubble_particles.name = "BubbleNotesParticles"
+	_bubble_particles.emitting = false
+	_bubble_particles.amount = 10
+	_bubble_particles.lifetime = 3.5
+	if ResourceLoader.exists("res://assets/art/vfx_bubbles_notes.png"):
+		_bubble_particles.texture = load("res://assets/art/vfx_bubbles_notes.png")
+	elif ResourceLoader.exists("res://assets/art/fx_rainbow_bubbles.png"):
+		_bubble_particles.texture = load("res://assets/art/fx_rainbow_bubbles.png")
+	_bubble_particles.direction = Vector2(0.2, -1.0)
+	_bubble_particles.spread = 28.0
+	_bubble_particles.gravity = Vector2(0, -18.0)
+	_bubble_particles.initial_velocity_min = 28.0
+	_bubble_particles.initial_velocity_max = 65.0
+	_bubble_particles.scale_amount_min = 0.22
+	_bubble_particles.scale_amount_max = 0.48
+	var bubble_grad := Gradient.new()
+	bubble_grad.set_color(0, Color(1, 1, 1, 0.0))
+	bubble_grad.add_point(0.2, Color(1, 1, 1, 0.95))
+	bubble_grad.add_point(0.8, Color(1, 1, 1, 0.9))
+	bubble_grad.set_color(1, Color(1, 1, 1, 0.0))
+	_bubble_particles.color_ramp = bubble_grad
+	_book_spread.add_child(_bubble_particles)
 
 
 func _on_free_play_changed(enabled: bool) -> void:
 	if enabled:
 		if _wiz_party_tex != null:
 			_wizard.texture = _wiz_party_tex
-		set_speech_text("Thỏa thích sáng tác nhạc nào! ♫")
+		if _beanstalk_freeplay != null:
+			_beanstalk_freeplay.visible = true
+		if _bubble_particles != null:
+			_bubble_particles.emitting = true
+		set_speech_text("Thỏa thích sáng tác nhạc nào! 🎵")
 	else:
 		if _wiz_normal_tex != null:
 			_wizard.texture = _wiz_normal_tex
+		if _beanstalk_freeplay != null:
+			_beanstalk_freeplay.visible = false
+		if _bubble_particles != null:
+			_bubble_particles.emitting = false
 		set_speech_text("♫ ♪ ♫")
 
 
 func _setup_textures() -> void:
-	if ResourceLoader.exists("res://assets/art/bg_far.png"):
+	if ResourceLoader.exists("res://assets/art/bg_fairytale_village_clean_25d.jpg"):
+		_bg_far.texture = load("res://assets/art/bg_fairytale_village_clean_25d.jpg")
+		_bg_mid.visible = false
+		_bg_near.visible = false
+	elif ResourceLoader.exists("res://assets/art/bg_fairytale_village_25d.png"):
+		_bg_far.texture = load("res://assets/art/bg_fairytale_village_25d.png")
+		_bg_mid.visible = false
+		_bg_near.visible = false
+	elif ResourceLoader.exists("res://assets/art/bg_far.png"):
 		_bg_far.texture = load("res://assets/art/bg_far.png")
-	if ResourceLoader.exists("res://assets/art/bg_mid.png"):
-		_bg_mid.texture = load("res://assets/art/bg_mid.png")
-	if ResourceLoader.exists("res://assets/art/bg_near.png"):
-		_bg_near.texture = load("res://assets/art/bg_near.png")
 
-	if ResourceLoader.exists("res://assets/art/open_book_spread.png"):
+	if ResourceLoader.exists("res://assets/art/storybook_isolated_25d.png"):
+		_book_spread.texture = load("res://assets/art/storybook_isolated_25d.png")
+	elif ResourceLoader.exists("res://assets/art/storybook_beanstalk_diorama_25d.png"):
+		_book_spread.texture = load("res://assets/art/storybook_beanstalk_diorama_25d.png")
+	elif ResourceLoader.exists("res://assets/art/open_book_spread.png"):
 		_book_spread.texture = load("res://assets/art/open_book_spread.png")
+
 	if ResourceLoader.exists("res://assets/art/wizard_piano.png"):
 		_wiz_normal_tex = load("res://assets/art/wizard_piano.png")
 		_wizard.texture = _wiz_normal_tex
-	if ResourceLoader.exists("res://assets/art/wizard_star_party.png"):
-		_wiz_party_tex = load("res://assets/art/wizard_star_party.png")
+	_wizard.visible = false # Đã có sẵn chú phù thủy vẽ tuyệt đẹp trong storybook_beanstalk_diorama_25d
 
-	if ResourceLoader.exists("res://assets/art/crystal_cyan_stump.png"):
+	if ResourceLoader.exists("res://assets/art/crystal_cyan_mock_clean.png"):
+		_crystal_cyan.texture = load("res://assets/art/crystal_cyan_mock_clean.png")
+	elif ResourceLoader.exists("res://assets/art/crystal_cyan_stump.png"):
 		_crystal_cyan.texture = load("res://assets/art/crystal_cyan_stump.png")
-	if ResourceLoader.exists("res://assets/art/crystal_magenta_stump.png"):
+	_crystal_cyan.visible = true
+
+	if ResourceLoader.exists("res://assets/art/crystal_magenta_mock_clean.png"):
+		_crystal_magenta.texture = load("res://assets/art/crystal_magenta_mock_clean.png")
+	elif ResourceLoader.exists("res://assets/art/crystal_magenta_stump.png"):
 		_crystal_magenta.texture = load("res://assets/art/crystal_magenta_stump.png")
-	if ResourceLoader.exists("res://assets/art/chest_ground.png"):
+	_crystal_magenta.visible = true
+
+	if ResourceLoader.exists("res://assets/art/chest_ground_mock.png"):
+		_chest_ground.texture = load("res://assets/art/chest_ground_mock.png")
+	elif ResourceLoader.exists("res://assets/art/chest_ground.png"):
 		_chest_ground.texture = load("res://assets/art/chest_ground.png")
+
 	if ResourceLoader.exists("res://assets/art/fx_sparkle.png"):
 		_sparkle_tex = load("res://assets/art/fx_sparkle.png")
 
@@ -110,44 +182,49 @@ func _update_layout() -> void:
 	if size.x <= 0 or size.y <= 0:
 		return
 
-	# Cuốn sách mở ở vị trí trung tâm màn hình, phía trên bàn phím đàn
-	var book_w := minf(size.x * 0.88, 1140.0)
-	var book_h := book_w * (1080.0 / 1920.0)
-	var book_y := (size.y - book_h) * 0.38 # nằm gọn trong nửa trên
+	var ref_w: float = 1280.0
+	var ref_h: float = 720.0
+	_bg_far.size = Vector2(ref_w, ref_h)
+	_bg_far.position = Vector2.ZERO
+
+	# Cuốn sách mở ở vị trí trung tâm màn hình: X: 242..778 (w: 536), Y: 30..364 (h: 334) / 1024x572
+	var book_w := ref_w * (536.0 / 1024.0)
+	var book_h := ref_h * (334.0 / 572.0)
+	var book_x := ref_w * (242.0 / 1024.0)
+	var book_y := ref_h * (30.0 / 572.0)
 	_book_spread.size = Vector2(book_w, book_h)
-	_book_spread.position = Vector2((size.x - book_w) * 0.5, book_y)
+	_book_spread.position = Vector2(book_x, book_y)
 
-	# Phù thủy nhỏ ở trang sách bên trái
-	var wiz_w := book_w * 0.30
-	var wiz_h := wiz_w * (600.0 / 560.0)
-	_wizard.size = Vector2(wiz_w, wiz_h)
-	_wizard.position = Vector2(book_w * 0.14, book_h * 0.40)
-	_wizard.pivot_offset = Vector2(wiz_w * 0.5, wiz_h)
-
-	# Bong bóng thoại phía trên phù thủy nhỏ
-	var bubble_w := book_w * 0.32
-	var bubble_h := 62.0
+	# Bong bóng thoại động (nếu hiển thị) đặt phía trên phù thủy nhỏ
+	var bubble_w := book_w * 0.42
+	var bubble_h := 72.0
 	_speech_bubble.size = Vector2(bubble_w, bubble_h)
-	_speech_bubble.position = Vector2(book_w * 0.13, book_h * 0.27)
+	_speech_bubble.position = Vector2(book_w * 0.08, book_h * 0.20)
+	_speech_bubble.visible = false
 
-	# Cụm thạch anh xanh ngọc ở góc trái dưới bệ đàn
-	var cry_w := minf(size.x * 0.18, 160.0)
-	var cry_h := cry_w * (480.0 / 440.0)
+	# Cụm thạch anh xanh ngọc ở góc trái tiền cảnh (ngồi tự nhiên sát trên gờ nẹp bàn đàn)
+	var cry_w := ref_w * (86.0 / 1024.0)
+	var cry_h := ref_h * (95.0 / 572.0)
 	_crystal_cyan.size = Vector2(cry_w, cry_h)
-	_crystal_cyan.position = Vector2(10.0, size.y - cry_h - 18.0)
-
-	# Cụm thạch anh hồng tím ở góc phải dưới
-	_crystal_magenta.size = Vector2(cry_w, cry_h)
-	_crystal_magenta.position = Vector2(size.x - cry_w - 10.0, size.y - cry_h - 18.0)
-	_crystal_magenta.pivot_offset = Vector2(cry_w * 0.5, cry_h * 0.5)
+	_crystal_cyan.position = Vector2(12.0, 464.0 - cry_h + 8.0)
 	_crystal_cyan.pivot_offset = Vector2(cry_w * 0.5, cry_h * 0.5)
+	_crystal_cyan.visible = true
 
-	# Rương báu nay đã được đặt ngự trên đỉnh Cây Đậu Thần (Beanstalk) theo đúng ảnh mock
-	var chest_dim := minf(size.x * 0.10, 85.0)
-	_chest_ground.size = Vector2(chest_dim, chest_dim)
-	_chest_ground.position = Vector2(size.x - cry_w - chest_dim - 24.0, size.y - chest_dim - 18.0)
-	_chest_ground.pivot_offset = Vector2(chest_dim * 0.5, chest_dim * 0.5)
-	_chest_ground.visible = false
+	# Rương báu cỏ tiền cảnh góc phải (ngồi vững chãi sát gờ nẹp bàn đàn)
+	var ch_w := ref_w * (90.0 / 1024.0)
+	var ch_h := ref_h * (100.0 / 572.0)
+	_chest_ground.size = Vector2(ch_w, ch_h)
+	_chest_ground.position = Vector2(ref_w - ch_w - 20.0, 464.0 - ch_h + 8.0)
+	_chest_ground.pivot_offset = Vector2(ch_w * 0.5, ch_h * 0.5)
+	_chest_ground.visible = true
+
+	# Cụm thạch anh hồng tím cạnh rương báu
+	var mag_w := ref_w * (52.0 / 1024.0)
+	var mag_h := ref_h * (80.0 / 572.0)
+	_crystal_magenta.size = Vector2(mag_w, mag_h)
+	_crystal_magenta.position = Vector2(ref_w - ch_w - mag_w - 28.0, 464.0 - mag_h + 8.0)
+	_crystal_magenta.pivot_offset = Vector2(mag_w * 0.5, mag_h * 0.5)
+	_crystal_magenta.visible = true
 
 	# Trang sách phải uốn cong (PageCurl)
 	if _page_curl != null:
@@ -155,6 +232,17 @@ func _update_layout() -> void:
 		var page_h := book_h * 0.88
 		_page_curl.size = Vector2(page_w, page_h)
 		_page_curl.position = Vector2(book_w * 0.50, book_h * 0.06)
+
+	# Cây đậu thần âm nhạc Màn 03 trang phải
+	if _beanstalk_freeplay != null:
+		var bs_w := book_w * 0.38
+		var bs_h := book_h * 0.78
+		_beanstalk_freeplay.size = Vector2(bs_w, bs_h)
+		_beanstalk_freeplay.position = Vector2(book_w * 0.53, book_h * 0.12)
+
+	# Vùng bay bong bóng nốt nhạc từ cây đậu thần
+	if _bubble_particles != null:
+		_bubble_particles.position = Vector2(book_w * 0.70, book_h * 0.80)
 
 	# Vùng phát đom đóm bao quanh cuốn sách
 	if _fireflies != null:
@@ -425,8 +513,8 @@ func flip_page(duration: float = 0.95) -> void:
 
 func set_speech_text(text: String) -> void:
 	if _speech_label != null:
-		if "C4" in text or "Sư tử" in text or "Giai điệu" in text or "Lắng nghe" in text:
-			_speech_label.text = "♫  ♪  ♫"
+		if text.is_empty() or "C4" in text or "Sư tử" in text or "Giai điệu" in text or "Lắng nghe" in text or "♫" in text:
+			_speech_label.text = "TAP THE MUSICAL LEAVES\nTO FIND THE TREASURE!"
 		elif "nở hoa" in text or "Cây thần" in text:
 			_speech_label.text = "★  ✦  ★"
 		else:

@@ -14,6 +14,10 @@
 [ext_resource type="PackedScene" path="res://game/diorama/diorama_stage.tscn" id="12_diorama"]
 [ext_resource type="Script" path="res://game/diorama/magic_ribbon.gd" id="13_ribbon"]
 [ext_resource type="PackedScene" path="res://game/ui/instrument_switcher.tscn" id="14_inst"]
+[ext_resource type="PackedScene" path="res://game/hud/top_instrument_bar.tscn" id="15_top_bar"]
+[ext_resource type="PackedScene" path="res://game/hud/score_board.tscn" id="16_score_board"]
+[ext_resource type="Script" path="res://game/hud/cottage_menu_button.gd" id="17_cottage_menu"]
+[ext_resource type="Script" path="res://game/hud/levels_star_button.gd" id="18_levels_star"]
 
 [node name="Main" type="Node2D" unique_id=233447844]
 script = ExtResource("1_emt18")
@@ -45,7 +49,10 @@ anchors_preset = 12
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_top = -260.0
+offset_left = 0.0
+offset_top = -256.0
+offset_right = 0.0
+offset_bottom = 0.0
 grow_horizontal = 2
 grow_vertical = 0
 
@@ -73,7 +80,50 @@ layout_mode = 2
 
 [node name="HUD" type="CanvasLayer" parent="." unique_id=1258399898]
 
+[node name="TopInstrumentBar" parent="HUD" instance=ExtResource("15_top_bar")]
+offset_left = 15.0
+offset_top = 10.0
+offset_right = 465.0
+offset_bottom = 115.0
+
+[node name="ScoreBoard" parent="HUD" instance=ExtResource("16_score_board")]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -330.0
+offset_top = 18.0
+offset_right = -135.0
+offset_bottom = 108.0
+grow_horizontal = 0
+
+[node name="CottageMenu" type="Control" parent="HUD"]
+layout_mode = 3
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -115.0
+offset_top = 15.0
+offset_right = -20.0
+offset_bottom = 128.0
+grow_horizontal = 0
+mouse_filter = 1
+script = ExtResource("17_cottage_menu")
+
+[node name="LevelsStar" type="Control" parent="HUD"]
+layout_mode = 3
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -115.0
+offset_top = 145.0
+offset_right = -20.0
+offset_bottom = 250.0
+grow_horizontal = 0
+mouse_filter = 1
+script = ExtResource("18_levels_star")
+
 [node name="StarJar" type="Control" parent="HUD" unique_id=101396196]
+visible = false
 layout_mode = 3
 anchors_preset = 1
 anchor_left = 1.0
@@ -95,6 +145,7 @@ offset_bottom = 22.0
 horizontal_alignment = 1
 
 [node name="Menu" type="Control" parent="HUD" unique_id=417452215]
+visible = false
 layout_mode = 3
 anchors_preset = 0
 offset_left = 28.0
@@ -105,6 +156,7 @@ mouse_filter = 2
 script = ExtResource("7_menu")
 
 [node name="ChapterProgress" type="Control" parent="HUD" unique_id=2031637127]
+visible = false
 layout_mode = 3
 anchors_preset = 0
 offset_left = 148.0
@@ -115,6 +167,7 @@ mouse_filter = 2
 script = ExtResource("9_prog")
 
 [node name="FreePlay" type="Button" parent="HUD" unique_id=223425106]
+visible = false
 anchors_preset = 3
 anchor_left = 1.0
 anchor_top = 1.0
@@ -129,6 +182,7 @@ grow_vertical = 0
 script = ExtResource("8_free")
 
 [node name="InstrumentSwitcher" parent="HUD" instance=ExtResource("14_inst")]
+visible = false
 anchors_preset = 3
 anchor_left = 1.0
 anchor_top = 1.0

@@ -18,6 +18,7 @@ func _ready() -> void:
 	var router: ScreenRouter = main.router()
 	_check("ScreenRouter tồn tại trong Main", router != null)
 
+	await _test_launch_ftue_flow()
 	await _test_main_menu_flow(router)
 	await _test_chapter_map_navigation(router)
 	await _test_level_select_flow(router)
@@ -36,10 +37,37 @@ func _check(label: String, ok: bool, detail: String = "") -> void:
 	print("  [%s] %s%s" % ["OK " if ok else "SAI", label, ("  — " + detail) if detail else ""])
 
 
+func _test_launch_ftue_flow() -> void:
+	print("⓪ Kiểm tra Khởi Động Vào Màn 01 (Bìa Sách Khởi Đầu theo Design Flow)")
+	GameState.show_main_menu_on_launch = true
+	var test_main: Node = load("res://game/main.tscn").instantiate()
+	get_tree().root.add_child.call_deferred(test_main)
+	for i in 6:
+		await get_tree().process_frame
+
+	var r: ScreenRouter = test_main.router()
+	var m: MainMenu = r.get_main_menu()
+	_check("Vừa mở game xuất hiện ngay Màn 01 (MainMenu)", m.is_open())
+	_check("Game tạm dừng chờ bé bấm Chơi", get_tree().paused)
+
+	# Bấm Chơi vào game
+	m._on_play_pressed()
+	await get_tree().process_frame
+	_check("Bấm Chơi đóng Bìa Sách và vào ván chơi chính", not m.is_open())
+	_check("Ván chơi tiếp tục", not get_tree().paused)
+
+	test_main.queue_free()
+	await get_tree().process_frame
+	PauseOverlay.reset_pause_state()
+	GameState.show_main_menu_on_launch = false
+
+
 func _test_main_menu_flow(router: ScreenRouter) -> void:
-	print("① Kiểm tra luồng Menu Bìa Sách (MainMenu)")
+	print("\n① Kiểm tra luồng Menu Bìa Sách (MainMenu)")
 	var menu: MainMenu = router.get_main_menu()
 	var map: ChapterMap = router.get_chapter_map()
+	var gate: ParentalGate = router.get_parental_gate()
+	var corner: ParentalCorner = router.get_parental_corner()
 
 	router.open_main_menu()
 	await get_tree().process_frame
@@ -63,6 +91,28 @@ func _test_main_menu_flow(router: ScreenRouter) -> void:
 	map.close_map()
 	await get_tree().process_frame
 	_check("Đóng Bản đồ trả về game", not map.is_open())
+
+	# Mở lại Menu và bấm Phụ Huynh
+	router.open_main_menu()
+	await get_tree().process_frame
+	menu.parent_gate_requested.emit()
+	await get_tree().process_frame
+	_check("Bấm Phụ Huynh từ MainMenu đóng Menu và mở ParentalGate", not menu.is_open() and gate.is_open())
+
+	# Giải đố Cổng Phụ Huynh
+	gate._tapped_strawberries = 3
+	gate.close_overlay()
+	gate.gate_unlocked.emit()
+	await get_tree().process_frame
+	_check("Giải đúng mở ParentalCorner", corner.is_open())
+
+	# Đóng ParentalCorner trả về MainMenu
+	corner.close_overlay()
+	await get_tree().process_frame
+	_check("Đóng ParentalCorner tự động quay lại MainMenu", menu.is_open())
+
+	menu.close_overlay()
+	await get_tree().process_frame
 
 
 func _test_chapter_map_navigation(router: ScreenRouter) -> void:

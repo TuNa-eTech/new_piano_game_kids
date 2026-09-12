@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://capture_menu_sequence_uid"]
+
+[ext_resource type="Script" path="res://game/dev/capture_menu_sequence.gd" id="1_seq"]
+
+[node name="CaptureMenuSequence" type="Node2D"]
+script = ExtResource("1_seq")

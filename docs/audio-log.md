@@ -94,10 +94,15 @@ rounded, no harsh transient, no metallic ring, mono, under 0.5 seconds.
 | `sfx_hold_complete.wav` | `A warm confirming chime` | Vòng giữ 2 giây đầy — phản hồi cho **người lớn** |
 | `sfx_chapter_unlock.wav` | `A bright unlocking sparkle` | Mở khoá chương mới |
 | `sfx_free_play_toggle.wav` | `A light playful toggle` | Bật/tắt Chơi Tự Do |
+| `sfx_soft_boing.wav` | `A soft bouncy marshmallow boing` | Sư tử/phù thủy bật nhảy tưng bừng (`-12dB`) |
+| `sfx_fairy_dust.wav` | `A tiny shimmering fairy dust cascade` | Vung đũa phép, sao lấp lánh li ti (`-10dB`) |
+| `sfx_giggle_cute.wav` | `A warm innocent cartoon baby giggle` | Hai bạn nhỏ chạm mặt, cười đùa (`-11dB`) |
+| `sfx_soft_plop.wav` | `A gentle rounded cushion moss tumble` | Sư tử ngã nhào lộn trên đệm rêu (`-10dB`) |
+| `sfx_cute_purr.wav` | `A soothing sleepy kitten purr` | Hai bạn cuộn tròn chợp mắt ngủ (`-13dB`) |
 
-**Vì sao không có `sfx_leaf_bloom`:** lá nở và hạt sao rơi vào lọ là **cùng một khoảnh khắc** — hai file sẽ chồng lên nhau chứ không thêm gì. Gộp cả hai vào một tiếng duy nhất là `sfx_star_ting`, và dành ô còn lại cho việc chọn chương, chỗ hiện đang hoàn toàn im.
+**Bộ SFX Hoạt Hình Hữu Cơ (Organic Cartoon Audio)**: Được thiết kế riêng cho các hoạt cảnh chờ của 2 nhân vật, phát với âm lượng nền dịu ngọt ($-10\text{dB}$ đến $-13\text{dB}$), hoàn toàn không mang nốt nhạc để không xung đột với bài BGM ru ngủ.
 
-Cả tám tên trên đã **nối sẵn trong code** (`AudioDirector.SFX_NAMES`). Thả đúng tên file vào `assets/audio/` là chạy, không phải sửa dòng nào.
+Tất cả các tên trên đã được nạp tự động qua `AudioDirector.SFX_NAMES` và gọi thông qua `AudioDirector.play_sfx(name, volume_db)`.
 
 ---
 
@@ -223,5 +228,26 @@ Nếu có lấy file từ thư viện ngoài, luật giấy phép:
 | `flute_0_c4.wav` .. `flute_6_d5.wav` (7 files) | Sáo Trúc (Bamboo Flute) | C4, D4, E4, G4, A4, C5, D5 | Sóng mộc, breath chiff lọc thông dải 2.2kHz, vibrato 5Hz | MIT / In-house | Antigravity | 2026-09-10 |
 | `kalimba_0_c4.wav` .. `kalimba_6_d5.wav` (7 files) | Đàn Kalimba (Thumb Piano) | C4, D4, E4, G4, A4, C5, D5 | Xung gõ phiến kim loại 12ms, họa âm phiến 5.8x, vang thùng gỗ 175Hz | MIT / In-house | Antigravity | 2026-09-10 |
 | `chimes_0_c4.wav` .. `chimes_6_d5.wav` (7 files) | Chuông Gió & Celesta (Wind Chimes) | C4, D4, E4, G4, A4, C5, D5 | Búa gõ pha lê, chùm họa âm ống kim loại (1.0, 2.76, 5.4, 8.9), beating chorus | MIT / In-house | Antigravity | 2026-09-10 |
+
+---
+
+### 6. Nhạc Nền 10 Bài Hát Thiếu Nhi (Songbook - In-house Acoustic Synth)
+
+Đặt tại: `assets/audio/songbook/` · Âm lượng chuẩn `-18 dBFS` · OGG Vorbis Stereo Seamless Loop.
+
+| Tên file | Bài hát | Nhịp | Vòng hợp âm | Giấy phép | Tác giả | Ngày tạo |
+|---|---|---|---|---|---|---|
+| `bgm_main_menu_theme.ogg` | "Kỳ Diệu Rừng Nhạc" (Main Menu Theme) | 84 BPM | C Maj9 - F Maj7 - Am9 - Gsus4 (Harp, Celesta, Marimba, Flute) | MIT / In-house | Antigravity | 2026-09-11 |
+| `bgm_baby_shark.ogg` | Baby Shark | 85 BPM | C - C - Am - F (Ukulele & Marimba) | MIT / In-house | Antigravity | 2026-09-11 |
+| `bgm_wheels_on_the_bus.ogg` | The Wheels on the Bus | 80 BPM | C - G - C - C (Bouncing Pizzicato) | MIT / In-house | Antigravity | 2026-09-11 |
+| `bgm_johny_johny.ogg` | Johny Johny Yes Papa | 76 BPM | C - G - C - G (Music Box & Guitar) | MIT / In-house | Antigravity | 2026-09-11 |
+| `bgm_twinkle_twinkle.ogg` | Twinkle Twinkle Little Star | 68 BPM | C - F - C - G (Celesta & Concert Harp) | MIT / In-house | Antigravity | 2026-09-11 |
+| `bgm_if_youre_happy.ogg` | If You're Happy and You Know It | 84 BPM | C - G - C - G (Happy Kalimba & Rhythm) | MIT / In-house | Antigravity | 2026-09-11 |
+| `bgm_old_macdonald.ogg` | Old MacDonald Had a Farm | 82 BPM | C - F - C - G (Rustic Folk Guitar) | MIT / In-house | Antigravity | 2026-09-11 |
+| `bgm_abc_song.ogg` | ABC Song | 70 BPM | C - F - C - G (Lullaby Bells & Piano) | MIT / In-house | Antigravity | 2026-09-11 |
+| `bgm_baa_baa_black_sheep.ogg` | Baa Baa Black Sheep | 72 BPM | C - F - C - G (Pastoral Flute & Pad) | MIT / In-house | Antigravity | 2026-09-11 |
+| `bgm_five_little_monkeys.ogg` | Five Little Monkeys | 80 BPM | C - G - C - G (Cheeky Marimba & Bass) | MIT / In-house | Antigravity | 2026-09-11 |
+| `bgm_heads_shoulders.ogg` | Heads, Shoulders, Knees and Toes | 86 BPM | C - G - C - G (Playful Tines & Ukulele) | MIT / In-house | Antigravity | 2026-09-11 |
+
 
 

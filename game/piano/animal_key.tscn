@@ -10,50 +10,27 @@ offset_bottom = 260.0
 mouse_filter = 2
 script = ExtResource("1_qeg72")
 
-[node name="Shadow" type="ColorRect" parent="." unique_id=1198273645]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 2.0
-offset_top = 8.0
-offset_right = -2.0
-offset_bottom = 4.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-color = Color(0, 0, 0, 0.28)
-
-[node name="Chamfer" type="Panel" parent="." unique_id=1582938472]
-layout_mode = 1
-anchors_preset = 12
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_top = -26.0
-grow_horizontal = 2
-grow_vertical = 0
-mouse_filter = 2
-
 [node name="KeyTop" type="Control" parent="." unique_id=1498273461]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_bottom = -16.0
-grow_horizontal = 2
-grow_vertical = 2
+layout_mode = 3
+anchors_preset = 0
+offset_right = 100.0
+offset_bottom = 165.0
 mouse_filter = 2
 
-[node name="Body" type="ColorRect" parent="KeyTop" unique_id=1798707488]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+[node name="Body" type="Panel" parent="KeyTop" unique_id=1798707488]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 100.0
+offset_bottom = 165.0
 mouse_filter = 2
-color = Color(0.992, 0.953, 0.855, 1)
+
+[node name="Chamfer" type="Panel" parent="KeyTop" unique_id=1582938472]
+layout_mode = 3
+anchors_preset = 0
+offset_top = 143.0
+offset_right = 100.0
+offset_bottom = 165.0
+mouse_filter = 2
 
 [node name="GlowOverlay" type="ColorRect" parent="KeyTop" unique_id=1432890123]
 layout_mode = 1

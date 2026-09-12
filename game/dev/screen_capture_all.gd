@@ -4,6 +4,8 @@ var _brain_dir := "/Users/anhtu/.gemini/antigravity-ide/brain/49773952-7526-4797
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	SaveStore.reset_for_test()
+	PauseOverlay.reset_pause_state()
 	var main_scene: PackedScene = load("res://game/main.tscn")
 	var main = main_scene.instantiate()
 	add_child(main)
