@@ -28,20 +28,20 @@ static func is_valid(chapter: int) -> bool:
 
 
 static func pages_per_chapter() -> int:
-	return Melodies.PAGES_PER_CHAPTER
+	return 5
 
 
-## Tổng số trang của v1: 3 × 5 = 15.
+## Tổng số trang hiện tại: 10 bài hát trong Songbook (2 chương x 5 bài)
 static func total_pages() -> int:
-	return count() * Melodies.PAGES_PER_CHAPTER
+	return Songbook.count() if Songbook.count() > 0 else count() * pages_per_chapter()
 
 
 static func first_page_of(chapter: int) -> int:
-	return clampi(chapter, 0, count() - 1) * Melodies.PAGES_PER_CHAPTER
+	return clampi(chapter, 0, count() - 1) * pages_per_chapter()
 
 
 static func of_page(page: int) -> int:
-	return clampi(page / Melodies.PAGES_PER_CHAPTER, 0, count() - 1)
+	return clampi(page / pages_per_chapter(), 0, count() - 1)
 
 
 static func name_of(chapter: int) -> String:

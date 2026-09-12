@@ -12,6 +12,7 @@ extends Node
 ## chờ tiếp — bé thử lại bao nhiêu lần cũng được.
 
 signal page_completed(page_index: int)
+signal phrase_completed(phrase_index: int)
 signal prompt_updated(prompt_text: String)
 signal page_turn_started
 
@@ -35,6 +36,7 @@ var _state: State = State.LEAD_IN
 var _timer: float = 0.0
 var _sequence: PackedInt32Array = PackedInt32Array()
 var _step: int = 0            ## vị trí trong chuỗi mà bé cần chạm tiếp
+var _phrase_index: int = 0    ## câu hát hiện tại trong bài hát
 var _sing_index: int = 0
 var _idle: float = 0.0
 var _replay_index: int = 0
@@ -67,21 +69,50 @@ func setup(tree: MagicTree, keyboard: PianoKeyboard) -> void:
 # ------------------------------------------------------------------ vòng đời --
 
 func _begin_page(first: bool = false) -> void:
-	_page = GameState.page_index
-	_sequence = Melodies.for_page(_page)
+	_page = clampi(GameState.page_index, 0, Songbook.count() - 1) if Songbook.count() > 0 else GameState.page_index
+	_phrase_index = 0
+	_load_phrase()
 	_step = 0
 	_sing_index = 0
 	_idle = 0.0
 	_tree.reset_page()
 	_tree.set_sequence(_sequence)
+
+	# Phát nhạc nền backing track chuẩn 10 bài hát của Songbook
+	if Songbook.is_valid(_page):
+		var song := Songbook.get_song(_page)
+		var bgm_path: String = song.get("bgm_path", "")
+		AudioDirector.play_songbook_bgm(bgm_path)
+	else:
+		AudioDirector.play_gameplay_music()
+
 	# Trang đầu tiên của phiên không có gì để "lật" — chỉ kêu khi thật sự sang trang.
 	if not first:
 		AudioDirector.play_sfx("page_turn")
 	_enter(State.FREE if GameState.free_play else State.LEAD_IN)
 
 
+func _load_phrase() -> void:
+	if Songbook.is_valid(_page):
+		_sequence = Songbook.get_phrase_sequence(_page, _phrase_index)
+		if _sequence.is_empty():
+			_sequence = Melodies.for_page(_page)
+	else:
+		_sequence = Melodies.for_page(_page)
+
+
+func _get_phrase_prompt() -> String:
+	if Songbook.is_valid(_page):
+		var phrase := Songbook.get_phrase(_page, _phrase_index)
+		var lyrics: String = phrase.get("lyrics", "")
+		if not lyrics.is_empty():
+			return "♫ %s ♫" % lyrics
+	return ""
+
+
 func _on_page_changed(page_index: int) -> void:
-	if page_index != _page:
+	var target := clampi(page_index, 0, Songbook.count() - 1) if Songbook.count() > 0 else page_index
+	if target != _page:
 		_begin_page()
 
 
@@ -105,13 +136,15 @@ func _enter(next: State) -> void:
 			_tree.clear_hint()
 			if _keyboard != null:
 				_keyboard.clear_hint_key()
-			prompt_updated.emit("Lắng nghe khu rừng nào... ♫")
+			var p := _get_phrase_prompt()
+			prompt_updated.emit(p if not p.is_empty() else "Lắng nghe khu rừng nào... ♫")
 		State.SINGING:
 			_sing_index = 0
 			_tree.clear_hint()
 			if _keyboard != null:
 				_keyboard.clear_hint_key()
-			prompt_updated.emit("Giai điệu đang ngân vang! ♫")
+			var p := _get_phrase_prompt()
+			prompt_updated.emit(p if not p.is_empty() else "Giai điệu đang ngân vang! ♫")
 		State.WAITING:
 			_tree.clear_singing()
 			_idle = 0.0
@@ -123,7 +156,7 @@ func _enter(next: State) -> void:
 			if _keyboard != null:
 				_keyboard.clear_hint_key()
 			AudioDirector.play_sfx("chest_open")
-			prompt_updated.emit("Cây thần nở hoa rồi! ★")
+			prompt_updated.emit("Cây thần nở hoa rực rỡ! ★")
 		State.PAGE_TURN:
 			_tree.clear_hint()
 			if _keyboard != null:
@@ -218,8 +251,20 @@ func _on_note_played(note_index: int) -> void:
 	_step += 1
 
 	if _step >= _sequence.size():
-		_enter(State.FRUITING)
-		page_completed.emit(GameState.page_index)
+		phrase_completed.emit(_phrase_index)
+		var total_phrases := Songbook.phrase_count(_page)
+		if Songbook.is_valid(_page) and (_phrase_index + 1) < total_phrases:
+			# Chuyển tiếp sang câu tiếp theo của bài hát
+			_phrase_index += 1
+			_load_phrase()
+			_step = 0
+			_tree.set_sequence(_sequence)
+			AudioDirector.play_sfx("fairy_dust")
+			_enter(State.LEAD_IN)
+		else:
+			# Hoàn thành trọn vẹn bài hát!
+			_enter(State.FRUITING)
+			page_completed.emit(GameState.page_index)
 	else:
 		_refresh_hint()
 
@@ -230,7 +275,11 @@ func _refresh_hint() -> void:
 		_tree.set_hint(n)
 		if _keyboard != null:
 			_keyboard.set_hint_key(n)
-		prompt_updated.emit("Chạm bạn %s (%s) nhé!" % [Notes.animal_of(n), Notes.note_of(n)])
+		var lyrics := _get_phrase_prompt()
+		if not lyrics.is_empty():
+			prompt_updated.emit(lyrics)
+		else:
+			prompt_updated.emit("♪ %s ♪" % Notes.animal_of(n))
 	else:
 		_tree.clear_hint()
 		if _keyboard != null:
@@ -269,4 +318,7 @@ func state_name() -> String:
 
 
 func progress() -> String:
+	var total_p := Songbook.phrase_count(_page)
+	if total_p > 1:
+		return "Câu %d/%d (%d/%d)" % [_phrase_index + 1, total_p, _step, _sequence.size()]
 	return "%d/%d" % [_step, _sequence.size()]

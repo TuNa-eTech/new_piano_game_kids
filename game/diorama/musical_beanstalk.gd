@@ -30,26 +30,26 @@ var _chest_tween: Tween
 
 # 7 vị trí tương đối của lá nốt nhạc trên thân cây (tính theo % width và % height của cây)
 const LEAF_POSITIONS: Array[Vector2] = [
-	Vector2(0.24, 0.76), # C4 (Lá dưới trái)
-	Vector2(0.72, 0.72), # D4 (Lá dưới phải)
-	Vector2(0.28, 0.54), # E4 (Lá giữa trái)
-	Vector2(0.74, 0.50), # F4 (Lá giữa phải)
-	Vector2(0.32, 0.36), # G4 (Lá trên trái)
-	Vector2(0.68, 0.30), # A4 (Lá trên phải)
-	Vector2(0.48, 0.18), # B4 (Lá đọt ngọn gần rương)
+	Vector2(0.24, 0.74), # C4 (Lá dưới trái)
+	Vector2(0.72, 0.65), # D4 (Lá dưới phải)
+	Vector2(0.26, 0.52), # E4 (Lá giữa trái)
+	Vector2(0.74, 0.48), # F4 (Lá giữa phải)
+	Vector2(0.30, 0.35), # G4 (Lá trên trái)
+	Vector2(0.68, 0.28), # A4 (Lá trên phải)
+	Vector2(0.48, 0.16), # B4 (Lá đọt ngọn gần rương)
 ]
 
 const LEAF_COLORS: Array[Color] = [
-	Color("#FF6B6B"), # C4 - Đỏ cam
-	Color("#FFA94D"), # D4 - Cam vàng
-	Color("#FFD43B"), # E4 - Vàng nắng
-	Color("#69DB7C"), # F4 - Xanh lá non
-	Color("#38D9A9"), # G4 - Bạc hà ngọc
-	Color("#4DABF7"), # A4 - Xanh da trời
-	Color("#B197FC"), # B4 - Tím hoa cà
+	Color("#E0644F"), # C4 - Sư tử (Đỏ cam)
+	Color("#E08A2E"), # D4 - Gấu (Cam mật)
+	Color("#D8619A"), # E4 - Thỏ (Hồng phấn)
+	Color("#3F9455"), # G4 - Mèo (Xanh lá)
+	Color("#3877B5"), # A4 - Khỉ (Xanh dương)
+	Color("#7C5CC4"), # C5 - Voi (Tím cà)
+	Color("#C7A017"), # D5 - Cú (Vàng hổ phách)
 ]
 
-const NOTE_LETTERS: Array[String] = ["C", "D", "E", "F", "G", "A", "B"]
+const NOTE_LETTERS: Array[String] = ["C", "D", "E", "G", "A", "C", "D"]
 
 
 func _ready() -> void:
@@ -206,7 +206,7 @@ func _update_layout() -> void:
 	if _chest_rect != null:
 		var c_size := Vector2(minf(size.x * 0.35, 104.0), minf(size.x * 0.32, 94.0))
 		_chest_rect.size = c_size
-		_chest_rect.position = Vector2((size.x - c_size.x) * 0.5, size.y * 0.02)
+		_chest_rect.position = Vector2((size.x - c_size.x) * 0.5, size.y * 0.055)
 		_chest_rect.pivot_offset = c_size * 0.5
 
 		if _chest_sparkles != null:

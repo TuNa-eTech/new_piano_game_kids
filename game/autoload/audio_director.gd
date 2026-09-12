@@ -233,6 +233,14 @@ func play_gameplay_music(fade_sec: float = 0.8) -> void:
 	play_music_track(path, fade_sec, 0.0)
 
 
+## Phát nhạc nền backing track chuẩn 10 bài hát thiếu nhi (-18 dBFS)
+func play_songbook_bgm(bgm_path: String, fade_sec: float = 0.6) -> void:
+	if ResourceLoader.exists(bgm_path):
+		play_music_track(bgm_path, fade_sec, 0.0) # Player volume trên bus Music (-18dB trong default_bus_layout)
+	else:
+		play_gameplay_music(fade_sec)
+
+
 ## Chuyển đổi nhạc nền mượt mà với crossfade âm lượng
 func play_music_track(path: String, fade_sec: float = 0.6, target_db: float = 0.0) -> void:
 	if not ResourceLoader.exists(path) or _pad_player == null:

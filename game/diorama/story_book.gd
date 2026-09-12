@@ -51,10 +51,11 @@ func _ready() -> void:
 	_update_layout()
 
 	# Khởi động với trang hiện tại của GameState
-	var init_page := 0
 	if GameState != null:
-		init_page = GameState.page_index
-	load_page(init_page)
+		GameState.page_changed.connect(load_page)
+		load_page(GameState.page_index)
+	else:
+		load_page(0)
 
 
 func _setup_book_frame() -> void:
@@ -62,7 +63,7 @@ func _setup_book_frame() -> void:
 	_book_bg.name = "BookBackground"
 	_book_bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_book_bg.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	_book_bg.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	_book_bg.stretch_mode = TextureRect.STRETCH_SCALE
 	if ResourceLoader.exists("res://assets/art/storybook_open_frame_clean.png"):
 		_book_bg.texture = load("res://assets/art/storybook_open_frame_clean.png")
 	add_child(_book_bg)
@@ -137,15 +138,10 @@ func _setup_left_page() -> void:
 	_speech_bubble.add_child(_speech_label)
 	_left_page.add_child(_speech_bubble)
 
-	# 3. Cậu Bé Phù Thủy Leo
+	# 3. Cậu Bé Phù Thủy Leo (Ngồi chơi đàn piano mini trên toàn bộ nửa dưới trang trái)
 	_wizard_leo = WizardLeo.new()
 	_wizard_leo.name = "WizardLeo"
 	_left_page.add_child(_wizard_leo)
-
-	# 4. Thú Cưng Đồng Hành
-	_pet_companion = PetCompanion.new()
-	_pet_companion.name = "PetCompanion"
-	_left_page.add_child(_pet_companion)
 
 
 func _setup_right_page() -> void:
@@ -160,6 +156,11 @@ func _setup_right_page() -> void:
 		chest_opened.emit()
 	)
 	_right_page.add_child(_beanstalk)
+
+	# 4. Thú Cưng Đồng Hành trên Trang Phải cùng Cây Đậu Thần
+	_pet_companion = PetCompanion.new()
+	_pet_companion.name = "PetCompanion"
+	_right_page.add_child(_pet_companion)
 
 
 func _setup_navigation_buttons() -> void:
@@ -204,36 +205,30 @@ func _update_layout() -> void:
 		_book_bg.position = Vector2.ZERO
 		_book_bg.size = size
 
-	# Chia đôi quyển sách: Trang Trái và Trang Phải
-	# Mỗi trang chiếm khoảng 43% chiều rộng, lùi vào mép bìa và tránh gáy sách giữa
-	var margin_x := size.x * 0.065
-	var margin_y := size.y * 0.075
-	var page_w := size.x * 0.42
-	var page_h := size.y * 0.85
+	# Chia đôi quyển sách: Trang Trái và Trang Phải khớp với tranh minh họa trong khung sách
+	var margin_x := size.x * 0.08
+	var margin_y := size.y * 0.06
+	var page_w := size.x * 0.405
+	var page_h := size.y * 0.88
 
 	if _left_page != null:
 		_left_page.position = Vector2(margin_x, margin_y)
 		_left_page.size = Vector2(page_w, page_h)
 
 		# Bố cục Trang Trái
-		var banner_h := 30.0
-		_title_banner.position = Vector2(10.0, 6.0)
-		_title_banner.size = Vector2(page_w - 20.0, banner_h)
+		var banner_h := 26.0
+		_title_banner.position = Vector2(16.0, 8.0)
+		_title_banner.size = Vector2(page_w - 32.0, banner_h)
 
-		var bubble_h := 44.0
-		_speech_bubble.position = Vector2(10.0, banner_h + 8.0)
-		_speech_bubble.size = Vector2(page_w - 20.0, bubble_h)
+		var bubble_h := 30.0
+		_speech_bubble.position = Vector2(16.0, 8.0 + banner_h + 4.0)
+		_speech_bubble.size = Vector2(page_w - 32.0, bubble_h)
 
-		# Leo ở nửa dưới bên trái
-		var leo_w := page_w * 0.65
-		var leo_h := page_h * 0.60
-		_wizard_leo.size = Vector2(leo_w, leo_h)
-		_wizard_leo.position = Vector2(6.0, page_h - leo_h - 6.0)
-
-		# Thú cưng ở góc dưới bên phải trang trái
-		var pet_size := minf(page_w * 0.38, 92.0)
-		_pet_companion.size = Vector2(pet_size, pet_size)
-		_pet_companion.position = Vector2(page_w - pet_size - 12.0, page_h - pet_size - 18.0)
+		# Leo ở nửa dưới trang trái: Đứng/ngồi oai vệ, thoải mái bên cây đàn mini
+		# Kích thước to hơn và đặt sát mép đáy trang sách gần bàn phím đàn piano lớn
+		var leo_s := 285.0
+		_wizard_leo.size = Vector2(leo_s, leo_s)
+		_wizard_leo.position = Vector2((page_w - leo_s) * 0.5 + 20.0, page_h - leo_s + 18.0)
 
 	if _right_page != null:
 		var right_x := size.x * 0.515
@@ -244,11 +239,21 @@ func _update_layout() -> void:
 			_beanstalk.position = Vector2.ZERO
 			_beanstalk.size = Vector2(page_w, page_h)
 
-	# Nút lật trang ở hai bên bìa sách
+		# Thú cưng đồng hành trên trang phải: Cùng cao độ mặt đất với Leo, hướng mặt về phía Cây Đậu Thần và Leo
+		if _pet_companion != null:
+			var pet_size := clampf(page_w * 0.24, 72.0, 84.0)
+			_pet_companion.size = Vector2(pet_size, pet_size)
+			_pet_companion.position = Vector2(page_w - pet_size - 28.0, page_h - pet_size + 14.0)
+			_pet_companion.set_facing_left(true)
+
+	# Nút lật trang ôm sát mép viền ngoài bìa sách
 	if _btn_prev != null and _btn_next != null:
-		var btn_y := (size.y - 44.0) * 0.5
-		_btn_prev.position = Vector2(6.0, btn_y)
-		_btn_next.position = Vector2(size.x - 50.0, btn_y)
+		var btn_s := 42.0
+		var btn_y := (size.y - btn_s) * 0.5
+		_btn_prev.size = Vector2(btn_s, btn_s)
+		_btn_prev.position = Vector2(size.x * 0.02, btn_y)
+		_btn_next.size = Vector2(btn_s, btn_s)
+		_btn_next.position = Vector2(size.x * 0.98 - btn_s, btn_y)
 
 
 ## Nạp dữ liệu trang bài hát
@@ -264,9 +269,18 @@ func load_page(page_idx: int) -> void:
 	var emoji: String = _song_data.get("pet_emoji", "✨")
 	_title_label.text = "Trang %d/%d: %s %s" % [_current_page + 1, total_songs, title, emoji]
 
-	# Cập nhật lời dẫn truyện ban đầu
-	var intro: String = _song_data.get("story_intro", "Cùng Leo và thú cưng đánh thức cây đậu thần nhé!")
-	set_speech_text(intro)
+	# Cập nhật lời bài hát mở đầu
+	var phrases: Array = _song_data.get("phrases", [])
+	if not phrases.is_empty():
+		var first_phrase: Dictionary = phrases[0]
+		var lyrics: String = first_phrase.get("lyrics", "")
+		if not lyrics.is_empty():
+			set_speech_text("♫ %s ♫" % lyrics)
+		else:
+			set_speech_text("♪ %s ♪" % title)
+	else:
+		var en_title: String = _song_data.get("title", "")
+		set_speech_text("♪ %s · %s ♪" % [title, en_title])
 
 	# Cập nhật BPM và trạng thái cho Cậu bé Leo
 	var bpm: float = _song_data.get("bpm", 80.0)
@@ -297,17 +311,19 @@ func set_speech_text(text: String) -> void:
 ## Khi bé gõ nốt đàn: Đồng bộ hoạt cảnh Leo, Thú cưng và Cây đậu thần
 func on_note_struck(note_index: int) -> void:
 	if _wizard_leo != null:
-		_wizard_leo.play_cast()
+		_wizard_leo.play_note(note_index)
 	if _pet_companion != null:
 		_pet_companion.play_react()
 	if _beanstalk != null:
 		_beanstalk.bloom_leaf(note_index)
 
 
-## Cây hát: Lá nốt nhạc phát sáng
+## Cây hát: Lá nốt nhạc phát sáng và Leo gõ đàn mẫu
 func sing_leaf(note_index: int) -> void:
 	if _beanstalk != null:
 		_beanstalk.sing_leaf(note_index)
+	if _wizard_leo != null:
+		_wizard_leo.play_note(note_index)
 
 
 ## Hoàn thành bài hát: Leo nhảy múa, thú cưng reo hò, rương báu mở bung
@@ -319,6 +335,20 @@ func celebrate_completion() -> void:
 	if _beanstalk != null:
 		_beanstalk.open_chest_celebration()
 	set_speech_text("HOAN HÔ BÉ GIỎI QUÁ! ✨\nRƯƠNG BÁU ĐÃ MỞ RỒI! 🎉")
+
+
+## Thao tác vung tay nghệ sĩ biểu diễn của Leo
+func play_leo_flourish() -> void:
+	if _wizard_leo != null:
+		_wizard_leo.play_flourish()
+	if _pet_companion != null:
+		_pet_companion.play_react()
+
+
+## Đổi biểu cảm cho Leo
+func set_leo_expression(expr: int, duration: float = 1.2) -> void:
+	if _wizard_leo != null:
+		_wizard_leo.set_expression(expr, duration)
 
 
 ## Lật sang trang tiếp theo

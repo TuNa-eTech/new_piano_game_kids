@@ -215,10 +215,10 @@ func _update_layout() -> void:
 	_book_spread.position = Vector2(book_x, book_y)
 
 	# Cuốn Sách Tranh Sống Động 2.5D Mới (Interactive Living Storybook)
-	var sb_w := minf(ref_w * 0.65, 832.0)
-	var sb_h := minf(ref_h * 0.53, 380.0)
+	var sb_w := 880.0
+	var sb_h := 458.0
 	var sb_x := (ref_w - sb_w) * 0.5
-	var sb_y := 44.0
+	var sb_y := 6.0
 	if _story_book != null:
 		_story_book.size = Vector2(sb_w, sb_h)
 		_story_book.position = Vector2(sb_x, sb_y)
@@ -581,21 +581,16 @@ func celebrate_completion() -> void:
 		_story_book.celebrate_completion()
 
 
+func play_flourish() -> void:
+	if _story_book != null:
+		_story_book.play_leo_flourish()
+
+
 func set_speech_text(text: String) -> void:
 	if _speech_label != null:
-		if text.is_empty() or "C4" in text or "Sư tử" in text or "Giai điệu" in text or "Lắng nghe" in text or "♫" in text:
-			_speech_label.text = "TAP THE MUSICAL LEAVES\nTO FIND THE TREASURE!"
-		elif "nở hoa" in text or "Cây thần" in text:
-			_speech_label.text = "★  ✦  ★"
-		else:
-			_speech_label.text = text
+		_speech_label.text = text
 	if _story_book != null:
-		if text.is_empty() or "Lắng nghe" in text or "Giai điệu" in text or "♫" in text or "TAP THE" in text:
-			var song := Songbook.get_song(_story_book._current_page)
-			var intro: String = song.get("story_intro", "Cùng Leo đánh thức mầm cây thần nhé!")
-			_story_book.set_speech_text(intro)
-		else:
-			_story_book.set_speech_text(text)
+		_story_book.set_speech_text(text)
 
 
 func on_note_played(note_idx: int) -> void:

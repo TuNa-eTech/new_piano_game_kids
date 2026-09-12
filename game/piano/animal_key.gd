@@ -120,14 +120,9 @@ func setup(key_index: int) -> void:
 	_chamfer.add_theme_stylebox_override("panel", _chamfer_style)
 	_chamfer.visible = true
 
-	# Chữ nốt trên nút tròn: C, D, E, F, G, A, B theo đúng ảnh mock-game-play.jpeg
-	const DIATONIC_LETTERS := ["C", "D", "E", "F", "G", "A", "B"]
-	var letter := "C"
-	if key_index >= 0 and key_index < DIATONIC_LETTERS.size():
-		letter = DIATONIC_LETTERS[key_index]
-	else:
-		var note_name := Notes.note_of(key_index)
-		letter = note_name.substr(0, 1)
+	# Chữ nốt trên nút tròn chuẩn ngũ cung Notes.TABLE: C, D, E, G, A, C, D
+	var note_name := Notes.note_of(key_index)
+	var letter := note_name.substr(0, 1)
 	_label.text = letter
 
 	_glow_overlay.color = _badge_color

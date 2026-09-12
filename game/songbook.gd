@@ -466,13 +466,14 @@ static func count() -> int:
 
 
 static func is_valid(index: int) -> bool:
-	return index >= 0 and index < SONGS.size()
+	return SONGS.size() > 0 and index >= 0
 
 
 static func get_song(index: int) -> Dictionary:
-	if not is_valid(index):
+	if SONGS.is_empty():
 		return {}
-	return SONGS[index]
+	var idx := posmod(index, SONGS.size())
+	return SONGS[idx]
 
 
 static func find_by_id(id_str: String) -> Dictionary:
@@ -483,15 +484,16 @@ static func find_by_id(id_str: String) -> Dictionary:
 
 
 static func phrase_count(song_index: int) -> int:
-	if not is_valid(song_index):
-		return 0
-	return (SONGS[song_index]["phrases"] as Array).size()
+	var s := get_song(song_index)
+	var phrases: Array = s.get("phrases", [])
+	return phrases.size()
 
 
 static func get_phrase(song_index: int, phrase_index: int) -> Dictionary:
-	if not is_valid(song_index):
+	var s := get_song(song_index)
+	var phrases: Array = s.get("phrases", [])
+	if phrases.is_empty():
 		return {}
-	var phrases: Array = SONGS[song_index]["phrases"]
 	var p_idx := clampi(phrase_index, 0, phrases.size() - 1)
 	return phrases[p_idx]
 

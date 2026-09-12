@@ -87,6 +87,7 @@ offset_right = 260.0
 offset_bottom = 68.0
 
 [node name="ScoreBoard" parent="HUD" instance=ExtResource("16_score_board")]
+visible = false
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
@@ -96,42 +97,15 @@ offset_right = -135.0
 offset_bottom = 78.0
 grow_horizontal = 0
 
-[node name="CottageMenu" type="Control" parent="HUD"]
-layout_mode = 3
-anchors_preset = 1
-anchor_left = 1.0
-anchor_right = 1.0
-offset_left = -115.0
-offset_top = 15.0
-offset_right = -20.0
-offset_bottom = 128.0
-grow_horizontal = 0
-mouse_filter = 1
-script = ExtResource("17_cottage_menu")
-
-[node name="LevelsStar" type="Control" parent="HUD"]
-layout_mode = 3
-anchors_preset = 1
-anchor_left = 1.0
-anchor_right = 1.0
-offset_left = -115.0
-offset_top = 145.0
-offset_right = -20.0
-offset_bottom = 250.0
-grow_horizontal = 0
-mouse_filter = 1
-script = ExtResource("18_levels_star")
-
 [node name="StarJar" type="Control" parent="HUD" unique_id=101396196]
-visible = false
 layout_mode = 3
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -112.0
-offset_top = 34.0
-offset_right = -46.0
-offset_bottom = 124.0
+offset_left = -215.0
+offset_top = 15.0
+offset_right = -145.0
+offset_bottom = 115.0
 grow_horizontal = 0
 script = ExtResource("5_wjctj")
 
@@ -143,6 +117,33 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 offset_bottom = 22.0
 horizontal_alignment = 1
+
+[node name="CottageMenu" type="Control" parent="HUD"]
+layout_mode = 3
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -120.0
+offset_top = 15.0
+offset_right = -30.0
+offset_bottom = 118.0
+grow_horizontal = 0
+mouse_filter = 1
+script = ExtResource("17_cottage_menu")
+
+[node name="LevelsStar" type="Control" parent="HUD"]
+visible = false
+layout_mode = 3
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -115.0
+offset_top = 145.0
+offset_right = -20.0
+offset_bottom = 250.0
+grow_horizontal = 0
+mouse_filter = 1
+script = ExtResource("18_levels_star")
 
 [node name="Menu" type="Control" parent="HUD" unique_id=417452215]
 visible = false

@@ -45,6 +45,18 @@ func _update_layout() -> void:
 		_texture_rect.position = Vector2.ZERO
 		_texture_rect.size = size
 		_texture_rect.pivot_offset = size * 0.5
+	queue_redraw()
+
+
+func _draw() -> void:
+	if size.x > 0.0 and size.y > 0.0:
+		# Bóng đổ elip mềm mại 2.5D dưới chân bạn thú cưng
+		var shadow_center := Vector2(size.x * 0.5, size.y * 0.88)
+		var rx := size.x * 0.36
+		var ry := size.y * 0.12
+		draw_set_transform(shadow_center, 0.0, Vector2(1.0, ry / rx))
+		draw_circle(Vector2.ZERO, rx, Color(0.12, 0.08, 0.05, 0.32))
+		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
 
 ## Tải bạn thú cưng mới theo bài hát
@@ -64,11 +76,18 @@ func load_pet(pet_id: String, bpm: float = 80.0) -> void:
 		_idle_tex = null
 
 	if _texture_rect != null:
+		var current_flip := _texture_rect.flip_h
 		_texture_rect.texture = _idle_tex
 		_texture_rect.position = Vector2.ZERO
 		_texture_rect.scale = Vector2.ONE
+		_texture_rect.flip_h = current_flip
 
 	_start_idle_bounce()
+
+
+func set_facing_left(facing_left: bool) -> void:
+	if _texture_rect != null:
+		_texture_rect.flip_h = facing_left
 
 
 func _start_idle_bounce() -> void:

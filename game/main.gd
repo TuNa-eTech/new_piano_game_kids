@@ -37,6 +37,11 @@ func _ready() -> void:
 	_probe.bind_keyboard(_keyboard)
 	_probe.bind_call_response(_call_response)
 
+	_call_response.prompt_updated.connect(_on_prompt_updated)
+	_call_response.page_turn_started.connect(_on_page_turn_started)
+	_call_response.page_completed.connect(_on_call_response_page_completed)
+	_call_response.phrase_completed.connect(_on_phrase_completed)
+
 	# Node con đã _ready() xong ở thời điểm này, nên trao tham chiếu ở đây là an toàn.
 	_call_response.setup(_tree, _keyboard)
 
@@ -64,9 +69,6 @@ func _ready() -> void:
 	GameState.chapter_completed.connect(_on_chapter_completed)
 	_keyboard.note_played.connect(_on_key_note_played)
 	_keyboard.black_note_played.connect(_on_black_note_played)
-	_call_response.prompt_updated.connect(_on_prompt_updated)
-	_call_response.page_turn_started.connect(_on_page_turn_started)
-	_call_response.page_completed.connect(_on_call_response_page_completed)
 	if _tree != null:
 		_tree.visible = false
 		_tree.leaf_singing.connect(func(n):
@@ -84,7 +86,7 @@ func _on_free_play_mode_changed(enabled: bool) -> void:
 	if _top_inst_bar != null:
 		_top_inst_bar.visible = not enabled
 	if _score_board != null:
-		_score_board.visible = not enabled
+		_score_board.visible = false
 
 
 func _on_page_turn_started() -> void:
@@ -95,6 +97,11 @@ func _on_page_turn_started() -> void:
 func _on_call_response_page_completed(_page_idx: int) -> void:
 	if _diorama != null:
 		_diorama.celebrate_completion()
+
+
+func _on_phrase_completed(_phrase_idx: int) -> void:
+	if _diorama != null:
+		_diorama.play_flourish()
 
 
 func _on_prompt_updated(text: String) -> void:
