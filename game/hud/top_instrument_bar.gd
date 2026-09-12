@@ -4,7 +4,7 @@ extends Control
 
 signal instrument_selected(index: int)
 
-const BAR_SIZE := Vector2(360.0, 84.0)
+const BAR_SIZE := Vector2(250.0, 58.0)
 
 var _bg_rect: TextureRect
 var _selection_glow: Control

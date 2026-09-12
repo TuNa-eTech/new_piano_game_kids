@@ -44,7 +44,7 @@ Quy trình mỹ thuật 2.5D Diorama được thiết kế tối ưu hóa cho nh
   4. **Tầng Điều hướng Tiền cảnh (Foreground HUD & Navigation)**:
      - Bảng ruy băng gỗ chạm khắc uốn lượn mang tiêu đề vàng kim: `Chapter Selection Map`.
      - Nút Quay Lại (`←`) bằng huy hiệu gỗ sồi tròn to bản ở góc trái trên.
-     - Nút `📖 Bìa Sách` và `🌙 Phụ Huynh` tinh tế cho bé và người lớn điều hướng.
+     - Nút `📖 Bìa Sách` tinh tế cho bé điều hướng.
      - Chiếc Lọ Sao Thủy Tinh tích lũy phần thưởng tỏa ánh sáng vàng ở góc phải trên.
 
 #### 1.2. Bảng Màu Chuẩn (Hút Trực Tiếp Từ `mock-chapter-map.jpeg`)
@@ -123,7 +123,7 @@ photorealistic, human realism, scary, sharp teeth, aggressive, horror, dark grit
 #### 3.3. Đóng Gói Texture Atlas & Thiết Lập 9-Slice (Patch-9)
 * Gom toàn bộ các phần tử giao diện của Bản Đồ Chương vào Texture Atlas kích thước $2048 \times 2048\text{ px}$ (Power of Two):
   - Bảng ruy băng tiêu đề `Chapter Selection Map`.
-  - Nút quay lại tròn, nút bìa sách, nút phụ huynh.
+  - Nút quay lại tròn, nút bìa sách.
   - Khung viền thẻ chương diorama (thiết lập 9-slice với margin 24px để co giãn mượt mà).
   - Ổ khóa đồng và đai da.
   - Lọ sao thủy tinh và các hạt sao.
@@ -193,8 +193,7 @@ ChapterMap (CanvasLayer - Layer 15: Chapter Map Overlay)
     │   ├── JarTexture (TextureRect)
     │   └── StarCountLabel (Label - Font Baloo 2 mạ vàng)
     └── QuickNavBar (HBoxContainer - Góc trên phụ)
-        ├── BtnMainMenu (Button - '📖 Bìa Sách')
-        └── BtnParents (Button - '🌙 Phụ Huynh')
+        └── BtnMainMenu (Button - '📖 Bìa Sách')
 ```
 
 ---

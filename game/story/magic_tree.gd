@@ -1,11 +1,9 @@
 class_name MagicTree
 extends Control
 ## Cây thần — nơi hiển thị kết quả, KHÔNG nhận input (Quyết định 01).
-##
-## Art tạm theo đúng luật Bước 4: "hình chữ nhật màu và vòng tròn màu là đủ —
-## cây thần là 8 hình khối cao dần, lá là 7 chấm nhỏ. Không vẽ gì thật trong
-## bốn tuần này." Bước 2 thay bằng AnimatedSprite2D 8 giai đoạn mà không phải
-## đụng tới logic ở đây.
+
+signal leaf_singing(note_index: int)
+signal leaf_bloomed(note_index: int)
 
 const STAGES := 8
 
@@ -91,6 +89,7 @@ func set_sequence(sequence: PackedInt32Array) -> void:
 func sing_leaf(note_index: int) -> void:
 	if Notes.is_valid(note_index) and _leaf_state[note_index] != LeafState.BLOOMED:
 		_leaf_state[note_index] = LeafState.SINGING
+		leaf_singing.emit(note_index)
 		queue_redraw()
 
 
@@ -126,6 +125,7 @@ func bloom(note_index: int, sequence_length: int) -> void:
 		return
 	_leaf_state[note_index] = LeafState.BLOOMED
 	_growth = minf(1.0, _growth + 0.9 / maxf(1.0, float(sequence_length)))
+	leaf_bloomed.emit(note_index)
 	queue_redraw()
 
 

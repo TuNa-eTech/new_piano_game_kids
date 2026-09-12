@@ -10,6 +10,7 @@ extends Control
 ## - Rương gỗ cổ điển trên thảm cỏ
 
 const PageCurl = preload("res://game/diorama/page_curl.gd")
+const StoryBook = preload("res://game/diorama/story_book.gd")
 
 signal prop_interacted(prop_name: String)
 
@@ -40,6 +41,7 @@ var _sparkle_tex: Texture2D
 var _wiz_normal_tex: Texture2D
 var _wiz_party_tex: Texture2D
 
+var _story_book: StoryBook
 var _page_curl: PageCurl
 var _fireflies: CPUParticles2D
 
@@ -60,6 +62,7 @@ var _cheer_index: int = 0
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_PASS
 	_setup_textures()
+	_setup_story_book()
 	_setup_page_curl()
 	_setup_fireflies()
 	_setup_freeplay_elements()
@@ -72,7 +75,23 @@ func _ready() -> void:
 	set_speech_text("TAP THE MUSICAL LEAVES\nTO FIND THE TREASURE!")
 	if GameState != null:
 		GameState.free_play_changed.connect(_on_free_play_changed)
+		GameState.page_changed.connect(_on_game_page_changed)
 		_on_free_play_changed(GameState.free_play)
+
+
+func _setup_story_book() -> void:
+	_story_book = StoryBook.new()
+	_story_book.name = "StoryBook"
+	_story_book.page_turn_requested.connect(func(new_page: int):
+		if GameState != null and GameState.page_index != new_page:
+			GameState.set_page(new_page)
+	)
+	_story_book.chest_opened.connect(func():
+		interact_chest()
+	)
+	add_child(_story_book)
+	move_child(_story_book, _book_spread.get_index() + 1)
+	_book_spread.visible = false
 
 
 
@@ -194,6 +213,15 @@ func _update_layout() -> void:
 	var book_y := ref_h * (30.0 / 572.0)
 	_book_spread.size = Vector2(book_w, book_h)
 	_book_spread.position = Vector2(book_x, book_y)
+
+	# Cuốn Sách Tranh Sống Động 2.5D Mới (Interactive Living Storybook)
+	var sb_w := minf(ref_w * 0.65, 832.0)
+	var sb_h := minf(ref_h * 0.53, 380.0)
+	var sb_x := (ref_w - sb_w) * 0.5
+	var sb_y := 44.0
+	if _story_book != null:
+		_story_book.size = Vector2(sb_w, sb_h)
+		_story_book.position = Vector2(sb_x, sb_y)
 
 	# Bong bóng thoại động (nếu hiển thị) đặt phía trên phù thủy nhỏ
 	var bubble_w := book_w * 0.42
@@ -410,6 +438,9 @@ func interact_wizard() -> void:
 	_cheer_index = (_cheer_index + 1) % WIZARD_CHEERS.size()
 	set_speech_text(WIZARD_CHEERS[_cheer_index])
 
+	if _story_book != null:
+		_story_book.on_note_struck(randi_range(0, 6))
+
 	# Âm thanh vui nhộn
 	AudioDirector.play_note_pitched(3, 1.25, -2.0)
 	prop_interacted.emit("wizard")
@@ -464,8 +495,20 @@ func interact_chest() -> void:
 
 
 func interact_book(pos: Vector2) -> void:
-	AudioDirector.play_ting()
-	prop_interacted.emit("book")
+	if _story_book != null:
+		_story_book.on_note_struck(randi_range(0, 6))
+	if GameState != null and GameState.free_play:
+		# Trong chế độ Free Play: Chạm nổ bong bóng âm nhạc và phát nốt ngẫu nhiên
+		AudioDirector.play_ting()
+		var rand_k := randi_range(0, Notes.count() - 1)
+		AudioDirector.play_note(rand_k)
+		if _wizard_sparkles != null:
+			_wizard_sparkles.position = pos
+			_wizard_sparkles.restart()
+		prop_interacted.emit("bubble")
+	else:
+		AudioDirector.play_ting()
+		prop_interacted.emit("book")
 
 
 func _setup_page_curl() -> void:
@@ -507,8 +550,35 @@ func _setup_fireflies() -> void:
 
 ## Gọi từ CallResponse khi kết thúc giai điệu để lật sang trang mới
 func flip_page(duration: float = 0.95) -> void:
+	if _story_book != null:
+		_story_book.next_page()
 	if _page_curl != null:
 		_page_curl.flip_page(duration)
+
+
+func load_page(page_idx: int) -> void:
+	if _story_book != null:
+		_story_book.load_page(page_idx)
+
+
+func _on_game_page_changed(page_idx: int) -> void:
+	load_page(page_idx)
+
+
+func get_leaf_global_position(note_index: int) -> Vector2:
+	if _story_book != null:
+		return _story_book.get_leaf_global_position(note_index)
+	return global_position + size * 0.5
+
+
+func sing_leaf(note_index: int) -> void:
+	if _story_book != null:
+		_story_book.sing_leaf(note_index)
+
+
+func celebrate_completion() -> void:
+	if _story_book != null:
+		_story_book.celebrate_completion()
 
 
 func set_speech_text(text: String) -> void:
@@ -519,9 +589,18 @@ func set_speech_text(text: String) -> void:
 			_speech_label.text = "★  ✦  ★"
 		else:
 			_speech_label.text = text
+	if _story_book != null:
+		if text.is_empty() or "Lắng nghe" in text or "Giai điệu" in text or "♫" in text or "TAP THE" in text:
+			var song := Songbook.get_song(_story_book._current_page)
+			var intro: String = song.get("story_intro", "Cùng Leo đánh thức mầm cây thần nhé!")
+			_story_book.set_speech_text(intro)
+		else:
+			_story_book.set_speech_text(text)
 
 
-func on_note_played(_note_idx: int) -> void:
+func on_note_played(note_idx: int) -> void:
+	if _story_book != null:
+		_story_book.on_note_struck(note_idx)
 	if _wizard != null:
 		var tw := create_tween().bind_node(self)
 		tw.tween_property(_wizard, "scale", Vector2(1.15, 0.85), 0.06) \

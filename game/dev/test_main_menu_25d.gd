@@ -13,16 +13,21 @@ func _ready() -> void:
 	# 1. Kiểm tra cấu trúc Node chính
 	_check_node(menu, "BackgroundEnvironment", "TextureRect")
 	_check_node(menu, "SwirlingNotesOrbit", "Control")
+	_check_node(menu, "AccordionProp", "Control")
+	_check_node(menu, "ViolinProp", "Control")
 	_check_node(menu, "CharacterHotspot", "Button")
 	_check_node(menu, "BookHotspot", "Button")
 	_check_node(menu, "CrystalHotspot", "Button")
 	_check_node(menu, "ChestHotspot", "Button")
+	_check_node(menu, "TableViolinHotspot", "Button")
+	_check_node(menu, "TableHarpHotspot", "Button")
 	_check_node(menu, "PlayButtonContainer", "Control")
 	_check_node(menu, "FireflyOverlay", "Control")
 	_check_node(menu, "StarlightBurstLayer", "Control")
 
-	# 2. Kiểm tra Nút bấm chính
+	# 2. Kiểm tra Nút bấm chính & Visual Khóa Son
 	var play_box: Control = menu.get_node_or_null("PlayButtonContainer") as Control
+	_check_node(play_box, "PlayDiscVisual", "TextureRect")
 	var play_btn: Button = play_box.get_node_or_null("PlayButtonHitbox") as Button if play_box else null
 	if play_btn != null and play_btn.mouse_filter == Control.MOUSE_FILTER_STOP:
 		print("  [OK ] Nút Khóa Son PLAY có hitbox hợp lệ (MOUSE_FILTER_STOP)")
@@ -48,14 +53,6 @@ func _ready() -> void:
 		print("  [OK ] _on_levels_pressed() phát tín hiệu levels_pressed")
 	else:
 		printerr("  [SAI] _on_levels_pressed() thất bại")
-
-	var parent_received := [false]
-	menu.parent_gate_requested.connect(func(): parent_received[0] = true)
-	menu._on_parent_pressed()
-	if parent_received[0]:
-		print("  [OK ] _on_parent_pressed() phát tín hiệu parent_gate_requested")
-	else:
-		printerr("  [SAI] _on_parent_pressed() thất bại")
 
 	# 4. Kiểm tra hiệu ứng nốt nhạc xoay quanh sách
 	var orbit: Control = menu.get_node_or_null("SwirlingNotesOrbit") as Control

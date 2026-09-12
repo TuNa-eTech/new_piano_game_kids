@@ -3,9 +3,6 @@ extends Control
 ## Nút phải GIỮ mới ăn — khoá nhẹ của nút Menu (Quyết định 03: "giữ 2 giây,
 ## đủ để bé không thoát nhầm, không cản người lớn").
 ##
-## Viết tách riêng vì Tuần 4 dùng lại: cổng phụ huynh đầy đủ ở luồng lưu clip
-## cũng là một cửa có ma sát, chỉ khác độ khó.
-##
 ## PHẢI NHÌN THẤY TIẾN TRÌNH GIỮ. Không có phản hồi thì người lớn tưởng nút hỏng
 ## và bé học được rằng chạm không có tác dụng — hỏng cả hai vế của câu "chặn bé
 ## mà không cản người lớn". Vòng tròn ở đây đầy dần trong lúc giữ.

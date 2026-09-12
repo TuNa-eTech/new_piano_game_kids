@@ -207,12 +207,12 @@ header .note{font-size:.95rem}
       </table>
     </div>
 
-    <p><b>Việc kế tiếp, theo thứ tự:</b> ① chọn ngã ba <b>A1 hay A3</b> của Spike A — điều tra đã xong, kết quả ở mục Spike A · ② cắm iPhone và chạy Spike B — để Xcode tự ký (<em>Automatically manage signing</em>), không phải vào portal · ③ <b>thử với ba đứa trẻ thật</b> để đóng Tuần 3 · ④ Tuần 4: màn kết chương, luồng chia sẻ, cổng phụ huynh đầy đủ.</p>
+    <p><b>Việc kế tiếp, theo thứ tự:</b> ① chọn ngã ba <b>A1 hay A3</b> của Spike A — điều tra đã xong, kết quả ở mục Spike A · ② cắm iPhone và chạy Spike B — để Xcode tự ký (<em>Automatically manage signing</em>), không phải vào portal · ③ <b>thử với ba đứa trẻ thật</b> để đóng Tuần 3 · ④ Tuần 4: màn kết chương, luồng chia sẻ (không rào cản trung gian).</p>
 
     <div class="warnbox" style="margin:12px 0"><b>Ngã ba Spike A: đã chọn A4, nhưng tài liệu thiết kế nói ngược lại.</b> Tác giả chọn A4 (không xuất file, chỉ gợi ý phụ huynh tự quay màn hình). Hai câu trong <code>gameplay-design</code> đi ngược lựa chọn đó, ghi lại để quyết định được đưa ra với đủ dữ kiện:
     <br>· <em>"Đừng cố crop màn hình ngang."</em> — mà screen recording của một app khoá <code>landscape</code> thì ra clip ngang, đúng thứ bị cấm.
     <br>· Về lý do clip được gửi đi: <em>"Nó có thứ mà video quay màn hình không có"</em> — tài liệu đã cân nhắc và loại bỏ chính cách quay màn hình.
-    <br>Hệ quả kèm theo: tài liệu đặt <b>cổng phụ huynh đầy đủ</b> ở luồng lưu clip, mà A4 không có luồng lưu clip nào. Kiểm phía quy định: Kids Category của Apple đòi cổng phụ huynh trước <em>liên kết ra ngoài</em> và <em>mua trong app</em> — v1 không có cả hai. Nên dưới A4, <b>v1 không còn thứ gì cần cổng phụ huynh</b>; khoá giữ 2 giây của Tuần 3 đã lo phần "đừng để bé đi lạc". Chưa dựng một cánh cổng không có cửa.
+    <br>Hệ quả kèm theo: Kids Category của Apple đòi cổng phụ huynh trước <em>liên kết ra ngoài</em> và <em>mua trong app</em> — v1 không có cả hai. Quyết định chính thức: <b>bỏ hoàn toàn tính năng và cổng phụ huynh</b> để tối giản trải nghiệm; khoá giữ 2 giây của nút Menu đã lo trọn phần chống bé chạm nhầm.
     <br>Tiêu chí thoát Tuần 4 ("một phụ huynh gửi được clip cho người khác mà không hỏi cách") cũng không đo được theo nghĩa tài liệu đặt ra nếu giữ A4.</div>
 
     <div class="note" style="margin:12px 0"><b>Lệch ảnh mock có chủ ý ở Tuần 3: gộp MENU và LEVELS thành một nút.</b> Ảnh mock có hai nút. Nhưng nếu LEVELS chạm phát là mở được bản đồ thì khoá nhẹ của MENU thành vô nghĩa — bé vẫn rời trang tự do, đúng thứ khoá nhẹ sinh ra để chặn. Nay còn một nút Menu (giữ 2 giây), và bản đồ chứa luôn phần chọn chương.</div>
@@ -625,7 +625,7 @@ share_file(path, mime_type, title, subject, content)</pre>
         <tr><td class="num">1</td><td>Đàn 7 phím + AudioDirector + con vật nảy + pad nền</td><td>Đập loạn 30 giây trên máy rẻ vẫn hay và không trễ</td></tr>
         <tr><td class="num">2</td><td>Cây thần 8 giai đoạn + vòng gọi–đáp + lọ hạt sao</td><td>Chơi trọn một trang truyện từ đầu đến lúc cây trổ quả</td></tr>
         <tr><td class="num">3</td><td>3 chương nội dung + bản đồ chương + khóa giữ 2 giây ở Menu</td><td>Một đứa trẻ thật chơi 5 phút không cần người lớn chỉ</td></tr>
-        <tr><td class="num">4</td><td>Màn kết chương + luồng chia sẻ + cổng phụ huynh</td><td>Một phụ huynh gửi được clip cho người khác mà không hỏi cách</td></tr>
+        <tr><td class="num">4</td><td>Màn kết chương + luồng chia sẻ (không rào cản)</td><td>Một phụ huynh gửi được clip cho người khác mà không hỏi cách</td></tr>
       </tbody>
     </table>
   </div>
@@ -697,7 +697,7 @@ share_file(path, mime_type, title, subject, content)</pre>
         <tr><td>Không thu thập dữ liệu trẻ em</td><td>Không SDK phân tích, không quảng cáo hành vi, không định danh thiết bị. Thiết kế này vốn đã không có gì rời khỏi máy</td><td class="ok">Đã thiết kế</td></tr>
         <tr><td>Privacy Nutrition Label</td><td>Khai "Data Not Collected" — và phải đúng sự thật, kể cả SDK bên thứ ba</td><td class="verify">Tra tại nguồn trước khi nộp</td></tr>
         <tr><td>Age Rating</td><td>Trả lời bảng câu hỏi nội dung một cách trung thực</td><td class="verify">Tra tại nguồn trước khi nộp</td></tr>
-        <tr><td>Cổng phụ huynh</td><td>Bắt buộc trước mọi liên kết ra ngoài, mọi thứ mua bán, và mọi hành vi đưa dữ liệu ra khỏi app. Đã có sẵn: cổng đầy đủ ở luồng lưu clip, khóa giữ 2 giây ở nút Menu</td><td class="ok">Đã thiết kế</td></tr>
+        <tr><td>Cổng phụ huynh</td><td>Apple Kids đòi hỏi trước link ngoài và IAP. Game hoàn toàn khép kín offline: 0 link ngoài, 0 mua hàng, 0 thu thập dữ liệu — hoàn toàn miễn trừ / không cần cổng phụ huynh. Chống chạm nhầm bằng nút Menu giữ 2 giây</td><td class="ok">Miễn trừ / Khép kín</td></tr>
         <tr><td>Chính sách quyền riêng tư</td><td>Một URL công khai, viết bằng lời dễ hiểu</td><td class="ok">Việc một buổi</td></tr>
       </tbody>
     </table>
@@ -731,7 +731,7 @@ share_file(path, mime_type, title, subject, content)</pre>
   <ul class="check">
     <li><b>Tuần 1:</b> chỉ sửa crash và những chỗ trẻ bị kẹt. Không thêm tính năng</li>
     <li><b>Chỉ số duy nhất cần nhìn:</b> tỉ lệ phiên chơi kết thúc bằng một clip được lưu vào máy. Mọi con số khác là nhiễu</li>
-    <li><b>Nếu chỉ số đó dưới 10%:</b> vấn đề nằm ở màn kết chương hoặc cổng phụ huynh, không nằm ở gameplay. Sửa chỗ đó trước khi làm bối cảnh thứ hai</li>
+    <li><b>Nếu chỉ số đó dưới 10%:</b> vấn đề nằm ở màn kết chương hoặc luồng chia sẻ, không nằm ở gameplay. Sửa chỗ đó trước khi làm bối cảnh thứ hai</li>
     <li><b>Nếu trên 25%:</b> làm biome thứ hai (Biển) và bộ 7 con vật mới — dùng lại toàn bộ code, chỉ thay asset</li>
     <li>Đọc mọi đánh giá trong tháng đầu. Phụ huynh viết đánh giá rất cụ thể, và họ nói cho bạn biết bản cập nhật tiếp theo nên làm gì</li>
   </ul>

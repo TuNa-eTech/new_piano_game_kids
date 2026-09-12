@@ -16,8 +16,9 @@ func _ready() -> void:
 		if ResourceLoader.exists("res://assets/art/ui_board_score_combo.png"):
 			_bg.texture = load("res://assets/art/ui_board_score_combo.png")
 
-	if is_instance_valid(GameState):
-		GameState.stars_changed.connect(_on_stars_changed)
+	var gs = get_node_or_null("/root/GameState")
+	if gs != null and gs.has_signal("stars_changed"):
+		gs.stars_changed.connect(_on_stars_changed)
 
 
 func _on_stars_changed(new_stars: int) -> void:

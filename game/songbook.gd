@@ -17,9 +17,12 @@ static var SONGS: Array[Dictionary] = [
 		"age_range": "1–6 tuổi",
 		"bpm": 85,
 		"bgm_path": "res://assets/audio/songbook/bgm_baby_shark.ogg",
-		"color": Color("#3877B5"),
-		"chords": ["C", "C", "Am", "F"],
 		"description": "Điệu nhảy lặp lại vui tươi, câu hát ngắn gọn cực kỳ bắt tai",
+		"pet_name": "Bé Cá Mập",
+		"pet_emoji": "🦈",
+		"pet_id": "shark",
+		"story_intro": "Cùng Leo lặn xuống biển xanh ngọc, gặp gỡ gia đình Cá Mập và đánh thức mầm cây san hô!",
+		"scene_cue": "Mầm cây thần cựa mình nảy chồi giữa đại dương lấp lánh bong bóng ngọc",
 		"phrases": [
 			{
 				"name": "Cá Mập Con (Câu 1)",
@@ -59,6 +62,11 @@ static var SONGS: Array[Dictionary] = [
 		"color": Color("#E08A2E"),
 		"chords": ["C", "G", "C", "C"],
 		"description": "Chủ đề phương tiện giao thông, tương tác vận động sôi nổi",
+		"pet_name": "Bác Gấu Lái Xe",
+		"pet_emoji": "🐻",
+		"pet_id": "bear",
+		"story_intro": "Bác Gấu nổ máy xe buýt vàng, đưa các bạn nhỏ băng qua khu rừng âm nhạc!",
+		"scene_cue": "Cây đậu thần hóa thành trạm dừng xe buýt đầy hoa và chuông gió reo",
 		"phrases": [
 			{
 				"name": "Bánh xe lăn tròn (Câu 1)",
@@ -98,6 +106,11 @@ static var SONGS: Array[Dictionary] = [
 		"color": Color("#E0644F"),
 		"chords": ["C", "G", "C", "G"],
 		"description": "Cấu trúc đối đáp gọi–trả lời dí dỏm, rất tự nhiên cho game",
+		"pet_name": "Mèo Con Tinh Nghịch",
+		"pet_emoji": "🐱",
+		"pet_id": "cat",
+		"story_intro": "Mèo Con trèo lên cây đậu ăn vụng kẹo ngọt rồi cười xòa Ha Ha Ha!",
+		"scene_cue": "Những chiếc lá đậu thần nở ra kẹo mút và quả dâu tây ngọt ngào",
 		"phrases": [
 			{
 				"name": "Bố gọi: Johny? (Câu 1)",
@@ -149,6 +162,11 @@ static var SONGS: Array[Dictionary] = [
 		"color": Color("#C7A017"),
 		"chords": ["C", "F", "C", "G"],
 		"description": "Giai điệu hát ru kinh điển, nốt khởi đầu mẫu mực cho học đàn",
+		"pet_name": "Cú Mèo Sao Đêm",
+		"pet_emoji": "🦉",
+		"pet_id": "owl",
+		"story_intro": "Cú Mèo chớp mắt thông thái, dẫn lối cho cây đậu thần vươn chạm ngàn sao lấp lánh!",
+		"scene_cue": "Đỉnh cây đậu thần chạm tới mây xanh, đón những vì sao kim cương rơi xuống",
 		"phrases": [
 			{
 				"name": "Ngôi sao lấp lánh (Câu 1)",
@@ -188,6 +206,11 @@ static var SONGS: Array[Dictionary] = [
 		"color": Color("#3F9455"),
 		"chords": ["C", "G", "C", "G"],
 		"description": "Khuyến khích vận động vỗ tay, dậm chân và cười vui",
+		"pet_name": "Thỏ Trắng Tinh Anh",
+		"pet_emoji": "🐰",
+		"pet_id": "rabbit",
+		"story_intro": "Thỏ Trắng rung rinh đôi tai, vỗ tay và rủ bé cùng nhún nhảy theo điệu nhạc!",
+		"scene_cue": "Các nốt nhạc bật nảy như những quả bóng sắc màu quanh thảm cỏ xanh",
 		"phrases": [
 			{
 				"name": "Vỗ tay nào (Câu 1)",
@@ -227,6 +250,11 @@ static var SONGS: Array[Dictionary] = [
 		"color": Color("#D8619A"),
 		"chords": ["C", "F", "C", "G"],
 		"description": "Học âm thanh và tiếng kêu muông thú nông trại",
+		"pet_name": "Bác Bò Sữa & Vịt Vàng",
+		"pet_emoji": "🐮",
+		"pet_id": "cow",
+		"story_intro": "Chào mừng bé đến nông trại rộn ràng của Bác Bò Sữa và Vịt Vàng!",
+		"scene_cue": "Cây đậu thần nở hoa vàng rực rỡ và những chiếc chuông gió nông trại",
 		"phrases": [
 			{
 				"name": "Nông trại bác MacDonald (Câu 1)",
@@ -266,6 +294,11 @@ static var SONGS: Array[Dictionary] = [
 		"color": Color("#7C5CC4"),
 		"chords": ["C", "F", "C", "G"],
 		"description": "Học bảng chữ cái tiếng Anh bằng giai điệu thân thuộc",
+		"pet_name": "Sư Tử Vua",
+		"pet_emoji": "🦁",
+		"pet_id": "lion",
+		"story_intro": "Sư Tử Vua uy nghiêm nhưng rất hiền từ, dẫn đầu đoàn tàu chữ cái A-B-C!",
+		"scene_cue": "Các quả táo chữ cái trên cành đậu thần rung rinh phát sáng",
 		"phrases": [
 			{
 				"name": "A B C D E F G (Câu 1)",
@@ -305,6 +338,11 @@ static var SONGS: Array[Dictionary] = [
 		"color": Color("#4A7C59"),
 		"chords": ["C", "F", "C", "G"],
 		"description": "Giai điệu đồng dao nhẹ nhàng về chú cừu và ba bao len",
+		"pet_name": "Cừu Bông Trắng Đen",
+		"pet_emoji": "🐑",
+		"pet_id": "sheep",
+		"story_intro": "Chú Cừu Đen mang những cuộn len mềm mại kết thành những đám mây âm nhạc bồng bềnh!",
+		"scene_cue": "Mây bông len trắng muốt trôi quanh thân cây đậu thần ấm áp",
 		"phrases": [
 			{
 				"name": "Cừu đen có len không? (Câu 1)",
@@ -344,6 +382,11 @@ static var SONGS: Array[Dictionary] = [
 		"color": Color("#8B5E3C"),
 		"chords": ["C", "G", "C", "G"],
 		"description": "Bài hát đếm số sinh động với câu chuyện chú khỉ tinh nghịch",
+		"pet_name": "Khỉ Con Tinh Nghịch",
+		"pet_emoji": "🐵",
+		"pet_id": "monkey",
+		"story_intro": "Đàn Khỉ Con tinh nghịch đu cành đậu thần nhào lộn làm rơi những quả chuối vàng!",
+		"scene_cue": "Các nốt nhạc nảy tưng tưng theo những cú nhào lộn của Khỉ Con",
 		"phrases": [
 			{
 				"name": "Năm chú khỉ nhảy nhót (Câu 1)",
@@ -383,6 +426,11 @@ static var SONGS: Array[Dictionary] = [
 		"color": Color("#5E60CE"),
 		"chords": ["C", "G", "C", "G"],
 		"description": "Học các bộ phận cơ thể thông qua vận động chạm tay",
+		"pet_name": "Voi Con Đáng Yêu",
+		"pet_emoji": "🐘",
+		"pet_id": "elephant",
+		"story_intro": "Bạn Voi Con dùng vòi lắc lư theo điệu nhảy Đầu - Vai - Gối - Chân cực kỳ vui nhộn!",
+		"scene_cue": "Voi Con phun nước vồng cầu vồng rực rỡ và hoa nhạc nở rộ trên cây thần",
 		"phrases": [
 			{
 				"name": "Đầu, vai, gối, chân (Câu 1)",

@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://d1c4map25dtest"]
+
+[ext_resource type="Script" path="res://game/dev/test_chapter_map_25d.gd" id="1_test"]
+
+[node name="TestChapterMap25D" type="Node"]
+script = ExtResource("1_test")

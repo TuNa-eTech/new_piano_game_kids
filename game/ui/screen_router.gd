@@ -4,42 +4,53 @@ extends Node
 ##
 ## Quản lý vòng đời và sự chuyển tiếp liền mạch giữa tất cả các màn hình & lớp phủ:
 ## 1. MainMenu (layer 25) - Bìa sách cổ tích 'Rừng Nhạc'
-## 2. ParentalGate (layer 20) - Cổng giải đố 3 quả dâu bảo vệ trẻ em (Apple Kids Category 1.3)
-## 3. GoodnightScreen (layer 18) - Màn đêm ru ngủ dịu êm khi hết giờ hẹn
-## 4. ParentalCorner (layer 15) - Góc cài đặt âm lượng & hẹn giờ của cha mẹ
-## 5. ChapterEnd (layer 13) - Buổi diễn rừng xanh đại nhạc hội 12s
-## 6. ChestReward (layer 12) - Mở rương báu trao huy hiệu bạn thú
-## 7. LevelSelect (layer 11) - Chọn 5 bục gỗ âm nhạc trong chương với Thỏ dẫn đường
-## 8. ChapterMap (layer 10) - Bản đồ 3 chương pop-up gỗ
+## 2. GoodnightScreen (layer 18) - Màn đêm ru ngủ dịu êm khi hết giờ hẹn
+## 3. ChapterEnd (layer 13) - Buổi diễn rừng xanh đại nhạc hội 12s
+## 4. ChestReward (layer 12) - Mở rương báu trao huy hiệu bạn thú
+## 5. LevelSelect (layer 11) - Chọn 5 bục gỗ âm nhạc trong chương với Thỏ dẫn đường
+## 6. ChapterMap (layer 10) - Bản đồ 3 chương pop-up gỗ
 
-enum GateTarget {
-	PARENTAL_CORNER,
-	WAKE_UP_FOREST
-}
+const ParentalGateClass = preload("res://game/ui/parental_gate.gd")
+const ParentalCornerClass = preload("res://game/ui/parental_corner.gd")
 
 var _main_menu: MainMenu
 var _chapter_map: ChapterMap
 var _level_select: LevelSelect
-var _parental_gate: ParentalGate
-var _parental_corner: ParentalCorner
 var _goodnight_screen: GoodnightScreen
 var _chest_reward: ChestReward
 var _chapter_end: ChapterEnd
+var _parental_gate: Node
+var _parental_corner: Node
 
-var _gate_target: GateTarget = GateTarget.PARENTAL_CORNER
+var _target_after_gate: String = ""
 var _pending_chapter_reward: int = 0
 var enable_chest_before_concert: bool = false
-var _parental_return_to_main_menu: bool = false
+
+
+func _ready() -> void:
+	if _level_select == null:
+		setup()
 
 
 func setup(
-	chapter_map: ChapterMap,
-	chapter_end: ChapterEnd
+	chapter_map: ChapterMap = null,
+	chapter_end: ChapterEnd = null
 ) -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 
-	_chapter_map = chapter_map
-	_chapter_end = chapter_end
+	if chapter_map != null:
+		_chapter_map = chapter_map
+	elif _chapter_map == null:
+		_chapter_map = ChapterMap.new()
+		_chapter_map.name = "ChapterMap"
+		add_child(_chapter_map)
+
+	if chapter_end != null:
+		_chapter_end = chapter_end
+	elif _chapter_end == null:
+		_chapter_end = ChapterEnd.new()
+		_chapter_end.name = "ChapterEnd"
+		add_child(_chapter_end)
 
 	# Khởi tạo các lớp phủ chuyên dụng nếu chưa có trong cây
 	_main_menu = MainMenu.new()
@@ -50,14 +61,6 @@ func setup(
 	_level_select.name = "LevelSelect"
 	add_child(_level_select)
 
-	_parental_gate = ParentalGate.new()
-	_parental_gate.name = "ParentalGate"
-	add_child(_parental_gate)
-
-	_parental_corner = ParentalCorner.new()
-	_parental_corner.name = "ParentalCorner"
-	add_child(_parental_corner)
-
 	_goodnight_screen = GoodnightScreen.new()
 	_goodnight_screen.name = "GoodnightScreen"
 	add_child(_goodnight_screen)
@@ -66,6 +69,14 @@ func setup(
 	_chest_reward.name = "ChestReward"
 	add_child(_chest_reward)
 
+	_parental_gate = ParentalGateClass.new()
+	_parental_gate.name = "ParentalGate"
+	add_child(_parental_gate)
+
+	_parental_corner = ParentalCornerClass.new()
+	_parental_corner.name = "ParentalCorner"
+	add_child(_parental_corner)
+
 	_connect_signals()
 
 
@@ -73,33 +84,37 @@ func _connect_signals() -> void:
 	# 1. MainMenu
 	_main_menu.play_pressed.connect(_on_main_menu_play)
 	_main_menu.levels_pressed.connect(_on_main_menu_levels)
-	_main_menu.parent_gate_requested.connect(_on_main_menu_parent_gate_requested)
 
 	# 2. ChapterMap
 	_chapter_map.chapter_selected.connect(_on_chapter_selected)
 	_chapter_map.main_menu_requested.connect(_on_map_main_menu_requested)
-	_chapter_map.parent_gate_requested.connect(_on_map_parent_gate_requested)
 
 	# 3. LevelSelect
 	_level_select.level_selected.connect(_on_level_selected)
 	_level_select.back_requested.connect(_on_level_select_back)
 
-	# 4. ParentalGate
-	_parental_gate.gate_unlocked.connect(_on_gate_unlocked)
-	_parental_gate.closed.connect(_on_parental_gate_closed)
+	# 4. GoodnightScreen
+	_goodnight_screen.wake_up_requested.connect(_on_goodnight_wake_up)
 
-	# 5. ParentalCorner
-	_parental_corner.bedtime_timer_changed.connect(_on_bedtime_timer_changed)
-	_parental_corner.closed.connect(_on_parental_corner_closed)
-
-	# 6. GoodnightScreen
-	_goodnight_screen.parental_unlock_requested.connect(_on_goodnight_unlock_requested)
-
-	# 7. ChestReward
+	# 5. ChestReward
 	_chest_reward.reward_claimed.connect(_on_reward_claimed)
 
-	# 8. GameState Bedtime Timer
-	GameState.bedtime_expired.connect(_on_bedtime_expired)
+	# 6. GameState Bedtime Timer
+	var gs := _get_game_state()
+	if gs != null and gs.has_signal("bedtime_expired"):
+		if not gs.bedtime_expired.is_connected(_on_bedtime_expired):
+			gs.bedtime_expired.connect(_on_bedtime_expired)
+
+	# 7. ParentalGate
+	_parental_gate.gate_unlocked.connect(_on_parental_gate_unlocked)
+	_parental_gate.gate_cancelled.connect(_on_parental_gate_cancelled)
+
+	# 8. ParentalCorner
+	_parental_corner.closed.connect(_on_parental_corner_closed)
+
+
+func _get_game_state() -> Node:
+	return get_node_or_null("/root/GameState")
 
 
 # ---------------------------------------------------------------- Điều Hướng --
@@ -119,25 +134,6 @@ func open_level_select(chapter_index: int) -> void:
 	if _chapter_map and _chapter_map.is_open():
 		_chapter_map.close_map()
 	_level_select.open_for_chapter(chapter_index)
-
-
-## Mở cổng phụ huynh trực tiếp
-func open_parental_gate(target_type: String = "corner") -> void:
-	if target_type == "goodnight" or target_type == "wake_up":
-		_gate_target = GateTarget.WAKE_UP_FOREST
-	else:
-		_gate_target = GateTarget.PARENTAL_CORNER
-	_parental_gate.open_overlay()
-
-
-## Mở góc phụ huynh trực tiếp
-func open_parental_corner() -> void:
-	_parental_corner.open_overlay()
-
-
-## Mở cổng phụ huynh để vào cài đặt
-func open_parental_settings() -> void:
-	_on_open_parental_gate_for_corner()
 
 
 ## Mở màn hình chúc bé ngủ ngon
@@ -161,6 +157,19 @@ func open_chapter_end(chapter_index: int = 0) -> void:
 	_chapter_end.play_for_chapter(chapter_index)
 
 
+## Mở Cổng Phụ Huynh Bảo Vệ (Parental Gate)
+func open_parental_gate(target_after_gate: String = "parental_corner") -> void:
+	_target_after_gate = target_after_gate
+	if _parental_gate != null and _parental_gate.has_method("open_gate"):
+		_parental_gate.open_gate()
+
+
+## Mở Góc Phụ Huynh (Cài đặt giờ chơi, âm lượng, thông tin)
+func open_parental_corner() -> void:
+	if _parental_corner != null and _parental_corner.has_method("open_corner"):
+		_parental_corner.open_corner()
+
+
 ## Đóng tất cả các màn hình/lớp phủ đang mở
 func close_all() -> void:
 	close_active_overlay()
@@ -174,16 +183,16 @@ func close_active_overlay() -> void:
 		_chapter_map.close_map()
 	if _level_select and _level_select.is_open():
 		_level_select.close_overlay()
-	if _parental_gate and _parental_gate.is_open():
-		_parental_gate.close_overlay()
-	if _parental_corner and _parental_corner.is_open():
-		_parental_corner.close_overlay()
 	if _goodnight_screen and _goodnight_screen.is_open():
 		_goodnight_screen.close_overlay()
 	if _chest_reward and _chest_reward.is_open():
 		_chest_reward.close_overlay()
 	if _chapter_end and _chapter_end.is_open():
 		_chapter_end.close_overlay()
+	if _parental_gate and _parental_gate.has_method("is_open") and _parental_gate.is_open():
+		_parental_gate.close_overlay()
+	if _parental_corner and _parental_corner.has_method("is_open") and _parental_corner.is_open():
+		_parental_corner.close_overlay()
 
 
 # ---------------------------------------------------------------- Xử Lý Sự Kiện --
@@ -198,34 +207,6 @@ func _on_main_menu_levels() -> void:
 	_chapter_map.open_map()
 
 
-func _on_main_menu_parent_gate_requested() -> void:
-	_parental_return_to_main_menu = true
-	_main_menu.close_overlay()
-	_on_open_parental_gate_for_corner()
-
-
-func _on_map_parent_gate_requested() -> void:
-	_parental_return_to_main_menu = false
-	_on_open_parental_gate_for_corner()
-
-
-func _on_open_parental_gate_for_corner() -> void:
-	_gate_target = GateTarget.PARENTAL_CORNER
-	_parental_gate.open_overlay()
-
-
-func _on_parental_gate_closed() -> void:
-	if _parental_return_to_main_menu and _gate_target == GateTarget.PARENTAL_CORNER and not _parental_corner.is_open():
-		_parental_return_to_main_menu = false
-		_main_menu.open_overlay()
-
-
-func _on_parental_corner_closed() -> void:
-	if _parental_return_to_main_menu:
-		_parental_return_to_main_menu = false
-		_main_menu.open_overlay()
-
-
 func _on_map_main_menu_requested() -> void:
 	_chapter_map.close_map()
 	_main_menu.open_overlay()
@@ -238,7 +219,9 @@ func _on_chapter_selected(chapter: int) -> void:
 
 
 func _on_level_selected(page: int) -> void:
-	GameState.set_page(page)
+	var gs := _get_game_state()
+	if gs != null and gs.has_method("set_page"):
+		gs.set_page(page)
 	_level_select.close_overlay()
 	_chapter_map.close_map()
 
@@ -248,22 +231,24 @@ func _on_level_select_back() -> void:
 	_chapter_map.open_map()
 
 
-func _on_gate_unlocked() -> void:
-	match _gate_target:
-		GateTarget.PARENTAL_CORNER:
-			_parental_corner.open_overlay()
-		GateTarget.WAKE_UP_FOREST:
-			_goodnight_screen.close_overlay()
-			GameState.set_bedtime_timer(0)
+func _on_goodnight_wake_up() -> void:
+	# Tuân thủ Apple Kids Category 1.3: Khi đánh thức app từ màn hình ngủ, mở Cổng Phụ Huynh
+	open_parental_gate("wake_up")
 
 
-func _on_bedtime_timer_changed(minutes: int) -> void:
-	GameState.set_bedtime_timer(minutes)
+func _on_parental_gate_unlocked() -> void:
+	if _target_after_gate == "wake_up":
+		_goodnight_screen.close_overlay()
+		var gs := _get_game_state()
+		if gs != null and gs.has_method("set_bedtime_timer"):
+			gs.set_bedtime_timer(0)
+	elif _target_after_gate == "parental_corner":
+		open_parental_corner()
+	_target_after_gate = ""
 
 
-func _on_goodnight_unlock_requested() -> void:
-	_gate_target = GateTarget.WAKE_UP_FOREST
-	_parental_gate.open_overlay()
+func _on_parental_gate_cancelled() -> void:
+	_target_after_gate = ""
 
 
 func _on_bedtime_expired() -> void:
@@ -284,6 +269,10 @@ func handle_chapter_completed(chapter_index: int) -> void:
 		_chapter_end.play_for_chapter(chapter_index)
 
 
+func _on_parental_corner_closed() -> void:
+	pass
+
+
 # ---------------------------------------------------------------- Getters --
 
 func get_main_menu() -> MainMenu:
@@ -295,12 +284,6 @@ func get_chapter_map() -> ChapterMap:
 func get_level_select() -> LevelSelect:
 	return _level_select
 
-func get_parental_gate() -> ParentalGate:
-	return _parental_gate
-
-func get_parental_corner() -> ParentalCorner:
-	return _parental_corner
-
 func get_goodnight_screen() -> GoodnightScreen:
 	return _goodnight_screen
 
@@ -309,3 +292,9 @@ func get_chest_reward() -> ChestReward:
 
 func get_chapter_end() -> ChapterEnd:
 	return _chapter_end
+
+func get_parental_gate() -> Node:
+	return _parental_gate
+
+func get_parental_corner() -> Node:
+	return _parental_corner

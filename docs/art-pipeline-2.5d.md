@@ -88,8 +88,7 @@
   │   ├── FireflyParticles (GPUParticles2D)
   │   └── StarlightDust (GPUParticles2D)
   └── UIOverlay (CanvasLayer - Layer 30)
-      ├── BtnLevels (Góc trái trên)
-      └── BtnParents (Góc phải trên)
+      └── BtnLevels (Góc trái trên)
   ```
 
 ---
@@ -150,20 +149,19 @@
 | `ui_btn_play_base` | $420 \times 420\text{ px}$ | Normal / Pressed | Bục gỗ tròn dày có vân nổi |
 | `ui_btn_play_clef` | $320 \times 320\text{ px}$ | Idle / Glow | Khóa Son mạ vàng 3D phát hào quang |
 | `ui_btn_star_levels` | $180 \times 180\text{ px}$ | Normal / Pressed | Huy hiệu gỗ viền đồng, ngôi sao vàng và số 1 |
-| `ui_btn_moon_parents` | $180 \times 180\text{ px}$ | Normal / Pressed | Huy hiệu gỗ viền đồng, vầng trăng khuyết & sao nhỏ |
 | `ui_panel_wood_frame` | $256 \times 256\text{ px}$ | 9-Slice Patch | Khung viền gỗ parchment co giãn cho popup |
 
 * **Prompt AI 06 (Nút Khóa Son "PLAY" Khổng Lồ)**:
   > **Prompt**: `Large circular wooden button plate with a prominent glowing golden Treble Clef symbol, carved dark oak border with gold inlay, embossed word 'PLAY' in chunky joyful golden lettering underneath the clef. Warm magical yellow halo aura, tactile toy-like feel, children's game UI element, centered, isolated on white background --ar 1:1 --style raw`
 
-* **Prompt AI 07 (Bộ Nút Gỗ Tròn UI: Levels & Parents)**:
-  > **Prompt**: `Set of two round carved wooden game badge buttons with thick dark wood borders and brass rivets: Left button has a bright golden 5-point star with number '1' carved inside; Right button has a sleeping crescent moon with a tiny star. Cozy woodland aesthetic, tactile preschool game UI, isolated on pure white background --ar 2:1 --style raw`
+* **Prompt AI 07 (Nút Gỗ Tròn UI: Levels)**:
+  > **Prompt**: `Round carved wooden game badge button with thick dark wood border and brass rivets, bright golden 5-point star with number '1' carved inside. Cozy woodland aesthetic, tactile preschool game UI, isolated on pure white background --ar 1:1 --style raw`
 
 #### 2.2. Typography & Style Guide
 * **Tiêu đề Display (Title & Buttons)**:
   - Font đề xuất: **Baloo 2** (Extra Bold 800) hoặc **Fredoka**.
   - Xử lý bề mặt: Gradient vàng kim (`#FFE89C` $\rightarrow$ `#D49A24`), stroke viền nâu đậm $3\text{px}$ (`#5A321A`), drop shadow $4\text{px}$ mềm mại (`rgba(0,0,0,0.35)`).
-* **Nhãn hướng dẫn (Labels - Levels/Parents)**:
+* **Nhãn hướng dẫn (Labels - Levels)**:
   - Font: **Be Vietnam Pro** (Semi-Bold 600) / Quicksand.
   - Màu sắc: Kem sáng `#FFF5DE`, viền nổi nhẹ, cỡ chữ $\ge 22\text{pt}$ đảm bảo đọc rõ trên màn hình điện thoại.
 
@@ -282,7 +280,7 @@ void vertex() {
    - Gắn shader `gold_shimmer.gdshader` vào nút Khóa Son và bộ phát hạt `GPUParticles2D` đom đóm.
 3. **Đấu nối Âm thanh & Tương tác**:
    - Tích hợp `AudioDirector.play_bgm("bgm_main_menu_forest_waltz")`.
-   - Kết nối tín hiệu nút `play_pressed`, `levels_pressed`, `parent_gate_requested` theo đúng Ma Trận Điều Hướng đã phê duyệt.
+   - Kết nối tín hiệu nút `play_pressed`, `levels_pressed` theo đúng Ma Trận Điều Hướng đã phê duyệt.
 
 ---
 

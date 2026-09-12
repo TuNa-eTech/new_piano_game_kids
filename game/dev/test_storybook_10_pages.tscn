@@ -1,0 +1,6 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://game/dev/test_storybook_10_pages.gd" id="1_test"]
+
+[node name="TestStorybook10Pages" type="Node"]
+script = ExtResource("1_test")

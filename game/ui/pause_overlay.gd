@@ -53,7 +53,8 @@ func open_overlay() -> void:
 	visible = true
 	_set_controls_visible(true)
 	_open_count += 1
-	get_tree().paused = true
+	if get_tree() != null:
+		get_tree().paused = true
 	_fade(0.0, 1.0)
 	opened.emit()
 
@@ -64,8 +65,9 @@ func close_overlay() -> void:
 	visible = false
 	_set_controls_visible(false)
 	_open_count = maxi(0, _open_count - 1)
-	if _open_count == 0:
+	if _open_count == 0 and get_tree() != null:
 		get_tree().paused = false
+	_fade(1.0, 0.0)
 	closed.emit()
 
 

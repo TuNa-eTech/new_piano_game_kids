@@ -88,6 +88,7 @@ func _build_ui() -> void:
 		slot.name = "Slot_%d" % i
 		slot.position = Vector2(i * slot_w, 0)
 		slot.size = Vector2(slot_w, size.y)
+		slot.pivot_offset = Vector2(slot_w * 0.5, size.y * 0.5)
 		slot.mouse_filter = Control.MOUSE_FILTER_STOP
 		var idx := i
 		slot.gui_input.connect(func(event: InputEvent): _on_slot_gui_input(event, idx))
@@ -98,8 +99,15 @@ func _build_ui() -> void:
 
 
 func _on_slot_gui_input(event: InputEvent, index: int) -> void:
+	var slot_node: Control = _hit_areas[index]
 	if (event is InputEventScreenTouch and event.pressed) or (event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT):
+		var tw := create_tween().set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+		tw.tween_property(slot_node, "scale", Vector2(0.92, 0.92), 0.05)
 		select_slot(index)
+		accept_event()
+	elif (event is InputEventScreenTouch and not event.pressed) or (event is InputEventMouseButton and not event.pressed and event.button_index == MOUSE_BUTTON_LEFT):
+		var tw := create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		tw.tween_property(slot_node, "scale", Vector2.ONE, 0.22)
 		accept_event()
 
 
@@ -110,11 +118,11 @@ func select_slot(index: int) -> void:
 	_selected_slot = index
 	_update_aura_position()
 
-	# Hiệu ứng nảy đàn hồi
+	# Hiệu ứng nảy đàn hồi lò xo
 	var slot_node: Control = _hit_areas[index]
 	var tw := create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	tw.tween_property(slot_node, "scale", Vector2(1.15, 1.15), 0.12)
-	tw.tween_property(slot_node, "scale", Vector2(1.0, 1.0), 0.18)
+	tw.tween_property(slot_node, "scale", Vector2(1.18, 1.18), 0.12)
+	tw.tween_property(slot_node, "scale", Vector2(1.0, 1.0), 0.20)
 
 	var target_mode: int = SLOT_TO_MODE[index]
 

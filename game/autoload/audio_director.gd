@@ -31,6 +31,7 @@ static var SFX_NAMES: Array[String] = [
 	"menu_open", "hold_complete", "chapter_unlock", "free_play_toggle",
 	"padlock_rattle",
 	"soft_boing", "fairy_dust", "giggle_cute", "soft_plop", "cute_purr",
+	"accordion_breath", "violin_pluck", "harp_chime",
 ]
 
 ## Pad hoà âm nền — docs/gameplay-design.html · Quyết định 02:

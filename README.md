@@ -54,10 +54,9 @@ Trò chơi kiên định với 3 nguyên tắc bất biến định hình toàn 
    - Không có màn hình thất bại (Game Over), không tính điểm phạt, không làm mất sao khi bé ấn nhầm phím.
    - Bất kỳ nốt nhạc nào bé gõ đều phát ra âm thanh hòa âm du dương, khích lệ bé tự do khám phá thế giới âm thanh.
    - Mọi nút bấm chuyển màn đều to bản (chuẩn Apple Kids $\ge 88\text{ pt}$), nhạy cảm ứng và có độ trễ giữ an toàn chống chạm vô thức.
-3. **An Toàn Tuyệt Đối & Giấc Ngủ Sinh Học (Apple Kids 1.3 & Bedtime Sleep Lock)**:
-   - **Cổng Phụ Huynh (Parental Gate)** chống trẻ vô tình vào cài đặt bằng câu đố thị giác xúc giác (*"Chạm vào 3 quả dâu tây đỏ"*).
-   - **Đồng Hồ Giờ Ngủ Sinh Học (Bedtime Lock)**: Tự động đưa khu rừng vào giấc ngủ đêm với nhạc ru êm dịu sau 15 hoặc 30 phút chơi, bảo vệ thị lực và nhịp sinh học của bé.
-   - Hoàn toàn **không quảng cáo**, **không mua hàng trong ứng dụng (No IAP)**, **không thu thập dữ liệu người dùng**.
+3. **An Toàn Tuyệt Đối & Thuần Khiết Trẻ Em**:
+   - Trải nghiệm liền mạch 100% cho trẻ nhỏ, loại bỏ hoàn toàn các rào cản cài đặt và cổng phụ huynh.
+   - Hoàn toàn **không quảng cáo**, **không mua hàng trong ứng dụng (No IAP)**, **không liên kết ngoài**, **không thu thập dữ liệu người dùng**.
 
 ---
 
@@ -71,74 +70,61 @@ Trò chơi kiên định với 3 nguyên tắc bất biến định hình toàn 
 | 🗺️ **3 Chương Sách Nổi & 15 Bài Hát** | Bản đồ sách 3D mở ra 3 thế giới cổ tích: *Chương 1: Sáo Trúc Rừng Xanh*, *Chương 2: Hồ Nước Kalimba*, *Chương 3: Lâu Đài Chuông Gió*. |
 | 🏆 **Rương Thần & Bộ Sưu Tập Huy Hiệu** | Khi hoàn thành mỗi bài hát, Rương Báu bung nắp trào suối ánh sáng và ban tặng Huy Hiệu Hoàng Gia của các bạn thú để bé cất vào Lọ Sao (Star Jar). |
 | 🎭 **Đại Hoan Ca Buổi Diễn Rừng Xanh** | Phần thưởng sau khi hoàn thành 5 bài của mỗi chương: Toàn bộ 7 bạn thú cùng Phù Thủy bước lên sân khấu múa rối gỗ rực rỡ và biểu diễn bản hòa tấu 12 giây rộn rã. |
-| 🔒 **Góc Phụ Huynh An Toàn** | Quản lý âm lượng độc lập, tùy chỉnh hẹn giờ giới hạn phiên chơi (Tắt / 15 Phút / 30 Phút) với Cổng bảo vệ xúc giác đạt chuẩn quốc tế. |
 
 ---
 
-## 🖼️ Hệ Thống 10 Màn Hình & Trải Nghiệm Thị Giác
+## 🖼️ Hệ Thống Màn Hình & Trải Nghiệm Thị Giác
 
-Dự án hoàn thiện toàn diện bộ 10 màn hình chuẩn hóa theo mockup nghệ thuật và sơ đồ điều phối tập trung [`ScreenRouter`](game/ui/screen_router.gd):
+Dự án chuẩn hóa các màn hình theo mockup nghệ thuật và sơ đồ điều phối tập trung [`ScreenRouter`](game/ui/screen_router.gd):
 
 <table align="center">
   <tr>
-    <td align="center" width="50%">
-      <img src="docs/mock-main-menu.jpeg" alt="Màn 01: Bìa Sách Khởi Đầu" /><br>
-      <strong>Màn 01: Menu Bìa Sách Khởi Đầu</strong><br>
-      <em>Cuốn sách bìa da dập vàng, nút Chơi khóa son khổng lồ</em>
-    </td>
-    <td align="center" width="50%">
-      <img src="docs/mock-game-play.jpeg" alt="Màn 02: Sân Khấu Chơi Chính" /><br>
-      <strong>Màn 02: Sân Khấu Chơi Chính (Core Loop)</strong><br>
-      <em>Vòng gọi-đáp, Cây Đậu Thần và Dải ruy băng ma thuật</em>
-    </td>
+	<td align="center" width="50%">
+	  <img src="docs/mock-main-menu.jpeg" alt="Màn 01: Bìa Sách Khởi Đầu" /><br>
+	  <strong>Màn 01: Menu Bìa Sách Khởi Đầu</strong><br>
+	  <em>Cuốn sách bìa da dập vàng, nút Chơi khóa son khổng lồ</em>
+	</td>
+	<td align="center" width="50%">
+	  <img src="docs/mock-game-play.jpeg" alt="Màn 02: Sân Khấu Chơi Chính" /><br>
+	  <strong>Màn 02: Sân Khấu Chơi Chính (Core Loop)</strong><br>
+	  <em>Vòng gọi-đáp, Cây Đậu Thần và Dải ruy băng ma thuật</em>
+	</td>
   </tr>
   <tr>
-    <td align="center" width="50%">
-      <img src="docs/mock-free-play.jpeg" alt="Màn 03: Chơi Tự Do Jam Party" /><br>
-      <strong>Màn 03: Sân Khấu Chơi Tự Do (Jam Party)</strong><br>
-      <em>Đổi 5 loại nhạc cụ, bong bóng nốt nhạc ngũ sắc</em>
-    </td>
-    <td align="center" width="50%">
-      <img src="docs/mock-chapter-map.jpeg" alt="Màn 04: Bản Đồ 3 Chương" /><br>
-      <strong>Màn 04: Bản Đồ 3 Chương Sách Nổi</strong><br>
-      <em>Khung trang sách mở với 3 thẻ chương 3D sống động</em>
-    </td>
+	<td align="center" width="50%">
+	  <img src="docs/mock-free-play.jpeg" alt="Màn 03: Chơi Tự Do Jam Party" /><br>
+	  <strong>Màn 03: Sân Khấu Chơi Tự Do (Jam Party)</strong><br>
+	  <em>Đổi 5 loại nhạc cụ, bong bóng nốt nhạc ngũ sắc</em>
+	</td>
+	<td align="center" width="50%">
+	  <img src="docs/mock-chapter-map.jpeg" alt="Màn 04: Bản Đồ 3 Chương" /><br>
+	  <strong>Màn 04: Bản Đồ 3 Chương Sách Nổi</strong><br>
+	  <em>Khung trang sách mở với 3 thẻ chương 3D sống động</em>
+	</td>
   </tr>
   <tr>
-    <td align="center" width="50%">
-      <img src="docs/mock-level-select.jpeg" alt="Màn 05: Chọn 5 Màn Chơi" /><br>
-      <strong>Màn 05: Chọn 5 Màn Chơi (Level Select)</strong><br>
-      <em>Con đường lát đá rêu dẫn lối cùng Bạn Thỏ dẫn đường</em>
-    </td>
-    <td align="center" width="50%">
-      <img src="docs/mock-chest-reward.jpeg" alt="Màn 06: Mở Rương Báu Thần" /><br>
-      <strong>Màn 06: Mở Rương Báu Thần</strong><br>
-      <em>Rương gỗ bung nắp, suối sao vàng và Huy hiệu Thú 3D</em>
-    </td>
+	<td align="center" width="50%">
+	  <img src="docs/mock-level-select.jpeg" alt="Màn 05: Chọn 5 Màn Chơi" /><br>
+	  <strong>Màn 05: Chọn 5 Màn Chơi (Level Select)</strong><br>
+	  <em>Con đường lát đá rêu dẫn lối cùng Bạn Thỏ dẫn đường</em>
+	</td>
+	<td align="center" width="50%">
+	  <img src="docs/mock-chest-reward.jpeg" alt="Màn 06: Mở Rương Báu Thần" /><br>
+	  <strong>Màn 06: Mở Rương Báu Thần</strong><br>
+	  <em>Rương gỗ bung nắp, suối sao vàng và Huy hiệu Thú 3D</em>
+	</td>
   </tr>
   <tr>
-    <td align="center" width="50%">
-      <img src="docs/mock-grand-finale.jpeg" alt="Màn 07: Đại Hoan Ca Buổi Diễn" /><br>
-      <strong>Màn 07: Đại Hoan Ca Buổi Diễn Rừng Xanh</strong><br>
-      <em>Sân khấu múa rối gỗ rèm nhung, hòa tấu chúc mừng vinh quang</em>
-    </td>
-    <td align="center" width="50%">
-      <img src="docs/mock-parental-gate.jpeg" alt="Màn 08: Cổng Phụ Huynh Bảo Vệ" /><br>
-      <strong>Màn 08: Cổng Phụ Huynh Bảo Vệ (Parental Gate)</strong><br>
-      <em>Bảng gỗ xích sắt, câu đố xúc giác: "Chạm 3 quả dâu tây đỏ"</em>
-    </td>
-  </tr>
-  <tr>
-    <td align="center" width="50%">
-      <img src="docs/mock-parental-corner.jpeg" alt="Màn 09: Góc Cài Đặt Phụ Huynh" /><br>
-      <strong>Màn 09: Góc Cài Đặt Phụ Huynh</strong><br>
-      <em>Bàn gỗ rừng đêm, thanh trượt âm lượng và hẹn giờ 15m/30m</em>
-    </td>
-    <td align="center" width="50%">
-      <img src="docs/mock-goodnight-bedtime.jpeg" alt="Màn 10: Chúc Bé Ngủ Ngon" /><br>
-      <strong>Màn 10: Chúc Bé Ngủ Ngon (Bedtime Lock)</strong><br>
-      <em>Ánh trăng dịu êm, Bé Phù Thủy say ngủ và nhạc ru êm ái</em>
-    </td>
+	<td align="center" width="50%">
+	  <img src="docs/mock-grand-finale.jpeg" alt="Màn 07: Đại Hoan Ca Buổi Diễn" /><br>
+	  <strong>Màn 07: Đại Hoan Ca Buổi Diễn Rừng Xanh</strong><br>
+	  <em>Sân khấu múa rối gỗ rèm nhung, hòa tấu chúc mừng vinh quang</em>
+	</td>
+	<td align="center" width="50%">
+	  <img src="docs/mock-goodnight-bedtime.jpeg" alt="Màn 08: Chúc Bé Ngủ Ngon" /><br>
+	  <strong>Màn 08: Chúc Bé Ngủ Ngon (Bedtime Screen)</strong><br>
+	  <em>Ánh trăng dịu êm, Bé Phù Thủy say ngủ và nhạc ru êm ái</em>
+	</td>
   </tr>
 </table>
 
@@ -169,26 +155,27 @@ $$\{ C_4, D_4, E_4, G_4, A_4, C_5, D_5 \}$$
 ## 🏛️ Kiến Trúc Mã Nguồn & Công Nghệ
 
 ```
-                                  ┌─────────────────────────────┐
-                                  │      AudioDirector          │
-                                  │ (Polyphonic Voice & SFX)   │
-                                  └──────────────▲──────────────┘
-                                                 │
+								  ┌─────────────────────────────┐
+								  │      AudioDirector          │
+								  │ (Polyphonic Voice & SFX)   │
+								  └──────────────▲──────────────┘
+												 │
 ┌──────────────────────────┐      ┌──────────────┴──────────────┐      ┌──────────────────────────┐
 │        GameState         │◄────►│         Main Scene          │◄────►│        SaveStore         │
 │ (Active Chapter & State) │      │      (game/main.tscn)       │      │ (Encrypted / Persisted)  │
 └──────────────────────────┘      └──────────────┬──────────────┘      └──────────────────────────┘
-                                                 │
-                                  ┌──────────────▼──────────────┐
-                                  │        ScreenRouter         │
-                                  │  (10 Overlays Coordinator)  │
-                                  └──────────────┬──────────────┘
-                 ┌───────────────────────────────┼───────────────────────────────┐
-                 ▼                               ▼                               ▼
-       ┌──────────────────┐            ┌──────────────────┐            ┌──────────────────┐
-       │   PianoKeyboard  │            │    MagicTree     │            │   DioramaStage   │
-       │ (Touch & Animal) │            │ (Procedural 3D)  │            │ (Shaders & FX)   │
-       └──────────────────┘            └──────────────────┘            └──────────────────┘
+												 │
+								  ┌──────────────▼──────────────┐
+								  │        ScreenRouter         │
+								   │        ScreenRouter         │
+								   │    (Overlays Coordinator)   │
+								   └──────────────┬──────────────┘
+				 ┌───────────────────────────────┼───────────────────────────────┐
+				 ▼                               ▼                               ▼
+	   ┌──────────────────┐            ┌──────────────────┐            ┌──────────────────┐
+	   │   PianoKeyboard  │            │    MagicTree     │            │   DioramaStage   │
+	   │ (Touch & Animal) │            │ (Procedural 3D)  │            │ (Shaders & FX)   │
+	   └──────────────────┘            └──────────────────┘            └──────────────────┘
 ```
 
 - **Engine Core**: Godot Engine 4.7 Mobile (Mobile Renderer, Direct3D 12 / Metal / Vulkan).
@@ -198,7 +185,7 @@ $$\{ C_4, D_4, E_4, G_4, A_4, C_5, D_5 \}$$
   - `AudioDirector`: Quản lý phát đa âm (polyphony), loop nền BGM, cân bằng âm lượng tự động khi có giọng hát thú.
   - `GameState`: Nắm giữ tiến trình, chế độ chơi (`MODE_CALL_RESPONSE` hoặc `MODE_FREE_PLAY`), bài hát hiện tại.
   - `SaveStore`: Lưu trữ cục bộ tiến độ mở khóa chương và số lượng sao thu thập an toàn.
-  - `ScreenRouter`: Điều phối chuyển tiếp giữa 10 màn hình không gây giật lag bộ nhớ (Zero-latency overlay transitions).
+  - `ScreenRouter`: Điều phối chuyển tiếp giữa các màn hình không gây giật lag bộ nhớ (Zero-latency overlay transitions).
 
 ---
 
@@ -214,11 +201,11 @@ new-piano/
 │   │   └── ...                # Khung sách, background ngày/đêm, nhạc cụ
 │   ├── audio/                 # Âm thanh giọng thú (G4), SFX nảy phím, BGM rừng xanh
 │   └── placeholder/           # Tài nguyên dự phòng tự tạo
-├── docs/                      # Tài liệu kỹ thuật, sổ tay mỹ thuật & ảnh mockup chuẩn 10 màn
+├── docs/                      # Tài liệu kỹ thuật, sổ tay mỹ thuật & ảnh mockup chuẩn
 │   ├── art-log.md             # Sổ tay màu sắc & quy chuẩn tạo asset mỹ thuật
 │   ├── audio-log.md           # Quy chuẩn tần số & thiết kế âm thanh nhạc cụ
-│   ├── screen-flow-guide.md   # Hướng dẫn chi tiết luồng chuyển tiếp 10 màn hình
-│   └── mock-*.jpeg            # 10 file hình ảnh Mockup chuẩn
+│   ├── screen-flow-guide.md   # Hướng dẫn chi tiết luồng chuyển tiếp các màn hình
+│   └── mock-*.jpeg            # Các file hình ảnh Mockup chuẩn
 ├── game/
 │   ├── autoload/              # Các Singleton toàn cục (AudioDirector, GameState, SaveStore)
 │   ├── dev/                   # Bộ công cụ Test tự động, Đo độ trễ & Chụp màn hình
@@ -226,7 +213,7 @@ new-piano/
 │   ├── hud/                   # Thanh tiến độ bài học, Lọ thu thập sao ma thuật
 │   ├── piano/                 # Logic bàn phím, Phím đàn thú nhún nhảy (animal_key.gd)
 │   ├── story/                 # Cây Đậu Thần (magic_tree.gd)
-│   ├── ui/                    # 10 Màn hình UI & Bộ điều phối trung tâm ScreenRouter
+│   ├── ui/                    # Các Màn hình UI & Bộ điều phối trung tâm ScreenRouter
 │   ├── main.gd                # Nối dây các tín hiệu cốt lõi
 │   ├── main.tscn              # Scene gốc của trò chơi
 │   ├── call_response.gd       # Logic vòng lặp chơi Gọi - Đáp

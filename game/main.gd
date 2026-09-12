@@ -66,6 +66,13 @@ func _ready() -> void:
 	_keyboard.black_note_played.connect(_on_black_note_played)
 	_call_response.prompt_updated.connect(_on_prompt_updated)
 	_call_response.page_turn_started.connect(_on_page_turn_started)
+	_call_response.page_completed.connect(_on_call_response_page_completed)
+	if _tree != null:
+		_tree.visible = false
+		_tree.leaf_singing.connect(func(n):
+			if _diorama != null:
+				_diorama.sing_leaf(n)
+		)
 	if _diorama != null:
 		_diorama.prop_interacted.connect(_on_diorama_prop_interacted)
 
@@ -78,8 +85,6 @@ func _on_free_play_mode_changed(enabled: bool) -> void:
 		_top_inst_bar.visible = not enabled
 	if _score_board != null:
 		_score_board.visible = not enabled
-	if _tree != null:
-		_tree.visible = not enabled
 
 
 func _on_page_turn_started() -> void:
@@ -87,13 +92,18 @@ func _on_page_turn_started() -> void:
 		_diorama.flip_page()
 
 
+func _on_call_response_page_completed(_page_idx: int) -> void:
+	if _diorama != null:
+		_diorama.celebrate_completion()
+
+
 func _on_prompt_updated(text: String) -> void:
 	if _diorama != null:
 		_diorama.set_speech_text(text)
-	if _ribbon != null and _tree != null and _keyboard != null:
+	if _ribbon != null and _keyboard != null:
 		var exp_note := _call_response.expected_note()
 		if exp_note >= 0:
-			var from_pos := _tree.global_position + _tree.get_leaf_position(exp_note)
+			var from_pos := _diorama.get_leaf_global_position(exp_note) if _diorama != null else (_tree.global_position + _tree.get_leaf_position(exp_note) if _tree != null else Vector2.ZERO)
 			var to_pos := _keyboard.get_key_global_position(exp_note)
 			_ribbon.set_guiding_stream(from_pos, to_pos, Notes.color_of(exp_note))
 		else:
@@ -101,9 +111,9 @@ func _on_prompt_updated(text: String) -> void:
 
 
 func _on_key_note_played(key: int) -> void:
-	if _ribbon != null and _tree != null:
+	if _ribbon != null:
 		var from_pos := _keyboard.get_key_global_position(key)
-		var to_pos := _tree.global_position + _tree.get_leaf_position(key)
+		var to_pos := _diorama.get_leaf_global_position(key) if _diorama != null else (_tree.global_position + _tree.get_leaf_position(key) if _tree != null else Vector2.ZERO)
 		_ribbon.emit_ribbon(from_pos, to_pos, Notes.color_of(key))
 	if _diorama != null:
 		_diorama.on_note_played(key)

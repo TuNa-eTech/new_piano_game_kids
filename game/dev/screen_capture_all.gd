@@ -96,7 +96,7 @@ func _run_captures(main) -> void:
 	await _capture("screen_main_menu")
 	router.close_active_overlay()
 
-	# 3. Chapter map via ScreenRouter (with Header Bar: Bìa Sách + Phụ Huynh)
+	# 3. Chapter map via ScreenRouter (with Header Bar: Bìa Sách)
 	router.open_chapter_map()
 	await _capture("screen_chapter_map")
 
@@ -105,22 +105,12 @@ func _run_captures(main) -> void:
 	await _capture("screen_level_select")
 	router.close_active_overlay()
 
-	# 5. Parental Gate via ScreenRouter
-	router.open_parental_gate()
-	await _capture("screen_parental_gate")
-	router.close_active_overlay()
-
-	# 6. Parental Corner via ScreenRouter
-	router.open_parental_corner()
-	await _capture("screen_parental_corner")
-	router.close_active_overlay()
-
-	# 7. Goodnight Screen via ScreenRouter
+	# 5. Goodnight Screen via ScreenRouter
 	router.open_goodnight()
 	await _capture("screen_goodnight")
 	router.close_active_overlay()
 
-	# 8. Chest Reward via ScreenRouter
+	# 6. Chest Reward via ScreenRouter
 	router.open_chest_reward(0)
 	await _capture("screen_chest_reward")
 	router.close_active_overlay()

@@ -4,13 +4,13 @@ var _frames: int = 0
 var _main_node: Node
 
 func _ready() -> void:
+	GameState.show_main_menu_on_launch = false
+	GameState.free_play = true
+	GameState.set_instrument_mode(0)
+
 	var scene := load("res://game/main.tscn") as PackedScene
 	_main_node = scene.instantiate()
 	add_child(_main_node)
-	
-	# Đặt chế độ Chơi Tự Do
-	GameState.free_play = true
-	GameState.set_instrument_mode(0)
 
 
 func _process(_delta: float) -> void:
