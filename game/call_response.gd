@@ -40,6 +40,7 @@ var _phrase_index: int = 0    ## câu hát hiện tại trong bài hát
 var _sing_index: int = 0
 var _idle: float = 0.0
 var _replay_index: int = 0
+var _auto_play_timer: float = 0.0
 ## Trang mà vòng chơi ĐANG chơi. Khác GameState.page_index thì phải dựng lại
 ## trang — bản đồ chương đổi trang từ bên ngoài, không đi qua đây.
 var _page: int = -1
@@ -60,6 +61,7 @@ func setup(tree: MagicTree, keyboard: PianoKeyboard) -> void:
 		return
 	_keyboard.note_played.connect(_on_note_played)
 	GameState.free_play_changed.connect(_on_free_play_changed)
+	GameState.auto_play_changed.connect(_on_auto_play_changed)
 	# Bé chọn chương trên bản đồ thì trang đổi mà không ai báo cho vòng chơi.
 	GameState.page_changed.connect(_on_page_changed)
 	_begin_page(true)
@@ -75,6 +77,7 @@ func _begin_page(first: bool = false) -> void:
 	_step = 0
 	_sing_index = 0
 	_idle = 0.0
+	_auto_play_timer = 0.0
 	_tree.reset_page()
 	_tree.set_sequence(_sequence)
 
@@ -127,6 +130,24 @@ func _on_free_play_changed(enabled: bool) -> void:
 		_begin_page()
 
 
+func _on_auto_play_changed(enabled: bool) -> void:
+	_auto_play_timer = 0.0
+	if enabled:
+		if _state == State.FREE:
+			_begin_page()
+		elif _state == State.SINGING or _state == State.LEAD_IN:
+			_tree.clear_singing()
+			_enter(State.WAITING)
+		var p := _get_phrase_prompt()
+		if not p.is_empty():
+			prompt_updated.emit(p)
+		else:
+			prompt_updated.emit("Tự động biểu diễn bài hát... ♫")
+	else:
+		_idle = 0.0
+		_refresh_hint()
+
+
 func _enter(next: State) -> void:
 	_state = next
 	_timer = 0.0
@@ -148,6 +169,7 @@ func _enter(next: State) -> void:
 		State.WAITING:
 			_tree.clear_singing()
 			_idle = 0.0
+			_auto_play_timer = 0.0
 			_refresh_hint()
 		State.FRUITING:
 			_replay_index = 0
@@ -178,7 +200,10 @@ func _process(delta: float) -> void:
 	match _state:
 		State.LEAD_IN:
 			if _timer >= SING_LEAD_IN:
-				_enter(State.SINGING)
+				if GameState.auto_play:
+					_enter(State.WAITING)
+				else:
+					_enter(State.SINGING)
 		State.SINGING:
 			_tick_singing()
 		State.WAITING:
@@ -207,9 +232,27 @@ func _tick_singing() -> void:
 		_enter(State.WAITING)
 
 
-## Bước 2 — Cây chờ: không đồng hồ, không thanh thời gian. Sau 8 giây im lặng,
-## con vật tương ứng ngân nhẹ nốt của mình để nhắc.
+## Bước 2 — Cây chờ: không đồng hồ, không thanh thời gian.
+## Ở chế độ Auto-Play: tự động gõ đúng nốt theo tiết tấu BPM.
+## Ở chế độ bình thường: sau 8 giây im lặng, con vật tương ứng ngân nhẹ nốt nhắc.
 func _tick_waiting(delta: float) -> void:
+	if GameState.auto_play:
+		_auto_play_timer += delta
+		var bpm: float = 80.0
+		if Songbook.is_valid(_page):
+			var song: Dictionary = Songbook.get_song(_page)
+			bpm = float(song.get("bpm", 80.0))
+		var note_interval: float = clampf((60.0 / bpm) * 0.72, 0.42, 0.65)
+		if _auto_play_timer >= note_interval:
+			_auto_play_timer = 0.0
+			if _step < _sequence.size():
+				var expected := _sequence[_step]
+				if _keyboard != null:
+					_keyboard.play_auto_key(expected, note_interval * 0.7)
+				else:
+					_on_note_played(expected)
+		return
+
 	_idle += delta
 	if _idle >= IDLE_HINT_SECONDS:
 		_idle = 0.0

@@ -80,6 +80,11 @@ func save() -> bool:
 	cfg.set_value(SECTION_PROGRESS, "bedtime_minutes", GameState.bedtime_minutes)
 	cfg.set_value(SECTION_PROGRESS, "instrument_mode", GameState.instrument_mode)
 
+	# Đảm bảo thư mục lưu trên máy luôn tồn tại
+	var global_dir := ProjectSettings.globalize_path(_path.get_base_dir())
+	if not DirAccess.dir_exists_absolute(global_dir):
+		DirAccess.make_dir_recursive_absolute(global_dir)
+
 	# Bản sao lưu chụp TRƯỚC khi đè: nếu lần ghi này chết giữa chừng (app bị
 	# giết đúng lúc xuống nền) thì .bak vẫn là một file nguyên vẹn của lần trước.
 	_backup()

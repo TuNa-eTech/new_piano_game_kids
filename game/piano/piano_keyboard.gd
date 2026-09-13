@@ -425,6 +425,20 @@ func _strike(key: int) -> void:
 	note_played.emit(key)
 
 
+## Gõ phím tự động (cho chế độ Auto-Play / Concert)
+func play_auto_key(key: int, hold_duration: float = 0.25) -> void:
+	if key < 0 or key >= _keys.size():
+		return
+	_strike(key)
+	var tw := create_tween().bind_node(self)
+	tw.tween_interval(hold_duration)
+	tw.tween_callback(func():
+		if key >= 0 and key < _keys.size():
+			_keys[key].release()
+			note_released.emit(key)
+	)
+
+
 func _strike_black_key(slot: int) -> void:
 	AudioDirector.play_black_key(slot)
 	_black_key_pressed[slot] = true

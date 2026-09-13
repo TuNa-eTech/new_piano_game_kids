@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://bautoplaytest01"]
+
+[ext_resource type="Script" path="res://game/dev/test_autoplay.gd" id="1_test"]
+
+[node name="TestAutoplay" type="Node"]
+script = ExtResource("1_test")

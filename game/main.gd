@@ -14,6 +14,7 @@ const ScreenRouter = preload("res://game/ui/screen_router.gd")
 const CottageMenuButton = preload("res://game/hud/cottage_menu_button.gd")
 const LevelsStarButton = preload("res://game/hud/levels_star_button.gd")
 const FreePlayTopBar = preload("res://game/hud/free_play_top_bar.gd")
+const AutoPlayButton = preload("res://game/ui/auto_play_button.gd")
 
 @onready var _keyboard: PianoKeyboard = $UI/PianoKeyboard
 @onready var _tree: MagicTree = $UI/MagicTree
@@ -22,6 +23,7 @@ const FreePlayTopBar = preload("res://game/hud/free_play_top_bar.gd")
 @onready var _menu: HoldButton = $HUD/Menu
 @onready var _cottage_menu: CottageMenuButton = $HUD/CottageMenu
 @onready var _levels_star: LevelsStarButton = $HUD/LevelsStar
+@onready var _auto_play_btn: AutoPlayButton = $HUD/AutoPlay
 @onready var _map: ChapterMap = $ChapterMap
 @onready var _chapter_end: ChapterEnd = $ChapterEnd
 @onready var _diorama: DioramaStage = $UI/DioramaStage
@@ -87,6 +89,14 @@ func _on_free_play_mode_changed(enabled: bool) -> void:
 		_top_inst_bar.visible = not enabled
 	if _score_board != null:
 		_score_board.visible = false
+	if _auto_play_btn != null:
+		_auto_play_btn.visible = not enabled
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event is InputEventKey and event.pressed and not event.echo:
+		if event.keycode == KEY_A:
+			GameState.auto_play = not GameState.auto_play
 
 
 func _on_page_turn_started() -> void:

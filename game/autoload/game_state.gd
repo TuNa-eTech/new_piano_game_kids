@@ -17,6 +17,7 @@ signal instrument_mode_changed(mode: int)
 signal chapter_completed(chapter_index: int)
 signal bedtime_timer_updated(remaining_seconds: float)
 signal bedtime_expired
+signal auto_play_changed(enabled: bool)
 
 ## Chế độ âm sắc nhạc cụ (Tính Năng 2). 0: AUTO, 1: ANIMALS, 2: FLUTE, 3: KALIMBA, 4: CHIMES
 var instrument_mode: int = 0: # Notes.InstrumentMode.AUTO
@@ -34,7 +35,21 @@ var free_play: bool = false:
 		if free_play == value:
 			return
 		free_play = value
+		if free_play and auto_play:
+			auto_play = false
 		free_play_changed.emit(value)
+
+## Tự Động Phát (Jukebox / Concert Mode):
+## Máy tự động gõ đàn theo tiết tấu BPM, lá nốt nở hoa, dải lụa bay,
+## hết câu tự sang câu tiếp, hết bài tự mở rương và tự động lật sang bài tiếp theo.
+var auto_play: bool = false:
+	set(value):
+		if auto_play == value:
+			return
+		auto_play = value
+		if auto_play and free_play:
+			free_play = false
+		auto_play_changed.emit(value)
 
 ## Trang truyện hiện tại, đếm từ 0. Mỗi trang là một giai điệu.
 var page_index: int = 0
@@ -144,6 +159,7 @@ func apply_saved(saved_page: int, saved_max_page: int, saved_stars: int) -> void
 ## Chỉ dùng cho máy đo: đưa mọi thứ về mặc định để phép đo không phụ thuộc vào
 ## file lưu của lần chạy trước.
 func reset_all() -> void:
+	auto_play = false
 	free_play = false
 	instrument_mode = 0
 	page_index = 0

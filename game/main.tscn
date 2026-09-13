@@ -18,6 +18,7 @@
 [ext_resource type="PackedScene" path="res://game/hud/score_board.tscn" id="16_score_board"]
 [ext_resource type="Script" path="res://game/hud/cottage_menu_button.gd" id="17_cottage_menu"]
 [ext_resource type="Script" path="res://game/hud/levels_star_button.gd" id="18_levels_star"]
+[ext_resource type="Script" path="res://game/ui/auto_play_button.gd" id="19_auto"]
 
 [node name="Main" type="Node2D" unique_id=233447844]
 script = ExtResource("1_emt18")
@@ -166,6 +167,20 @@ offset_right = 328.0
 offset_bottom = 100.0
 mouse_filter = 2
 script = ExtResource("9_prog")
+
+[node name="AutoPlay" type="Button" parent="HUD" unique_id=223425107]
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -228.0
+offset_top = -368.0
+offset_right = -132.0
+offset_bottom = -272.0
+grow_horizontal = 0
+grow_vertical = 0
+script = ExtResource("19_auto")
 
 [node name="FreePlay" type="Button" parent="HUD" unique_id=223425106]
 anchors_preset = 3
