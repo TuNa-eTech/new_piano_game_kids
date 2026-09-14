@@ -80,7 +80,11 @@ var _arrow_next_tex: Texture2D
 
 func _ready() -> void:
 	super()
-	layer = 12
+	# 13 chứ không phải 12: ChestReward cũng ở 12, và hai lớp CanvasLayer cùng số
+	# thì thứ tự vẽ rơi về thứ tự trong cây — tức là không xác định theo ý ta.
+	# Buổi diễn luôn mở NGAY SAU rương (_on_reward_claimed), nên nó phải nằm trên.
+	# Số 13 cũng đúng bằng cái mà comment đầu screen_router.gd vẫn ghi từ trước.
+	layer = 13
 	set_process(false)
 
 

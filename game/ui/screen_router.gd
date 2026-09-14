@@ -2,13 +2,21 @@ class_name ScreenRouter
 extends Node
 ## Bộ Điều Phối Luồng Điều Hướng Toàn Diện (Screen Navigation Orchestrator).
 ##
-## Quản lý vòng đời và sự chuyển tiếp liền mạch giữa tất cả các màn hình & lớp phủ:
-## 1. MainMenu (layer 25) - Bìa sách cổ tích 'Rừng Nhạc'
-## 2. GoodnightScreen (layer 18) - Màn đêm ru ngủ dịu êm khi hết giờ hẹn
-## 3. ChapterEnd (layer 13) - Buổi diễn rừng xanh đại nhạc hội 12s
-## 4. ChestReward (layer 12) - Mở rương báu trao huy hiệu bạn thú
-## 5. LevelSelect (layer 11) - Chọn 5 bục gỗ âm nhạc trong chương với Thỏ dẫn đường
-## 6. ChapterMap (layer 10) - Bản đồ 3 chương pop-up gỗ
+## Quản lý vòng đời và sự chuyển tiếp liền mạch giữa tất cả các màn hình & lớp phủ.
+##
+## Số `layer` quyết định lớp nào nằm trên khi hai lớp phủ cùng mở, nên danh sách
+## này phải khớp với code — đừng sửa một bên. Từ trên xuống:
+##   MainMenu        25  - Bìa sách cổ tích 'Rừng Nhạc'
+##   ParentalGate    20  - Cổng phụ huynh (chồng lên Goodnight — Apple Kids 1.3)
+##   ParentalCorner  19  - Góc phụ huynh: giờ chơi, âm lượng
+##   GoodnightScreen 18  - Màn đêm ru ngủ dịu êm khi hết giờ hẹn
+##   ChapterEnd      13  - Buổi diễn rừng xanh đại nhạc hội 12s
+##   ChestReward     12  - Mở rương báu trao huy hiệu bạn thú
+##   LevelSelect     11  - Chọn 5 bục gỗ âm nhạc trong chương với Thỏ dẫn đường
+##   ChapterMap      10  - Bản đồ 3 chương pop-up gỗ
+##
+## Việc dừng/chạy lại ván chơi KHÔNG do file này quyết định — xem PauseOverlay:
+## ván chơi chạy lại khi và chỉ khi ngăn xếp lớp phủ rỗng.
 
 const ParentalGateClass = preload("res://game/ui/parental_gate.gd")
 const ParentalCornerClass = preload("res://game/ui/parental_corner.gd")
@@ -175,32 +183,35 @@ func close_all() -> void:
 	close_active_overlay()
 
 
-## Đóng lớp phủ đang mở nếu có
+## Đóng mọi lớp phủ đang mở, từ ĐỈNH ngăn xếp xuống.
+##
+## Trước Giai Đoạn 1 đây là 8 khối `if` liệt kê tay từng lớp. Hai vấn đề: thêm màn
+## hình mới mà quên thêm vào đây thì nó không bao giờ được dọn (đã xảy ra —
+## xem _on_main_menu_play), và thứ tự đóng là thứ tự viết trong danh sách chứ
+## không phải thứ tự chồng thật.
+##
+## Đóng từ đỉnh xuống mới đúng: lớp trên cùng là lớp bé đang nhìn. PauseOverlay
+## chỉ cho ván chơi chạy lại khi ngăn xếp rỗng, nên không có nhịp nào đàn kêu
+## trong lúc màn hình vẫn bị phủ kín.
 func close_active_overlay() -> void:
-	if _main_menu and _main_menu.is_open():
-		_main_menu.close_overlay()
-	if _chapter_map and _chapter_map.is_open():
-		_chapter_map.close_map()
-	if _level_select and _level_select.is_open():
-		_level_select.close_overlay()
-	if _goodnight_screen and _goodnight_screen.is_open():
-		_goodnight_screen.close_overlay()
-	if _chest_reward and _chest_reward.is_open():
-		_chest_reward.close_overlay()
-	if _chapter_end and _chapter_end.is_open():
-		_chapter_end.close_overlay()
-	if _parental_gate and _parental_gate.has_method("is_open") and _parental_gate.is_open():
-		_parental_gate.close_overlay()
-	if _parental_corner and _parental_corner.has_method("is_open") and _parental_corner.is_open():
-		_parental_corner.close_overlay()
+	# Chốt chặn vòng lặp vô hạn: nếu một lớp con ghi đè close_overlay() mà quên
+	# gọi super() thì nó sẽ không rời ngăn xếp, và vòng while sẽ quay mãi.
+	var guard := 16
+	while guard > 0:
+		var top := PauseOverlay.top_overlay()
+		if top == null:
+			return
+		top.close_overlay()
+		guard -= 1
+	push_error("ScreenRouter: không dọn hết ngăn xếp lớp phủ — có lớp con nào đó không gọi super() trong close_overlay()?")
 
 
 # ---------------------------------------------------------------- Xử Lý Sự Kiện --
 
 func _on_main_menu_play() -> void:
-	# Fix UI 7 nhóm: trước đây là pass — menu tự đóng nhưng router không dọn
-	# các overlay khác (map/level/goodnight) nên có thể kẹt paused.
-	# Đóng sạch để ván chơi chạy lại ngay.
+	# Trước đây là `pass` — menu tự đóng nhưng router không dọn các lớp phủ khác
+	# (map/level/goodnight) nên ván chơi kẹt paused. Dọn sạch ngăn xếp để bé bấm
+	# CHƠI là chơi được ngay, bất kể trước đó đang mở những gì.
 	close_active_overlay()
 
 
@@ -258,8 +269,9 @@ func _on_bedtime_expired() -> void:
 
 
 func _on_reward_claimed(_badge_index: int) -> void:
-	# Fix UI 7 nhóm: trước đây mở chapter_end chồng lên chest chưa đóng
-	# (2 overlay cùng pause, bộ đếm _open_count lệch, bé thấy 2 lớp phủ).
+	# Đây là CHUYỂN TIẾP rương → buổi diễn, không phải mở thêm một lớp nữa:
+	# đóng rương TRƯỚC rồi mới mở buổi diễn. Trước đây mở chồng lên rương chưa
+	# đóng nên bé thấy hai lớp phủ cùng lúc.
 	if _chest_reward != null and _chest_reward.is_open():
 		_chest_reward.close_overlay()
 	if _chapter_end != null and not _chapter_end.is_open():
@@ -269,7 +281,8 @@ func _on_reward_claimed(_badge_index: int) -> void:
 ## Xử lý hoàn thành chương (gọi từ main.gd khi trang cuối kết thúc)
 func handle_chapter_completed(chapter_index: int) -> void:
 	_pending_chapter_reward = chapter_index
-	# Fix UI 7 nhóm: chống mở chồng nếu chapter_end/chest đã mở (double signal).
+	# chapter_completed có thể tới hai lần trong một nhịp. Màn thưởng cuối chương
+	# đã mở rồi thì lần thứ hai không được mở đè — bỏ qua, đừng chồng lớp.
 	if _chapter_end != null and _chapter_end.is_open():
 		return
 	if _chest_reward != null and _chest_reward.is_open():
