@@ -1,5 +1,7 @@
 class_name ParentalGate
 extends PauseOverlay
+
+const StarlightBurst = preload("res://game/fx/starlight_burst.gd")
 ## Cổng Phụ Huynh Bảo Vệ (Parental Gate & Tactile Fruit Puzzle).
 ## Thiết kế khớp 100% với mock-parental-gate.jpeg và chuẩn Apple Kids Category 1.3.
 ##
@@ -21,7 +23,7 @@ var _prompt_label: Label
 var _close_btn: Button
 var _padlock_rect: TextureRect
 var _fruit_buttons: Array[Button] = []
-var _burst_layer: GateStarlightBurstLayer
+var _burst_layer: StarlightBurst
 var _time: float = 0.0
 
 # Dữ liệu câu đố trái cây
@@ -194,7 +196,12 @@ func _build() -> void:
 	_board_anchor.add_child(_padlock_rect)
 
 	# --- 9. LỚP BÙNG NỔ BỤI SAO VÀNG ---
-	_burst_layer = GateStarlightBurstLayer.new()
+	_burst_layer = StarlightBurst.new()
+	_burst_layer.speed_min = 40.0
+	_burst_layer.speed_max = 180.0
+	_burst_layer.radius_max = 4.8
+	_burst_layer.halo_scale = 1.8
+	_burst_layer.default_count = 18
 	_burst_layer.name = "GateStarlightBurstLayer"
 	_burst_layer.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_burst_layer.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -303,41 +310,3 @@ func _play_sfx(sfx_name: String) -> void:
 
 
 ## Lớp hiệu ứng bụi sao bung nở cho Cổng Phụ Huynh
-class GateStarlightBurstLayer extends Control:
-	var _particles: Array[Dictionary] = []
-
-	func emit_burst(origin: Vector2, color: Color = Color(1.0, 0.92, 0.45, 0.95), count: int = 18) -> void:
-		var rng := RandomNumberGenerator.new()
-		rng.randomize()
-		for j in range(count):
-			var angle := rng.randf_range(0, TAU)
-			var spd := rng.randf_range(40.0, 180.0)
-			_particles.append({
-				"pos": origin,
-				"vel": Vector2(cos(angle), sin(angle)) * spd,
-				"color": color,
-				"alpha": 1.0,
-				"radius": rng.randf_range(2.5, 4.8),
-				"decay": rng.randf_range(1.6, 2.8),
-			})
-
-	func _process(delta: float) -> void:
-		if _particles.is_empty():
-			return
-		var i := _particles.size() - 1
-		while i >= 0:
-			var p: Dictionary = _particles[i]
-			p["pos"] += p["vel"] * delta
-			p["vel"] *= 0.91
-			p["alpha"] -= p["decay"] * delta
-			if p["alpha"] <= 0.0:
-				_particles.remove_at(i)
-			i -= 1
-		queue_redraw()
-
-	func _draw() -> void:
-		for p in _particles:
-			var col: Color = p["color"]
-			col.a *= p["alpha"]
-			draw_circle(p["pos"], p["radius"] * p["alpha"], col)
-			draw_circle(p["pos"], p["radius"] * 1.8 * p["alpha"], Color(col.r, col.g, col.b, col.a * 0.25))

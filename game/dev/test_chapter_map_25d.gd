@@ -31,7 +31,8 @@ func _ready() -> void:
 	_check("Thẻ 1 đang chạy animation pop-up", cards[0].scale.x < 1.0 or cards[0].scale.x > 1.0 or cards[0]._entry_tween != null)
 
 	# 4. Kiểm tra Tương Tác Xúc Giác & Hạt Bụi Sao (Lọ Sao)
-	var burst: ChapterMap.StarlightBurstLayer = map.get_node("StarlightBurstLayer")
+	# Kiểu giờ là StarlightBurst dùng chung (game/fx/), không còn lớp nội bộ của ChapterMap.
+	var burst: StarlightBurst = map.get_node("StarlightBurstLayer")
 	var initial_particles := burst._particles.size()
 	map._on_star_jar_pressed()
 	_check("Lọ sao bấm phát sinh hạt bụi sao (Starlight Burst)", burst._particles.size() > initial_particles)

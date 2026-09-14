@@ -1,5 +1,7 @@
 class_name GoodnightScreen
 extends PauseOverlay
+
+const StarlightBurst = preload("res://game/fx/starlight_burst.gd")
 ## Màn Chúc Bé Ngủ Ngon (Goodnight Bedtime & Sleeping Piano Diorama).
 ## Thiết kế khớp 100% với mock-goodnight-bedtime.jpeg và tiêu chuẩn Apple Kids Category 1.3.
 ##
@@ -26,7 +28,7 @@ var _piano_keys: Array[Button] = []
 
 var _lullaby_player: AudioStreamPlayer
 var _sound_enabled: bool = true
-var _burst_layer: GoodnightZzzBurstLayer
+var _burst_layer: StarlightBurst
 var _time: float = 0.0
 
 
@@ -228,7 +230,17 @@ func _build() -> void:
 	add_child(_lullaby_player)
 
 	# --- 9. LỚP BỤI SAO & BONG BÓNG ZZZ RU NGỦ ---
-	_burst_layer = GoodnightZzzBurstLayer.new()
+	_burst_layer = StarlightBurst.new()
+	_burst_layer.speed_min = 20.0
+	_burst_layer.speed_max = 110.0
+	_burst_layer.radius_max = 4.8
+	_burst_layer.decay_min = 1.2
+	_burst_layer.decay_max = 2.2
+	_burst_layer.damping = 0.94
+	_burst_layer.halo_scale = 2.0
+	_burst_layer.rise = 0.4
+	_burst_layer.default_color = Color(1.0, 0.95, 0.55, 0.95)
+	_burst_layer.default_count = 14
 	_burst_layer.name = "GoodnightZzzBurstLayer"
 	_burst_layer.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_burst_layer.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -390,41 +402,3 @@ class NightFireflyOverlay extends Control:
 
 
 ## Lớp phát hiệu ứng bụi sao và chữ Zzz ru ngủ khi chạm
-class GoodnightZzzBurstLayer extends Control:
-	var _particles: Array[Dictionary] = []
-
-	func emit_burst(origin: Vector2, color: Color = Color(1.0, 0.95, 0.55, 0.95), count: int = 14) -> void:
-		var rng := RandomNumberGenerator.new()
-		rng.randomize()
-		for j in range(count):
-			var angle := rng.randf_range(0, TAU)
-			var spd := rng.randf_range(20.0, 110.0)
-			_particles.append({
-				"pos": origin,
-				"vel": Vector2(cos(angle), sin(angle) - 0.4) * spd,
-				"color": color,
-				"alpha": 1.0,
-				"radius": rng.randf_range(2.5, 4.8),
-				"decay": rng.randf_range(1.2, 2.2),
-			})
-
-	func _process(delta: float) -> void:
-		if _particles.is_empty():
-			return
-		var i := _particles.size() - 1
-		while i >= 0:
-			var p: Dictionary = _particles[i]
-			p["pos"] += p["vel"] * delta
-			p["vel"] *= 0.94
-			p["alpha"] -= p["decay"] * delta
-			if p["alpha"] <= 0.0:
-				_particles.remove_at(i)
-			i -= 1
-		queue_redraw()
-
-	func _draw() -> void:
-		for p in _particles:
-			var col: Color = p["color"]
-			col.a *= p["alpha"]
-			draw_circle(p["pos"], p["radius"] * p["alpha"], col)
-			draw_circle(p["pos"], p["radius"] * 2.0 * p["alpha"], Color(col.r, col.g, col.b, col.a * 0.25))

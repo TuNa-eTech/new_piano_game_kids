@@ -1,6 +1,8 @@
 class_name MainMenu
 extends PauseOverlay
 
+const MusicalNoteBurst = preload("res://game/fx/musical_note_burst.gd")
+
 const AnimatedMenuCharacters = preload("res://game/ui/animated_menu_characters.gd")
 
 ## Màn hình Menu Khởi Đầu / Bìa Sách 'Rừng Nhạc' (FTUE) chuẩn 2.5D Diorama.
@@ -28,7 +30,7 @@ var _play_aura: PlayButtonAura
 var _levels_btn: Button
 var _levels_box: Control
 
-var _burst_layer: StarlightBurstLayer
+var _burst_layer: MusicalNoteBurst
 var _time: float = 0.0
 var _ambient_hint_timer: float = 0.0
 
@@ -119,7 +121,13 @@ func _build() -> void:
 	add_child(notes_orbit)
 
 	# 3. LỚP HIỆU ỨNG HẠT ĐOM ĐÓM & BỤI SAO / NỐT NHẠC BAY
-	_burst_layer = StarlightBurstLayer.new()
+	_burst_layer = MusicalNoteBurst.new()
+	_burst_layer.speed_min = 60.0
+	_burst_layer.speed_max = 220.0
+	_burst_layer.decay_min = 1.5
+	_burst_layer.decay_max = 2.5
+	_burst_layer.damping = 0.92
+	_burst_layer.halo_scale = 1.8
 	_burst_layer.name = "StarlightBurstLayer"
 	_burst_layer.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_burst_layer.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -607,112 +615,15 @@ class FireflyOverlay extends Control:
 
 
 ## Lớp phát hiệu ứng bùng nổ bụi sao vàng và nốt nhạc bay khi chạm (Starlight & Music Notes Burst)
-class StarlightBurstLayer extends Control:
-	var _particles: Array[Dictionary] = []
-	var _musical_notes: Array[Dictionary] = []
-
-	func emit_burst(origin: Vector2, color: Color, count: int = 20) -> void:
-		var rng := RandomNumberGenerator.new()
-		for i in count:
-			var angle := rng.randf_range(0, TAU)
-			var spd := rng.randf_range(60.0, 220.0)
-			_particles.append({
-				"pos": origin,
-				"vel": Vector2(cos(angle), sin(angle)) * spd,
-				"color": color,
-				"alpha": 1.0,
-				"radius": rng.randf_range(2.5, 5.0),
-				"decay": rng.randf_range(1.5, 2.5),
-			})
-
-	func emit_musical_notes(origin: Vector2, count: int = 3) -> void:
-		var rng := RandomNumberGenerator.new()
-		var colors := [
-			Color(1.0, 0.88, 0.38, 0.95), # Golden amber
-			Color(0.42, 0.96, 0.86, 0.95), # Cyan emerald
-			Color(1.0, 0.68, 0.88, 0.95), # Fairy pink
-			Color(1.0, 0.98, 0.68, 0.95), # Warm yellow
-		]
-		for i in count:
-			var vx := rng.randf_range(-35.0, 35.0)
-			var vy := rng.randf_range(-80.0, -140.0)
-			_musical_notes.append({
-				"pos": origin + Vector2(rng.randf_range(-18, 18), rng.randf_range(-12, 12)),
-				"vel": Vector2(vx, vy),
-				"rot": rng.randf_range(-0.35, 0.35),
-				"rot_spd": rng.randf_range(-1.2, 1.2),
-				"scale": rng.randf_range(0.85, 1.25),
-				"color": colors[i % colors.size()],
-				"alpha": 1.0,
-				"decay": rng.randf_range(0.8, 1.3),
-				"phase": rng.randf_range(0, TAU),
-			})
-
-	func _process(delta: float) -> void:
-		var redraw_needed := false
-		if not _particles.is_empty():
-			redraw_needed = true
-			var i := _particles.size() - 1
-			while i >= 0:
-				var p: Dictionary = _particles[i]
-				p["pos"] += p["vel"] * delta
-				p["vel"] *= 0.92
-				p["alpha"] -= p["decay"] * delta
-				if p["alpha"] <= 0.0:
-					_particles.remove_at(i)
-				i -= 1
-
-		if not _musical_notes.is_empty():
-			redraw_needed = true
-			var j := _musical_notes.size() - 1
-			while j >= 0:
-				var n: Dictionary = _musical_notes[j]
-				n["pos"] += n["vel"] * delta
-				n["pos"].x += sin(n["phase"] + n["alpha"] * 5.0) * 0.8
-				n["vel"].y *= 0.96
-				n["rot"] += n["rot_spd"] * delta
-				n["alpha"] -= n["decay"] * delta
-				if n["alpha"] <= 0.0:
-					_musical_notes.remove_at(j)
-				j -= 1
-
-		if redraw_needed:
-			queue_redraw()
-
-	func _draw() -> void:
-		for p in _particles:
-			var col: Color = p["color"]
-			col.a *= p["alpha"]
-			draw_circle(p["pos"], p["radius"] * p["alpha"], col)
-			draw_circle(p["pos"], p["radius"] * 1.8 * p["alpha"], Color(col.r, col.g, col.b, col.a * 0.25))
-
-		for n in _musical_notes:
-			var col: Color = n["color"]
-			col.a *= n["alpha"]
-			_draw_musical_note(n["pos"], col, n["scale"], n["rot"])
-
-	func _draw_musical_note(p: Vector2, col: Color, sc: float, rot: float) -> void:
-		var head_radius := 4.2 * sc
-		var stem_h := 13.0 * sc
-		var xform := Transform2D(rot, p)
-		draw_set_transform_matrix(xform)
-		draw_circle(Vector2.ZERO, head_radius * 1.5, Color(col.r, col.g, col.b, col.a * 0.3))
-		draw_circle(Vector2.ZERO, head_radius, col)
-		var stem_x := head_radius * 0.72
-		draw_line(Vector2(stem_x, 0), Vector2(stem_x, -stem_h), col, 1.8 * sc)
-		draw_arc(Vector2(stem_x + 2.8 * sc, -stem_h + 3.2 * sc), 3.2 * sc, 0.0, PI * 0.7, 6, col, 1.8 * sc)
-		draw_set_transform_matrix(Transform2D.IDENTITY)
-
-
 ## Prop Đàn Accordion (Phong Cầm) 2.5D với nhịp thở nếp gấp và phản hồi nén nhả xúc giác
 class AccordionProp extends Control:
 	var _tex_rect: TextureRect
 	var _time: float = 0.0
 	var _is_reacting: bool = false
-	var _burst_layer: StarlightBurstLayer
+	var _burst_layer: MusicalNoteBurst
 	var _audio_node: Node
 
-	func _init(burst: StarlightBurstLayer, audio: Node) -> void:
+	func _init(burst: MusicalNoteBurst, audio: Node) -> void:
 		_burst_layer = burst
 		_audio_node = audio
 
@@ -786,10 +697,10 @@ class ViolinProp extends Control:
 	var _time: float = 0.0
 	var _ambient_timer: float = 0.0
 	var _is_reacting: bool = false
-	var _burst_layer: StarlightBurstLayer
+	var _burst_layer: MusicalNoteBurst
 	var _audio_node: Node
 
-	func _init(burst: StarlightBurstLayer, audio: Node) -> void:
+	func _init(burst: MusicalNoteBurst, audio: Node) -> void:
 		_burst_layer = burst
 		_audio_node = audio
 

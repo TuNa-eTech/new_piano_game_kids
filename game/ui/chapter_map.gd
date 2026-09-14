@@ -1,5 +1,7 @@
 class_name ChapterMap
 extends PauseOverlay
+
+const StarlightBurst = preload("res://game/fx/starlight_burst.gd")
 ## Bản đồ chương — lớp phủ mở bằng nút Menu giữ 2 giây hoặc từ Bìa Sách.
 ## Thiết kế khớp 100% với mock-chapter-map.jpeg.
 ##
@@ -18,7 +20,7 @@ var _stage: Control
 var _back_btn: Button
 var _star_jar_btn: Button
 var _menu_btn: Button
-var _burst_layer: StarlightBurstLayer
+var _burst_layer: StarlightBurst
 var _time: float = 0.0
 
 
@@ -145,7 +147,7 @@ func _build() -> void:
 	_stage.add_child(_star_jar_btn)
 
 	# --- 5. LỚP BÙNG NỔ BỤI SAO VÀNG (STARLIGHT BURST VFX) ---
-	_burst_layer = StarlightBurstLayer.new()
+	_burst_layer = StarlightBurst.new()
 	_burst_layer.name = "StarlightBurstLayer"
 	_burst_layer.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_burst_layer.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -268,40 +270,3 @@ func _get_game_state() -> Node:
 
 
 ## Lớp phát hiệu ứng bùng nổ bụi sao vàng khi tương tác (Starlight Burst)
-class StarlightBurstLayer extends Control:
-	var _particles: Array[Dictionary] = []
-
-	func emit_burst(origin: Vector2, color: Color, count: int = 20) -> void:
-		var rng := RandomNumberGenerator.new()
-		for i in count:
-			var angle := rng.randf_range(0, TAU)
-			var spd := rng.randf_range(50.0, 210.0)
-			_particles.append({
-				"pos": origin,
-				"vel": Vector2(cos(angle), sin(angle)) * spd,
-				"color": color,
-				"alpha": 1.0,
-				"radius": rng.randf_range(2.5, 5.0),
-				"decay": rng.randf_range(1.6, 2.8),
-			})
-
-	func _process(delta: float) -> void:
-		if _particles.is_empty():
-			return
-		var i := _particles.size() - 1
-		while i >= 0:
-			var p: Dictionary = _particles[i]
-			p["pos"] += p["vel"] * delta
-			p["vel"] *= 0.91
-			p["alpha"] -= p["decay"] * delta
-			if p["alpha"] <= 0.0:
-				_particles.remove_at(i)
-			i -= 1
-		queue_redraw()
-
-	func _draw() -> void:
-		for p in _particles:
-			var col: Color = p["color"]
-			col.a *= p["alpha"]
-			draw_circle(p["pos"], p["radius"] * p["alpha"], col)
-			draw_circle(p["pos"], p["radius"] * 1.9 * p["alpha"], Color(col.r, col.g, col.b, col.a * 0.25))

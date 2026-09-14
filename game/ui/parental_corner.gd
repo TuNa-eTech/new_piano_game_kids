@@ -1,5 +1,7 @@
 class_name ParentalCorner
 extends PauseOverlay
+
+const StarlightBurst = preload("res://game/fx/starlight_burst.gd")
 ## Góc Phụ Huynh (Parental Corner & Cozy Bedtime Control).
 ## Thiết kế khớp 100% với mock-parental-corner.jpeg và tiêu chuẩn Apple Kids Category 1.3.
 ##
@@ -45,7 +47,7 @@ var _boy_time: float = 0.0
 var _close_btn: Button
 
 # Particles & Time
-var _burst_layer: CornerBurstLayer
+var _burst_layer: StarlightBurst
 var _time: float = 0.0
 
 
@@ -303,7 +305,18 @@ func _build() -> void:
 	add_child(_lullaby_player)
 
 	# --- 11. LỚP BÙNG NỔ BỤI SAO XÚC GIÁC ---
-	_burst_layer = CornerBurstLayer.new()
+	_burst_layer = StarlightBurst.new()
+	_burst_layer.speed_min = 30.0
+	_burst_layer.speed_max = 150.0
+	_burst_layer.radius_min = 2.0
+	_burst_layer.radius_max = 4.5
+	_burst_layer.decay_min = 1.5
+	_burst_layer.decay_max = 2.5
+	_burst_layer.damping = 0.92
+	_burst_layer.halo_scale = 1.8
+	_burst_layer.halo_alpha = 0.22
+	_burst_layer.default_color = Color("#FFD768")
+	_burst_layer.default_count = 16
 	_burst_layer.name = "CornerBurstLayer"
 	_burst_layer.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_burst_layer.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -492,41 +505,3 @@ func _play_sfx(sfx_name: String) -> void:
 
 
 ## Lớp hiệu ứng bụi sao bung nở cho Góc Phụ Huynh
-class CornerBurstLayer extends Control:
-	var _particles: Array[Dictionary] = []
-
-	func emit_burst(origin: Vector2, color: Color = Color("#FFD768"), count: int = 16) -> void:
-		var rng := RandomNumberGenerator.new()
-		rng.randomize()
-		for j in range(count):
-			var angle := rng.randf_range(0, TAU)
-			var spd := rng.randf_range(30.0, 150.0)
-			_particles.append({
-				"pos": origin,
-				"vel": Vector2(cos(angle), sin(angle)) * spd,
-				"color": color,
-				"alpha": 1.0,
-				"radius": rng.randf_range(2.0, 4.5),
-				"decay": rng.randf_range(1.5, 2.5),
-			})
-
-	func _process(delta: float) -> void:
-		if _particles.is_empty():
-			return
-		var i := _particles.size() - 1
-		while i >= 0:
-			var p: Dictionary = _particles[i]
-			p["pos"] += p["vel"] * delta
-			p["vel"] *= 0.92
-			p["alpha"] -= p["decay"] * delta
-			if p["alpha"] <= 0.0:
-				_particles.remove_at(i)
-			i -= 1
-		queue_redraw()
-
-	func _draw() -> void:
-		for p in _particles:
-			var col: Color = p["color"]
-			col.a *= p["alpha"]
-			draw_circle(p["pos"], p["radius"] * p["alpha"], col)
-			draw_circle(p["pos"], p["radius"] * 1.8 * p["alpha"], Color(col.r, col.g, col.b, col.a * 0.22))
