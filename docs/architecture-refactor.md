@@ -355,11 +355,25 @@ vẫn **đúng 3 lỗi cũ** — mốc nền không đổi.
 
 | GĐ | Trạng thái | Commit | Kiểm chứng |
 | :---: | :--- | :--- | :--- |
+| **0** | ✅ Xong | `db3d034` + sau | 19 → **0** tham chiếu `res://docs/` |
 | **1** | ✅ Xong | `410c189` | 3 lỗi nền, không lỗi mới |
 | **2a** | ✅ Xong | `fecc549` | 3 lỗi nền + 2 test 2.5D ĐẠT toàn bộ |
-| **0** | 🟡 Xong 6/8 màn | *(đang làm)* | 19 tham chiếu `res://docs/` → còn 4 |
-| **5** | ✅ Xong | *(đang làm)* | cổng nhanh sạch + 3 lỗi nền |
-| 2b · 3 · 4 · 6 · 7 | ⬜ Chưa làm | — | — |
+| **5** | ✅ Xong | `db3d034` | cổng nhanh sạch + 3 lỗi nền |
+| **6** | ✅ Xong | — | ~26 MB rời khỏi gói phát hành |
+| **2b · 3 · 4 · 7** | ⬜ Chưa làm | — | cần bạn quyết (xem 6.6) |
+
+## 6.6. CÒN LẠI — cần bạn quyết trước khi làm
+
+- **2b (GPUParticles2D)** và **7 (thí điểm `.tscn`)**: theo định nghĩa là **đổi hình
+  ảnh**, phải bạn duyệt bằng mắt. Không tự làm.
+- **3 (Theme .tres)**: cổng kiểm chứng duy nhất là so ảnh, mà mục 6.4 đã chỉ ra ảnh
+  chụp hai lần chạy vốn đã khác nhau. Phải làm 6.4 (gieo hạt/tắt lớp particle khi
+  chụp) TRƯỚC, nếu không không phân biệt được lỗi hồi quy với nhiễu.
+- **4 (sổ đăng ký asset)**: cần chốt phạm vi — chỉ gom 258 chuỗi `res://assets/` vào
+  một chỗ, hay gom luôn cả mẫu `ResourceLoader.exists(A) / load(A)` lặp 123 lần?
+  Làm cái đầu mà bỏ cái sau thì chỉ dời chuỗi đi nơi khác chứ không bớt trùng lặp.
+- **6.2b (màn Rương Báu)**: câu hỏi mở vẫn chưa có câu trả lời — cờ chết
+  `enable_chest_before_concert` vẫn còn nguyên, chưa đụng tới.
 
 **Giai Đoạn 1** — `_open_count` (static int) → ngăn xếp giữ chính các đối tượng
 `PauseOverlay`. Bất biến: ván chơi chạy lại ⟺ ngăn xếp rỗng. `close_active_overlay()`
@@ -374,6 +388,29 @@ từ 8 khối `if` liệt kê tay → đóng từ đỉnh xuống.
 **Giai Đoạn 2a** — 6 lớp hạt → `game/fx/starlight_burst.gd` + `musical_note_burst.gd`.
 **−303 dòng** trong `game/ui/`, **+179 dòng** dùng chung. Mọi con số phép thuật
 (0.91/0.92/0.94, 1.8/1.9/2.0, dải tốc độ) giờ là thuộc tính có tên đặt tại nơi dùng.
+
+> ⚠️ **Bẫy đã vấp, ghi lại cho người sau**: đổi kiểu một biến sang `class_name` mới
+> thêm (`StarlightBurst`) làm `test_chapter_map_25d` **treo vô hạn** thay vì báo lỗi —
+> class_name chỉ được đăng ký sau khi editor quét dự án, chạy `--headless` trên cây
+> sạch thì không thấy tên đó; script hỏng parse ⇒ scene không có script ⇒ không ai gọi
+> `quit()`. Trong dự án này, script chạy headless phải **preload theo đường dẫn**.
+> Đã sửa ở `d75a586`.
+
+**Giai Đoạn 0** — 19 → **0** tham chiếu `res://docs/` trong mã phát hành. Sáu màn chỉ
+cần gỡ nhánh dự phòng chết. Hai màn `chapter_map` và `chest_reward` không gỡ được vì
+mockup là nguồn DUY NHẤT, nên tấm concept được chép sang
+`assets/placeholder/art/` dưới tên nói đúng bản chất (`placeholder_bg_*.jpg`) — nó vẫn
+là ảnh tạm, nhưng nằm đúng chỗ của một tài nguyên chạy thật thay vì trong thư mục tài
+liệu. Nhờ vậy `docs/` thôi làm phụ thuộc lúc chạy và loại được khỏi gói build.
+Đã đo trực tiếp: cả hai màn vẫn có `_bg_texture` 1376×768.
+
+**Giai Đoạn 5** — 22 chỗ `get_node_or_null("/root/...")` + `has_method()` → gọi thẳng
+autoload; xoá các helper `_get_audio()` / `_get_game_state()` nay đã thừa.
+
+**Giai Đoạn 6** — `export_presets.cfg` loại `tools/` · `game/dev/` · `scratch/` ·
+`docs/` (~26 MB). **Cố ý KHÔNG loại** `addons/godot_ai/` (project.godot đăng ký
+autoload `_mcp_game_helper` trỏ vào đó — loại đi là vỡ lúc chạy) và
+`assets/placeholder/notes/` (là lưới dự phòng khi thiếu giọng thú, chỉ ~700 KB).
 
 ---
 

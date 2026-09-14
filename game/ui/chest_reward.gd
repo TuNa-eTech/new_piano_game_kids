@@ -85,15 +85,17 @@ func _build() -> void:
 	add_child(_stage)
 
 	# 1. Phông nền toàn cảnh Sân Khấu Rừng & Nhà Nấm từ mock-chest-reward.jpeg
-	# ⚠️ NỢ KỸ THUẬT — ẢNH MOCKUP ĐANG CHẠY THẬT TRONG GAME.
-	# Đây là `if` chứ không phải `elif`: không có nhánh asset thật nào phía trên,
-	# nên tấm .jpeg trong docs/ CHÍNH LÀ phông nền phát hành của màn này.
-	# Asset thật mà docs/art-pipeline-chest-reward-2.5d.md đặt tên là `tex_bg_chest_forest_diorama.png`
-	# — CHƯA ĐƯỢC DỰNG. Gỡ dòng dưới trước khi có nó thì màn này trắng trơn.
-	# Khi asset về: đổi thành `if ResourceLoader.exists(<asset thật>)` rồi xoá hẳn
-	# nhánh mockup, và bỏ docs/ khỏi gói export.
-	if ResourceLoader.exists("res://docs/mock-chest-reward.jpeg"):
-		_bg_texture = load("res://docs/mock-chest-reward.jpeg")
+	# ⚠️ PHÔNG NỀN TẠM — chưa có asset thật.
+	# Asset chính thức mà docs/art-pipeline-chest-reward-2.5d.md đặt tên là
+	# `tex_bg_chest_forest_diorama.png` và CHƯA ĐƯỢC DỰNG. Trong lúc chờ, màn này dùng bản
+	# tạm trong assets/placeholder/ (chính là tấm concept, nhưng nằm đúng chỗ của
+	# một tài nguyên chạy thật — trước đây nó nằm trong docs/, khiến thư mục tài
+	# liệu >10 MB bị kéo cả vào gói phát hành).
+	# Khi asset thật về: đổi đường dẫn rồi xoá dòng placeholder.
+	if ResourceLoader.exists("res://assets/art/tex_bg_chest_forest_diorama.png"):
+		_bg_texture = load("res://assets/art/tex_bg_chest_forest_diorama.png")
+	elif ResourceLoader.exists("res://assets/placeholder/art/placeholder_bg_chest_reward.jpg"):
+		_bg_texture = load("res://assets/placeholder/art/placeholder_bg_chest_reward.jpg")
 
 	var bg_rect := TextureRect.new()
 	bg_rect.name = "BackgroundDiorama"
