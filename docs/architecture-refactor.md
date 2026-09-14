@@ -362,6 +362,57 @@ vẫn **đúng 3 lỗi cũ** — mốc nền không đổi.
 | **6** | ✅ Xong | — | ~26 MB rời khỏi gói phát hành |
 | **2b · 3 · 4 · 7** | ⬜ Chưa làm | — | cần bạn quyết (xem 6.6) |
 
+### 6.5b. Hai bẫy đã vấp khi thực thi — ghi lại để khỏi vấp lại
+
+**① Loại thư mục khỏi export suýt ship bản vỡ.** `game/dev/*` bị loại, nhưng
+`main.tscn` tham chiếu `res://game/dev/latency_probe.gd` — node `LatencyProbe` nằm
+TRONG scene chính và `main.gd:_ready()` gọi `_probe.bind_keyboard()`. Trong bản
+export, script biến mất ⇒ `_ready()` của scene chính chết giữa chừng ⇒ `_router`
+không bao giờ được tạo ⇒ hỏng toàn bộ điều hướng.
+**Cổng kiểm chứng chạy từ mã nguồn nên KHÔNG thấy được lỗi này.** Đã chuyển
+`latency_probe.gd` sang `game/hud/` (nó vốn là mã phát hành, chỉ bị xếp nhầm chỗ).
+
+> 📌 **Luật rút ra**: trước khi thêm bất cứ gì vào `exclude_filter`, phải chạy
+> `grep -rn "res://<thư mục bị loại>" game/*.tscn game/*.gd game/ui game/hud ...`
+> Cổng test hiện tại KHÔNG bao giờ bắt được loại lỗi này.
+
+**② Di chuyển file .gd trong Godot 4: `uid://` được ưu tiên hơn `path=`.**
+Sửa `path=` trong `.tscn` là chưa đủ trên máy đã có `.godot/uid_cache.bin` cũ —
+Godot vẫn giải bằng uid và trỏ về đường dẫn cũ. Phải chạy `--import` để làm mới cache.
+
+### 6.5c. Bổ sung lưới an toàn: `game/dev/overlay_stack_test.tscn`
+
+Giai Đoạn 1 đặt ra một bất biến nhưng ban đầu **không có gì canh nó** —
+`navigation_flow_test` kiểm luồng đi giữa các màn, `soak_test` gõ đàn; không bài nào
+mở/đóng lớp phủ qua nhiều chu kỳ, mà trôi bộ đếm thì chỉ lộ ra sau nhiều chu kỳ.
+
+Bài test mới đo đúng ba lỗi mà `_open_count` cũ từng mắc, cộng trường hợp ngăn xếp
+sâu 2. **Kết quả: ĐẠT TOÀN BỘ 14/14.**
+
+---
+
+### 6.5d. Kết quả `soak_test` (cổng còn thiếu của Giai Đoạn 1)
+
+5 lượt × 60 vòng × 3 ngón:
+
+```
+object = 3238 · 3233 · 3245 ...   -> ĐỨNG YÊN, không rò đối tượng
+ngón còn kẹt: 0   giọng còn kêu: 0
+2.368 KB mỗi cú chạm ở trạng thái ổn định
+```
+
+⚠️ **Không so sánh được con số KB với lần chạy trước** — lần đó `LatencyProbe`
+đang hỏng tham chiếu (mục 6.5b ①) nên script không nạp, và chính `_process()` của
+nó mới là nguồn cấp phát: nó dựng ~10 chuỗi định dạng rồi `join` **mỗi khung hình**
+(`game/hud/latency_probe.gd:77-90`). Sau khi sửa, script chạy lại đúng như vốn có,
+nên KB/cú chạm tăng là **hành vi đúng được khôi phục**, không phải rò rỉ do refactor.
+Bằng chứng: số lượng object đứng yên.
+
+> 💡 **Việc đáng làm sau, ngoài phạm vi refactor này**: overlay chẩn đoán cấp phát
+> mỗi khung hình kể cả khi đang ẩn. Nên chặn bằng `set_process(visible)`.
+
+---
+
 ## 6.6. CÒN LẠI — cần bạn quyết trước khi làm
 
 - **2b (GPUParticles2D)** và **7 (thí điểm `.tscn`)**: theo định nghĩa là **đổi hình
