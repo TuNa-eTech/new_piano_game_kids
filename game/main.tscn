@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://ceiuq1wnm8chb" path="res://game/main.gd" id="1_emt18"]
 [ext_resource type="PackedScene" uid="uid://cchdvvlnvwlkd" path="res://game/piano/piano_keyboard.tscn" id="2_vop5m"]
-[ext_resource type="Script" uid="uid://cuqrqtaxbyl1d" path="res://game/dev/latency_probe.gd" id="3_5un7r"]
+[ext_resource type="Script" uid="uid://cuqrqtaxbyl1d" path="res://game/hud/latency_probe.gd" id="3_5un7r"]
 [ext_resource type="Script" uid="uid://c45vjgh7yssp2" path="res://game/story/magic_tree.gd" id="3_dgpao"]
 [ext_resource type="Script" uid="uid://db68jfyytks35" path="res://game/hud/star_jar.gd" id="5_wjctj"]
 [ext_resource type="Script" uid="uid://d0v2gcbg8rggx" path="res://game/call_response.gd" id="6_xkbyp"]

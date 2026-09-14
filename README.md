@@ -259,7 +259,7 @@ Dự án tích hợp sẵn bộ kịch bản kiểm thử toàn diện đặt tr
 | **Vòng Lặp Chơi Nhạc** | `res://game/dev/loop_test.tscn` | Tự động mô phỏng bé gõ phím, kiểm tra tính toán Gọi-Đáp, Cây lớn và chuyển màn. |
 | **Điều Hướng 10 Màn** | `res://game/dev/navigation_flow_test.tscn` | Thử nghiệm toàn bộ tín hiệu mở/đóng giữa 10 màn hình qua `ScreenRouter`. |
 | **Chụp Màn Hình Toàn Diện** | `res://game/dev/screen_capture_all.tscn` | Tự động tuần tự mở 10 màn hình và xuất ảnh chụp sắc nét để kiểm tra giao diện (Visual QA). |
-| **Đo Độ Trễ Âm Thanh** | `res://game/dev/latency_probe.tscn` | Đo lường độ trễ từ lúc chạm phím cảm ứng đến khi AudioDriver phát âm thanh (mục tiêu $<30\text{ ms}$). |
+| **Đo Độ Trễ Âm Thanh** | `res://game/hud/latency_probe.gd` *(gắn sẵn trong `main.tscn`, hiện bằng phím tắt)* | Đo lường độ trễ từ lúc chạm phím cảm ứng đến khi AudioDriver phát âm thanh (mục tiêu $<30\text{ ms}$). |
 | **Kiểm Thử Độ Bền (Soak Test)**| `res://game/dev/soak_test.tscn` | Chạy liên tục vòng lặp gõ đàn ngẫu nhiên 30 phút nhằm phát hiện rò rỉ bộ nhớ (Memory Leaks). |
 
 ---
