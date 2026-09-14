@@ -47,6 +47,10 @@ var default_count: int = 20
 var _particles: Array[Dictionary] = []
 
 
+## `color` lấy thẳng default_color làm giá trị mặc định (GDScript tính biểu thức
+## này lúc GỌI, theo đúng instance — đã dò thực tế trên 4.7.2, không phải đoán).
+## `count` thì KHÔNG làm thế được: 0 là số hạt hợp lệ ("đừng bắn gì cả"), nên nó
+## cần một giá trị vô hiệu riêng là -1 để phân biệt với "chủ ý bắn 0 hạt".
 func emit_burst(origin: Vector2, color: Color = default_color, count: int = -1) -> void:
 	var n := count if count >= 0 else default_count
 	var rng := RandomNumberGenerator.new()

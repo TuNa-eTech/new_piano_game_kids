@@ -348,6 +348,33 @@ chứng kiểu "ảnh phải giống hệt" do đó không phân biệt được
 
 ---
 
+## 6.5. TIẾN ĐỘ THỰC THI
+
+Nhánh: `refactor/kien-truc-giai-doan-1`. Baseline đo lại trên commit `6707617`
+vẫn **đúng 3 lỗi cũ** — mốc nền không đổi.
+
+| GĐ | Trạng thái | Commit | Kiểm chứng |
+| :---: | :--- | :--- | :--- |
+| **1** | ✅ Xong | `410c189` | 3 lỗi nền, không lỗi mới |
+| **2a** | ✅ Xong | `fecc549` | 3 lỗi nền, không lỗi mới |
+| 0 · 2b · 3 · 4 · 5 · 6 · 7 | ⬜ Chưa làm | — | — |
+
+**Giai Đoạn 1** — `_open_count` (static int) → ngăn xếp giữ chính các đối tượng
+`PauseOverlay`. Bất biến: ván chơi chạy lại ⟺ ngăn xếp rỗng. `close_active_overlay()`
+từ 8 khối `if` liệt kê tay → đóng từ đỉnh xuống.
+
+> 🐞 **Lỗi tiềm ẩn phát hiện thêm khi làm**: `ChapterEnd` và `ChestReward` **cùng
+> `layer = 12`**. Hai `CanvasLayer` cùng số thì thứ tự vẽ rơi về thứ tự trong cây —
+> đúng cặp đã gây ra lỗi "bé thấy 2 lớp phủ" ghi trong comment cũ của router.
+> Đã đổi `ChapterEnd` → `layer = 13`, khớp với con số mà comment đầu
+> `screen_router.gd` vẫn ghi từ trước (code và comment đã lệch nhau từ lâu).
+
+**Giai Đoạn 2a** — 6 lớp hạt → `game/fx/starlight_burst.gd` + `musical_note_burst.gd`.
+**−303 dòng** trong `game/ui/`, **+179 dòng** dùng chung. Mọi con số phép thuật
+(0.91/0.92/0.94, 1.8/1.9/2.0, dải tốc độ) giờ là thuộc tính có tên đặt tại nơi dùng.
+
+---
+
 ## 7. Những Điều KHÔNG Nên Làm
 
 1. ❌ **Không** áp kiến trúc phân tầng backend (entities / use-cases / repository).

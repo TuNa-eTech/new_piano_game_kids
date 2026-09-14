@@ -1,5 +1,7 @@
 extends Node
 
+const StarlightBurstScript = preload("res://game/fx/starlight_burst.gd")
+
 var _passed: int = 0
 var _failed: int = 0
 
@@ -32,7 +34,9 @@ func _ready() -> void:
 
 	# 4. Kiểm tra Tương Tác Xúc Giác & Hạt Bụi Sao (Lọ Sao)
 	# Kiểu giờ là StarlightBurst dùng chung (game/fx/), không còn lớp nội bộ của ChapterMap.
-	var burst: StarlightBurst = map.get_node("StarlightBurstLayer")
+	# Dùng preload chứ KHÔNG dùng tên lớp toàn cục: class_name chỉ được đăng ký sau khi
+	# editor quét dự án, nên chạy --headless trên máy sạch sẽ không tìm thấy tên đó.
+	var burst := map.get_node("StarlightBurstLayer") as StarlightBurstScript
 	var initial_particles := burst._particles.size()
 	map._on_star_jar_pressed()
 	_check("Lọ sao bấm phát sinh hạt bụi sao (Starlight Burst)", burst._particles.size() > initial_particles)
