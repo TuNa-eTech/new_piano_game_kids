@@ -26,9 +26,28 @@ var _play_container: Control
 var _play_aura: PlayButtonAura
 
 var _levels_btn: Button
+var _levels_box: Control
 
 var _burst_layer: StarlightBurstLayer
 var _time: float = 0.0
+var _ambient_hint_timer: float = 0.0
+
+
+func _process(_delta: float) -> void:
+	# Fix UI 7 nhóm: hotspot vô hình nên bé không biết chỗ nào chạm được.
+	# Thở nhẹ nút Levels + tỏa sparkle mời gọi quanh Play mỗi ~5s.
+	if not visible:
+		return
+	_time += _delta
+	if _levels_box != null and is_instance_valid(_levels_box):
+		var breathe := 1.0 + 0.03 * sin(_time * 2.4)
+		_levels_box.scale = Vector2(breathe, breathe)
+	_ambient_hint_timer += _delta
+	if _ambient_hint_timer >= 5.0:
+		_ambient_hint_timer = 0.0
+		if _burst_layer != null and _play_container != null and is_instance_valid(_play_container):
+			var center := _play_container.get_global_rect().get_center()
+			_burst_layer.emit_burst(center + Vector2(0, -20), Color(1.0, 0.92, 0.50, 0.55), 6)
 
 
 func _ready() -> void:
@@ -364,6 +383,7 @@ func _build_header_badges() -> void:
 
 	# --- NÚT LEVELS (NGÔI SAO GỖ GÓC TRÁI TRÊN) ---
 	var levels_box := Control.new()
+	levels_box.name = "LevelsBox"
 	levels_box.anchor_left = 0.022
 	levels_box.anchor_top = 0.042
 	levels_box.anchor_right = 0.105
@@ -371,6 +391,7 @@ func _build_header_badges() -> void:
 	levels_box.pivot_offset = Vector2(50, 50)
 	levels_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(levels_box)
+	_levels_box = levels_box
 
 	_levels_btn = Button.new()
 	_levels_btn.name = "LevelsButton"

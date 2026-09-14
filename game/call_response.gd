@@ -24,7 +24,7 @@ enum State { LEAD_IN, SINGING, WAITING, FRUITING, PAGE_TURN, FREE }
 const SING_LEAD_IN := 0.6
 const SING_INTERVAL := 0.55      ## 3 nốt ~1,6 s · 7 nốt ~3,9 s → đúng "2–4 giây"
 const SING_TAIL := 0.35
-const IDLE_HINT_SECONDS := 8.0   ## Quyết định 03: "sau 8 giây không chạm"
+const IDLE_HINT_SECONDS := 4.0   ## P0-3: 8s quá lâu với bé 4 tuổi — 4s nhắc thị giác
 const FRUIT_SECONDS := 3.0       ## "thiết kế nó như một cảnh phim ngắn 3 giây"
 const FRUIT_REPLAY_INTERVAL := 0.22
 const PAGE_TURN_SECONDS := 1.2
@@ -39,6 +39,7 @@ var _step: int = 0            ## vị trí trong chuỗi mà bé cần chạm ti
 var _phrase_index: int = 0    ## câu hát hiện tại trong bài hát
 var _sing_index: int = 0
 var _idle: float = 0.0
+var _idle_repeats: int = 0   ## số lần nhắc liên tiếp khi bé đơ — để tăng dần cường độ
 var _replay_index: int = 0
 var _auto_play_timer: float = 0.0
 ## Trang mà vòng chơi ĐANG chơi. Khác GameState.page_index thì phải dựng lại
@@ -169,6 +170,7 @@ func _enter(next: State) -> void:
 		State.WAITING:
 			_tree.clear_singing()
 			_idle = 0.0
+			_idle_repeats = 0
 			_auto_play_timer = 0.0
 			_refresh_hint()
 		State.FRUITING:
@@ -257,7 +259,11 @@ func _tick_waiting(delta: float) -> void:
 	if _idle >= IDLE_HINT_SECONDS:
 		_idle = 0.0
 		if _step < _sequence.size():
-			AudioDirector.play_note_pitched(_sequence[_step], 1.0, -10.0)
+			# Lần 1 nhắc nhẹ, lần 2+ to dần + pulse lại hint để bé thấy.
+			var vol_db := -10.0 if _idle_repeats == 0 else -4.0
+			AudioDirector.play_note_pitched(_sequence[_step], 1.0, vol_db)
+			_idle_repeats += 1
+			_refresh_hint_forced()
 
 
 ## Bước 4 — Cây trổ quả: cả 7 con vật cùng hát lại giai điệu vừa xong.
@@ -276,6 +282,7 @@ func _tick_fruiting() -> void:
 ## trước khi tín hiệu này tới đây.
 func _on_note_played(note_index: int) -> void:
 	_idle = 0.0
+	_idle_repeats = 0
 
 	if _state != State.WAITING or _step >= _sequence.size():
 		# Ngoài lúc chờ đáp thì vẫn là chơi tự do: cây vẫn cao thêm một chút.
@@ -327,6 +334,19 @@ func _refresh_hint() -> void:
 		_tree.clear_hint()
 		if _keyboard != null:
 			_keyboard.clear_hint_key()
+
+
+## Nhắc lại khi bé đơ: clear rồi set để tween hint chạy lại từ đầu,
+## bé thấy phím "giật" một cái thay vì sáng mờ liên tục.
+func _refresh_hint_forced() -> void:
+	if _step >= _sequence.size():
+		return
+	var n: int = _sequence[_step]
+	_tree.set_hint(n)
+	if _keyboard != null:
+		_keyboard.clear_hint_key()
+		_keyboard.set_hint_key(n)
+	_refresh_hint()
 
 
 

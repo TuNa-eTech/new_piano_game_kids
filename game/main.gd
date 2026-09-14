@@ -12,7 +12,6 @@ const DioramaStage = preload("res://game/diorama/diorama_stage.gd")
 const MagicRibbon = preload("res://game/diorama/magic_ribbon.gd")
 const ScreenRouter = preload("res://game/ui/screen_router.gd")
 const CottageMenuButton = preload("res://game/hud/cottage_menu_button.gd")
-const LevelsStarButton = preload("res://game/hud/levels_star_button.gd")
 const FreePlayTopBar = preload("res://game/hud/free_play_top_bar.gd")
 const AutoPlayButton = preload("res://game/ui/auto_play_button.gd")
 
@@ -20,16 +19,13 @@ const AutoPlayButton = preload("res://game/ui/auto_play_button.gd")
 @onready var _tree: MagicTree = $UI/MagicTree
 @onready var _call_response: CallResponse = $CallResponse
 @onready var _probe: CanvasLayer = $LatencyProbe
-@onready var _menu: HoldButton = $HUD/Menu
 @onready var _cottage_menu: CottageMenuButton = $HUD/CottageMenu
-@onready var _levels_star: LevelsStarButton = $HUD/LevelsStar
 @onready var _auto_play_btn: AutoPlayButton = $HUD/AutoPlay
 @onready var _map: ChapterMap = $ChapterMap
 @onready var _chapter_end: ChapterEnd = $ChapterEnd
 @onready var _diorama: DioramaStage = $UI/DioramaStage
 @onready var _ribbon: MagicRibbon = $UI/MagicRibbon
 @onready var _top_inst_bar: Control = $HUD/TopInstrumentBar
-@onready var _score_board: Control = $HUD/ScoreBoard
 
 var _router: ScreenRouter
 var _free_play_bar: FreePlayTopBar
@@ -55,18 +51,13 @@ func _ready() -> void:
 	# Thanh 4 Nhạc Cụ Màn 03 Sân Khấu Chơi Tự Do (docs/mock-free-play.jpeg)
 	_free_play_bar = FreePlayTopBar.new()
 	_free_play_bar.name = "FreePlayTopBar"
-	_free_play_bar.set_anchors_preset(Control.PRESET_CENTER_TOP)
-	_free_play_bar.position = Vector2((1280.0 - FreePlayTopBar.BAR_SIZE.x) * 0.5, 10.0)
 	$HUD.add_child(_free_play_bar)
 
 	GameState.free_play_changed.connect(_on_free_play_mode_changed)
 	_on_free_play_mode_changed(GameState.free_play)
 
-	_menu.activated.connect(_on_menu_activated)
 	if _cottage_menu != null:
 		_cottage_menu.activated.connect(_on_menu_activated)
-	if _levels_star != null:
-		_levels_star.activated.connect(_on_menu_activated)
 	_map.closed.connect(_on_map_closed)
 	GameState.chapter_completed.connect(_on_chapter_completed)
 	_keyboard.note_played.connect(_on_key_note_played)
@@ -87,8 +78,6 @@ func _ready() -> void:
 func _on_free_play_mode_changed(enabled: bool) -> void:
 	if _top_inst_bar != null:
 		_top_inst_bar.visible = not enabled
-	if _score_board != null:
-		_score_board.visible = false
 	if _auto_play_btn != null:
 		_auto_play_btn.visible = not enabled
 
@@ -143,6 +132,12 @@ func _on_black_note_played(slot: int) -> void:
 		_ribbon.emit_ribbon(from_pos, target_pos, Color("#FFD166"))
 	if _diorama != null:
 		_diorama.on_note_played(slot)
+	# Fix UI 7 nhóm: phím đen giờ kêu nốt ngũ cung (AudioDirector remap),
+	# nên cho cây cao thêm + đếm nốt để bé thấy "bấm đâu cũng có phản hồi".
+	# KHÔNG cho sao / không tiến chuỗi (CallResponse chỉ nghe note_played trắng).
+	if _tree != null:
+		_tree.grow_free()
+	GameState.note_was_played(slot)
 
 
 
@@ -158,13 +153,18 @@ func _on_menu_activated() -> void:
 func _on_map_closed() -> void:
 	# Lúc bản đồ mở, HUD bị dừng nên nút Menu không thấy ngón nhả ra. Không dọn
 	# thì lần sau nó tưởng vẫn còn ngón trên màn hình và từ chối nhận lượt giữ mới.
-	_menu.cancel()
+	if _cottage_menu != null and _cottage_menu.has_method("cancel"):
+		_cottage_menu.cancel()
 
 
 func _on_diorama_prop_interacted(prop: String) -> void:
+	# Rương chỉ mở overlay khi Chơi Tự Do. Lúc đang học (SINGING/WAITING),
+	# chạm rương chỉ nổ particle + sfx trong diorama, không bung overlay
+	# phá chuỗi — gliss từ sách xuống phím hay quệt trúng rương.
 	if prop == "chest" and _router != null:
-		_keyboard.release_all()
-		_router.open_chest_reward(GameState.chapter_index())
+		if GameState.free_play:
+			_keyboard.release_all()
+			_router.open_chest_reward(GameState.chapter_index())
 
 
 ## "Buổi Diễn Rừng Xanh" — hết chương thì cả 7 con vật hát lại giai điệu của
@@ -175,7 +175,8 @@ func _on_chapter_completed(chapter_index: int) -> void:
 	# GameState.chapter_unlocked(): nó so max_page_reached với trang đầu chương.
 	AudioDirector.play_sfx("chapter_unlock")
 	_keyboard.release_all()
-	_menu.cancel()
+	if _cottage_menu != null and _cottage_menu.has_method("cancel"):
+		_cottage_menu.cancel()
 	if _router != null:
 		_router.handle_chapter_completed(chapter_index)
 	else:

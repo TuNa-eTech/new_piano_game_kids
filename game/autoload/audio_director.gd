@@ -378,6 +378,20 @@ func play_note(index: int) -> void:
 		p.pitch_scale = 1.0
 
 
+## Fix UI 7 nhóm (nhóm 5): phím đen chromatic C#/D#/F#/G#/A# chói tai trên nền
+## pad ngũ cung C-D-E-G-A, vi phạm "chạm đâu cũng hay".
+## Ánh xạ mỗi slot đen sang nốt ngũ cung lân cận SÁNG nhất (upper neighbor):
+## slot 0 (C-D) -> D4, 1 (D-E) -> E4, 3 (G-A) -> A4, 4 (A-C5) -> C5, 5 (C5-D5) -> D5.
+const BLACK_KEY_TO_WHITE := {
+	0: 1,
+	1: 2,
+	3: 4,
+	4: 5,
+	5: 6,
+}
+
+## Giữ hằng số chromatic cũ để không vỡ test/tools tra cứu, nhưng đường phát
+## tiếng KHÔNG dùng nó nữa.
 ## Cao độ chuẩn cho 5 nốt phím đen (Accidentals) so với G4 (1.0):
 ## Slot 0: C#4 (0.707107), Slot 1: D#4 (0.793701), Slot 3: F#4 (0.943874), Slot 4: G#4 (1.059463), Slot 5: A#4 (1.189207)
 const BLACK_KEY_PITCHES: Dictionary = {
@@ -389,6 +403,10 @@ const BLACK_KEY_PITCHES: Dictionary = {
 }
 
 func play_black_key(slot: int) -> void:
+	# Luôn hòa âm ngũ cung: phát nốt trắng lân cận thay vì nửa cung chromatic.
+	if BLACK_KEY_TO_WHITE.has(slot):
+		play_note(int(BLACK_KEY_TO_WHITE[slot]))
+		return
 	if not BLACK_KEY_PITCHES.has(slot):
 		return
 	var pitch: float = BLACK_KEY_PITCHES[slot]

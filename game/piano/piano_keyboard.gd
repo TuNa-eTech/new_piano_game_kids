@@ -138,8 +138,9 @@ func _layout_keys() -> void:
 		_bottom_lip.position = Vector2(0.0, size.y - bot_rail_h)
 		_bottom_lip.size = Vector2(size.x, bot_rail_h)
 
-	# Phím trắng trượt nhẹ 6px dưới gờ gỗ trên để tạo độ sâu, và dừng ngay trên gờ nẹp đáy
-	var margin_t := 40.0
+	# P1: margin_t 40→48 để hở khỏi rail 46px +2px; phím trắng không còn
+	# trượt dưới gờ gỗ, hết cảm giác "bấm mà không thấy".
+	var margin_t := 48.0
 	var margin_b := 16.0
 	var kb_y := margin_t
 	var kb_h := maxf(50.0, size.y - (margin_t + margin_b))
@@ -159,9 +160,10 @@ func _layout_keys() -> void:
 		_keys[i].pivot_offset = r.size * 0.5
 
 	# Tính toán vị trí 5 phím đen (Accidentals)
-	# Phím đen rộng 40% phím trắng, cao 42% phím trắng (dừng phía trên đầu thú, chuẩn concept)
-	var bw := key_w * 0.40
-	var bh := key_h * 0.42
+	# P1: rộng 40%→48% (≈87px, đạt Apple Kids 88pt), cao 42%→50% để
+	# bé chạm trúng; dừng phía trên đầu thú, chuẩn concept.
+	var bw := key_w * 0.48
+	var bh := key_h * 0.50
 	for slot in BLACK_KEY_SLOTS:
 		if slot + 1 < _key_rects.size():
 			var boundary: float = (_key_rects[slot].end.x + _key_rects[slot + 1].position.x) * 0.5

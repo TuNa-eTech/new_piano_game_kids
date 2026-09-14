@@ -82,8 +82,13 @@ func _on_button_up() -> void:
 
 
 func _on_toggled(pressed_state: bool) -> void:
+	# P1 radio: bật Jukebox mà đang Chơi tự do thì Free tự tắt trong
+	# GameState — thêm fairy_dust đã có + wood_tap để nghe ra chuyển mode.
+	var killed_free := pressed_state and GameState.free_play
 	AudioDirector.play_sfx("fairy_dust")
 	GameState.auto_play = pressed_state
+	if killed_free:
+		AudioDirector.play_sfx("wood_tap")
 	_face.queue_redraw()
 
 
@@ -97,7 +102,8 @@ func _draw_face() -> void:
 	var c := _face.size * 0.5
 	var r := minf(_face.size.x, _face.size.y) * 0.5
 	var on := GameState.auto_play
-	var ink := _accent if on else Color(1, 1, 1, 0.60)
+	# Fix UI 7 nhóm: ink tắt 0.60 chìm trên nền gỗ tối — nâng lên 0.85.
+	var ink := _accent if on else Color(1, 1, 1, 0.85)
 
 	# 1. Vẽ biểu tượng Tam Giác Phát Nhạc (Play Symbol ▶) bên trái tâm
 	var play_offset := Vector2(-r * 0.22, 0.0)

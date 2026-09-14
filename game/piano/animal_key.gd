@@ -323,19 +323,20 @@ func set_hint_active(active: bool) -> void:
 		return
 
 	_glow_overlay.color = _badge_color
-	_glow_overlay.color.a = 0.12
+	_glow_overlay.color.a = 0.18
 	_hint_tween = create_tween().bind_node(self).set_loops()
 
-	# 1. Hào quang phát sáng nhịp nhàng
-	_hint_tween.tween_property(_glow_overlay, "color:a", 0.52, 0.35) \
+	# 1. Hào quang phát sáng nhịp nhàng — P0-3: tăng từ 0.52 lên 0.65 để
+	# đứng xa 2m vẫn thấy phím cần bấm.
+	_hint_tween.tween_property(_glow_overlay, "color:a", 0.65, 0.35) \
 		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	if _token != null and _has_token:
-		_hint_tween.parallel().tween_property(_token, "position:y", base_y - 10.0, 0.35) \
+		_hint_tween.parallel().tween_property(_token, "position:y", base_y - 16.0, 0.35) \
 			.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-		_hint_tween.parallel().tween_property(_token, "scale", Vector2(1.08, 0.94), 0.35) \
+		_hint_tween.parallel().tween_property(_token, "scale", Vector2(1.14, 0.90), 0.35) \
 			.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 
-	_hint_tween.tween_property(_glow_overlay, "color:a", 0.12, 0.35) \
+	_hint_tween.tween_property(_glow_overlay, "color:a", 0.18, 0.35) \
 		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	if _token != null and _has_token:
 		_hint_tween.parallel().tween_property(_token, "position:y", base_y, 0.35) \

@@ -4,7 +4,8 @@ extends Control
 
 signal activated
 
-const BTN_SIZE := Vector2(76.0, 84.0)
+## Apple Kids Category: touch-target tối thiểu 88x88 pt.
+const BTN_SIZE := Vector2(96.0, 96.0)
 
 var _tex_rect: TextureRect
 var _is_pressed: bool = false

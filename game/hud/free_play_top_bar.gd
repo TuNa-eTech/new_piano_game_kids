@@ -29,7 +29,11 @@ const INSTRUMENT_NAMES := [
 ## 1: Kalimba (mode 3)
 ## 2: Chuông Pha Lê (mode 4)
 ## 3: Giọng Thú (mode 1)
+## P3: giữ nguyên — mock-free-play.jpeg chỉ có 4 slot, FLUTE (mode 2) cố ý
+## vắng mặt ở Free Play (vẫn có trong InstrumentSwitcher guided 5 mode).
+## Thứ tự không liên tục là đúng, đừng "sửa" thành [0,1,2,3].
 const SLOT_TO_MODE := [0, 3, 4, 1]
+const SLOT_CENTERS: Array[float] = [85.0, 185.0, 288.0, 392.0]
 
 var _bg_rect: TextureRect
 var _selection_aura: Control
@@ -43,6 +47,7 @@ func _ready() -> void:
 	custom_minimum_size = BAR_SIZE
 	size = BAR_SIZE
 	mouse_filter = Control.MOUSE_FILTER_PASS
+	position = Vector2((1280.0 - BAR_SIZE.x) * 0.5, 8.0)
 
 	_build_ui()
 
@@ -60,18 +65,16 @@ func _process(delta: float) -> void:
 
 
 func _build_ui() -> void:
-	# 1. Texture nền thanh gỗ chạm khắc
+	# 1. Nền gỗ thanh 4 nhạc cụ
 	_bg_rect = TextureRect.new()
 	_bg_rect.name = "Background"
 	_bg_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_bg_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	_bg_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	_bg_rect.stretch_mode = TextureRect.STRETCH_SCALE
 	_bg_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 	if ResourceLoader.exists("res://assets/art/ui_bar_instruments_freeplay.png"):
 		_bg_rect.texture = load("res://assets/art/ui_bar_instruments_freeplay.png")
-	elif ResourceLoader.exists("res://assets/art/ui_top_bar_wood_hd.png"):
-		_bg_rect.texture = load("res://assets/art/ui_top_bar_wood_hd.png")
 	add_child(_bg_rect)
 
 	# 2. Vùng quầng sáng báo hiệu lựa chọn (Aura Medallion)
@@ -82,13 +85,13 @@ func _build_ui() -> void:
 	add_child(_selection_aura)
 
 	# 3. 4 vùng nhận chạm cảm ứng (Touch Slots chuẩn Apple Kids >= 88 pt)
-	var slot_w := size.x / float(SLOT_COUNT)
 	for i in SLOT_COUNT:
 		var slot := Control.new()
 		slot.name = "Slot_%d" % i
-		slot.position = Vector2(i * slot_w, 0)
-		slot.size = Vector2(slot_w, size.y)
-		slot.pivot_offset = Vector2(slot_w * 0.5, size.y * 0.5)
+		var cx := SLOT_CENTERS[i]
+		slot.position = Vector2(cx - 50.0, 0)
+		slot.size = Vector2(100.0, size.y)
+		slot.pivot_offset = Vector2(50.0, size.y * 0.44)
 		slot.mouse_filter = Control.MOUSE_FILTER_STOP
 		var idx := i
 		slot.gui_input.connect(func(event: InputEvent): _on_slot_gui_input(event, idx))
@@ -146,17 +149,19 @@ func select_slot(index: int) -> void:
 
 
 func _draw_selection_aura() -> void:
-	var slot_w := size.x / float(SLOT_COUNT)
-	var center_x := (_selected_slot + 0.5) * slot_w
-	var center_y := size.y * 0.44
-	var radius := 34.0 + 2.5 * sin(_aura_phase)
+	var center_x: float = SLOT_CENTERS[_selected_slot]
+	var center_y: float = size.y * 0.44
+	var radius := 34.0 + 2.0 * sin(_aura_phase)
 
-	var gold_bright := Color("#FFE666")
-	var gold_glow := Color("#F2B82E", 0.45)
+	# Quầng sáng ánh kim vàng dịu tự nhiên (Soft Radial Spotlight, không vẽ viền cứng)
+	var gold_core := Color(1.0, 0.92, 0.50, 0.40)
+	var gold_mid := Color(0.95, 0.75, 0.25, 0.20)
+	var gold_outer := Color(0.85, 0.60, 0.15, 0.06)
 
-	# Vòng hào quang phát sáng
-	_selection_aura.draw_circle(Vector2(center_x, center_y), radius + 8.0, gold_glow)
-	_selection_aura.draw_arc(Vector2(center_x, center_y), radius, 0.0, TAU, 32, gold_bright, 3.5, true)
+	_selection_aura.draw_circle(Vector2(center_x, center_y), radius + 10.0, gold_outer)
+	_selection_aura.draw_circle(Vector2(center_x, center_y), radius + 4.0, gold_mid)
+	_selection_aura.draw_circle(Vector2(center_x, center_y), radius * 0.70, gold_core)
+
 
 
 func _update_aura_position() -> void:
@@ -186,10 +191,11 @@ func _on_free_play_changed(enabled: bool) -> void:
 		_slide_tween.kill()
 
 	_slide_tween = create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	var target_x := (1280.0 - BAR_SIZE.x) * 0.5
 
 	if enabled:
 		visible = true
-		position.y = -size.y - 20.0
+		position = Vector2(target_x, -size.y - 20.0)
 		modulate.a = 0.0
 		_slide_tween.tween_property(self, "position:y", 8.0, 0.45)
 		_slide_tween.parallel().tween_property(self, "modulate:a", 1.0, 0.3)

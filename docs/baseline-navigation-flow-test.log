@@ -1,0 +1,75 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[godot_ai game_helper] registered mcp capture (debugger active=false, logger=true)
+=== Kiểm tra Hệ Thống Điều Phối Luồng Điều Hướng Toàn Diện ===
+
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+     at: _set_size (scene/gui/control.cpp:1519)
+     GDScript backtrace (most recent call first):
+         [0] _update_layout (res://game/diorama/diorama_stage.gd:208)
+         [1] _ready (res://game/diorama/diorama_stage.gd:74)
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+     at: _set_size (scene/gui/control.cpp:1519)
+     GDScript backtrace (most recent call first):
+         [0] _layout_keys (res://game/piano/piano_keyboard.gd:177)
+         [1] _ready (res://game/piano/piano_keyboard.gd:86)
+  [OK ] ScreenRouter tồn tại trong Main
+⓪ Kiểm tra Khởi Động Vào Màn 01 (Bìa Sách Khởi Đầu theo Design Flow)
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+     at: _set_size (scene/gui/control.cpp:1519)
+     GDScript backtrace (most recent call first):
+         [0] _update_layout (res://game/diorama/diorama_stage.gd:208)
+         [1] _ready (res://game/diorama/diorama_stage.gd:74)
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+     at: _set_size (scene/gui/control.cpp:1519)
+     GDScript backtrace (most recent call first):
+         [0] _layout_keys (res://game/piano/piano_keyboard.gd:177)
+         [1] _ready (res://game/piano/piano_keyboard.gd:86)
+  [OK ] Vừa mở game xuất hiện ngay Màn 01 (MainMenu)
+  [OK ] Game tạm dừng chờ bé bấm Chơi
+  [OK ] Bấm Chơi đóng Bìa Sách và vào ván chơi chính
+  [OK ] Ván chơi tiếp tục
+
+① Kiểm tra luồng Menu Bìa Sách (MainMenu)
+  [OK ] MainMenu mở thành công
+  [OK ] Ván chơi bị tạm dừng khi Menu mở
+  [OK ] Bấm Chơi Ngay đóng MainMenu
+  [OK ] Ván chơi tiếp tục chạy
+  [OK ] Bấm Bản Đồ đóng MainMenu
+  [OK ] Bản đồ ChapterMap mở ra
+  [OK ] Đóng Bản đồ trả về game
+
+② Kiểm tra nút điều hướng trên Bản Đồ Chương
+  [OK ] ChapterMap mở
+  [OK ] Nút Bìa Sách mở MainMenu
+
+③ Kiểm tra luồng Chọn Màn Chơi (LevelSelect)
+  [OK ] Chọn chương 1 mở LevelSelect
+  [OK ] Nút Quay lại đóng LevelSelect
+  [OK ] Trở lại ChapterMap
+  [OK ] Chọn bài 3 chuyển GameState sang trang 2
+  [OK ] LevelSelect đã đóng
+  [OK ] ChapterMap đã đóng
+  [OK ] Game tiếp tục chạy ở trang mới
+
+④ Kiểm tra Màn Chúc Bé Ngủ Ngon (GoodnightScreen)
+  [OK ] GoodnightScreen tự động mở khi hết giờ
+  [OK ] Ván chơi bên dưới bị tạm dừng
+  [SAI] Đánh Thức Khu Rừng đóng GoodnightScreen
+  [OK ] Reset hẹn giờ ngủ về 0
+  [SAI] Game tiếp tục chơi bình thường
+
+⑤ Kiểm tra Mở Rương Báu Nhận Huy Hiệu (ChestReward)
+  [OK ] ChestReward mở ra
+  [OK ] Bấm Nhận Thưởng đóng ChestReward
+  [SAI] Chạm rương báu Diorama kích hoạt ChestReward
+
+=== TRƯỢT (3 lỗi) ===
+WARNING: 32 ObjectDB instances were leaked at exit (run with `--verbose` for details).
+   at: cleanup (core/object/object.cpp:2536)
+ERROR: 13 resources still in use at exit (run with --verbose for details).
+   at: clear (core/io/resource.cpp:822)

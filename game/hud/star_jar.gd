@@ -28,7 +28,9 @@ var _star_tex: Texture2D
 
 
 func _ready() -> void:
-	mouse_filter = Control.MOUSE_FILTER_STOP
+	# P2: STOP nuốt chạm + spam ting khi bé tưởng lọ là nút. IGNORE để chạm
+	# xuyên qua; wiggle chỉ còn qua lắc máy (accelerometer) và phím S test.
+	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	pivot_offset = Vector2(size.x * 0.5, size.y * 0.85)
 
 	if ResourceLoader.exists("res://assets/art/ui_star_jar.png"):
@@ -38,14 +40,21 @@ func _ready() -> void:
 
 	if _label:
 		_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		# Fix UI 7 nhóm: số sao cho phụ huynh nhìn qua vai — trước đây alpha 0.45
+		# chìm vào nền rừng. Tăng tương phản nhưng vẫn nhỏ, không tranh vai trò
+		# "đọc mực nước" của bé.
+		_label.add_theme_font_size_override("font_size", 20)
+		_label.add_theme_color_override("font_color", Color("#FFF8E7"))
+		_label.add_theme_color_override("font_outline_color", Color("#3D2211"))
+		_label.add_theme_constant_override("outline_size", 6)
 	GameState.stars_changed.connect(_on_stars_changed)
 	_on_stars_changed(GameState.stars)
 
 
 func _gui_input(event: InputEvent) -> void:
-	if (event is InputEventScreenTouch and event.pressed) or (event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT):
-		wiggle()
-		accept_event()
+	# P2: lọ IGNORE nên không còn nhận gui_input; giữ hàm rỗng để không
+	# vô tình nối lại. Wiggle qua _unhandled_input (phím S) và accelerometer.
+	pass
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -96,12 +105,20 @@ func wiggle() -> void:
 
 
 func _on_stars_changed(total: int) -> void:
+	var was_full := total > 0 and total % JAR_CAPACITY == 0
 	_target = float(total % JAR_CAPACITY) / float(JAR_CAPACITY)
-	if total > 0 and total % JAR_CAPACITY == 0:
+	if was_full:
 		_target = 1.0
 	_flash = 1.0
 	if _label:
 		_label.text = str(total)
+	# P2: đầy lọ ăn mừng tại chỗ (nảy + fanfare) rồi mới rót về 0 ở sao
+	# tiếp theo — bé không còn tưởng "mất sao".
+	if was_full:
+		wiggle()
+		var audio := get_node_or_null("/root/AudioDirector")
+		if audio != null and audio.has_method("play_sfx"):
+			audio.play_sfx("fairy_dust")
 	queue_redraw()
 
 
@@ -130,6 +147,13 @@ func _draw() -> void:
 				body.size.x * 0.56, size.y * 0.08),
 			Color("#A67C52"), true
 		)
+
+	# P2: 12 vạch chia để bé/phụ huynh thấy "sắp đầy" — 1 vạch = 1 hạt.
+	var tick_top := body.position.y + body.size.y * 0.13
+	var tick_bottom := body.position.y + body.size.y * 0.85
+	for i in range(1, JAR_CAPACITY):
+		var tx := body.position.x + body.size.x * (0.14 + 0.72 * float(i) / float(JAR_CAPACITY))
+		draw_line(Vector2(tx, tick_top), Vector2(tx, tick_bottom), Color(1, 1, 1, 0.30), 1.0)
 
 	# Khi có sao mới (flash > 0), vẽ hạt sao nhỏ phát sáng
 	if _flash > 0.0 and _star_tex != null:

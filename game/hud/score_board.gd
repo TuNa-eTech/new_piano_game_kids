@@ -1,6 +1,8 @@
 class_name ScoreBoard
 extends Control
-## Bảng Điểm Gỗ và Combo góc phải trên màn hình gameplay (docs/mock-game-play.jpeg).
+## DEPRECATED (Fix UI 7 nhóm): vi phạm Zero-Text + Quyết định 04 bỏ SCORE/COMBO.
+## Đã gỡ khỏi main.tscn. Giữ file để không vỡ lịch sử, KHÔNG dùng cho màn mới.
+## Dùng StarJar (mực nước sao) thay cho mọi hiển thị tiến độ của bé.
 
 @onready var _bg: TextureRect = $Background
 

@@ -15,7 +15,7 @@ extends Node
 var _keyboard: PianoKeyboard
 var _tree: MagicTree
 var _cr: CallResponse
-var _menu: HoldButton
+var _menu: CottageMenuButton
 var _map: ChapterMap
 var _chapter_end: ChapterEnd
 var _points: Array[Vector2] = []
@@ -47,7 +47,7 @@ func _ready() -> void:
 	_keyboard = main.get_node("UI/PianoKeyboard")
 	_tree = main.get_node("UI/MagicTree")
 	_cr = main.get_node("CallResponse")
-	_menu = main.get_node("HUD/Menu")
+	_menu = main.get_node("HUD/CottageMenu")
 	_map = main.get_node("ChapterMap")
 	_chapter_end = main.get_node("ChapterEnd")
 
@@ -169,6 +169,8 @@ func _menu_centre() -> Vector2:
 
 
 ## Giữ một (hoặc hai) ngón trên một điểm trong `seconds` giây thực rồi nhả.
+## Ngón thứ 2 đặt CÙNG trên nút Menu (lòng bàn tay úp) — khác ngón trên đàn
+## (gui_input cách ly nên không ảnh hưởng lượt giữ menu).
 func _hold(p: Vector2, seconds: float, second_finger: bool = false) -> void:
 	var d := InputEventScreenTouch.new()
 	d.index = 0
@@ -179,7 +181,7 @@ func _hold(p: Vector2, seconds: float, second_finger: bool = false) -> void:
 		var palm := InputEventScreenTouch.new()
 		palm.index = 1
 		palm.pressed = true
-		palm.position = p + Vector2(140.0, 30.0)
+		palm.position = p + Vector2(20.0, 10.0)
 		Input.parse_input_event(palm)
 
 	var t := 0.0
@@ -196,7 +198,7 @@ func _hold(p: Vector2, seconds: float, second_finger: bool = false) -> void:
 		var palm_up := InputEventScreenTouch.new()
 		palm_up.index = 1
 		palm_up.pressed = false
-		palm_up.position = p + Vector2(140.0, 30.0)
+		palm_up.position = p + Vector2(20.0, 10.0)
 		Input.parse_input_event(palm_up)
 	await get_tree().process_frame
 
@@ -233,6 +235,32 @@ func _run_menu_lock() -> void:
 	await _hold(_menu_centre(), 2.4)
 	_check("giữ đủ 2 giây thì mở bản đồ", _map.is_open())
 	_check("ván chơi bên dưới đã dừng", get_tree().paused)
+	_map.close_map()
+	await get_tree().process_frame
+	_menu.cancel()
+
+	# P0-1: phụ huynh giữ menu trong lúc bé đàn 2 ngón vẫn mở được map.
+	# Ngón trên đàn không bao giờ tới gui_input của nút nên không abort.
+	print("⑥b Menu mở được khi bé đang đàn")
+	var mp := _menu_centre()
+	var md := InputEventScreenTouch.new()
+	md.index = 0
+	md.pressed = true
+	md.position = mp
+	Input.parse_input_event(md)
+	for i in 3:
+		await _press(i % Notes.count())
+	var t := 0.0
+	while t < 2.4:
+		await get_tree().process_frame
+		t += get_process_delta_time()
+	var mu := InputEventScreenTouch.new()
+	mu.index = 0
+	mu.pressed = false
+	mu.position = mp
+	Input.parse_input_event(mu)
+	await get_tree().process_frame
+	_check("giữ menu + bé đàn vẫn mở bản đồ", _map.is_open())
 
 
 func _run_chapter_map() -> void:

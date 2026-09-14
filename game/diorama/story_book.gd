@@ -33,8 +33,8 @@ var _right_page: Control
 var _beanstalk: MusicalBeanstalk
 
 # Nút chuyển trang
-var _btn_prev: Button
-var _btn_next: Button
+var _btn_prev: TextureButton
+var _btn_next: TextureButton
 
 # Hiệu ứng lật trang
 var _flip_layer: ColorRect
@@ -98,7 +98,8 @@ func _setup_left_page() -> void:
 	_title_label.text = "Trang 1/10: Cá Mập Con 🦈"
 	_title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_title_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_title_label.add_theme_font_size_override("font_size", 14)
+	# Fix UI 7 nhóm: chữ 14px chìm trên điện thoại — nâng lên 18px cho phụ huynh đọc.
+	_title_label.add_theme_font_size_override("font_size", 18)
 	_title_label.add_theme_color_override("font_color", Color("#FFF7E6"))
 	_title_label.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_title_banner.add_child(_title_label)
@@ -128,7 +129,8 @@ func _setup_left_page() -> void:
 	_speech_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_speech_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_speech_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_speech_label.add_theme_font_size_override("font_size", 13)
+	# P0-3: chữ 16px quá nhỏ, đứng xa không đọc được — lên 22px.
+	_speech_label.add_theme_font_size_override("font_size", 22)
 	_speech_label.add_theme_color_override("font_color", Color("#261405"))
 	_speech_label.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_speech_label.offset_left = 6.0
@@ -164,35 +166,41 @@ func _setup_right_page() -> void:
 
 
 func _setup_navigation_buttons() -> void:
-	var sb_btn := StyleBoxFlat.new()
-	sb_btn.bg_color = Color("#F3C969", 0.90)
-	sb_btn.border_width_left = 2
-	sb_btn.border_width_top = 2
-	sb_btn.border_width_right = 2
-	sb_btn.border_width_bottom = 2
-	sb_btn.border_color = Color("#5B371E")
-	sb_btn.set_corner_radius_all(20)
-	sb_btn.shadow_color = Color(0, 0, 0, 0.3)
-	sb_btn.shadow_size = 3
-	sb_btn.shadow_offset = Vector2(0, 2)
+	var tex_back: Texture2D = null
+	if ResourceLoader.exists("res://assets/art/ui_arrow_back.png"):
+		tex_back = load("res://assets/art/ui_arrow_back.png")
 
-	_btn_prev = Button.new()
+	var tex_next: Texture2D = null
+	if ResourceLoader.exists("res://assets/art/ui_arrow_next.png"):
+		tex_next = load("res://assets/art/ui_arrow_next.png")
+
+	_btn_prev = TextureButton.new()
 	_btn_prev.name = "BtnPrevPage"
-	_btn_prev.text = "◀"
-	_btn_prev.custom_minimum_size = Vector2(44, 44)
-	_btn_prev.add_theme_stylebox_override("normal", sb_btn)
-	_btn_prev.add_theme_color_override("font_color", Color("#3D2211"))
-	_btn_prev.add_theme_font_size_override("font_size", 18)
+	_btn_prev.texture_normal = tex_back
+	_btn_prev.ignore_texture_size = true
+	_btn_prev.stretch_mode = TextureButton.STRETCH_KEEP_ASPECT_CENTERED
+	_btn_prev.custom_minimum_size = Vector2(68, 68)
+	_btn_prev.pivot_offset = Vector2(34, 34)
+	_btn_prev.button_down.connect(func():
+		_btn_prev.scale = Vector2(0.90, 0.90)
+		AudioDirector.play_sfx("wood_tap")
+	)
+	_btn_prev.button_up.connect(func(): _btn_prev.scale = Vector2.ONE)
 	_btn_prev.pressed.connect(prev_page)
 	add_child(_btn_prev)
 
-	_btn_next = Button.new()
+	_btn_next = TextureButton.new()
 	_btn_next.name = "BtnNextPage"
-	_btn_next.text = "▶"
-	_btn_next.custom_minimum_size = Vector2(44, 44)
-	_btn_next.add_theme_stylebox_override("normal", sb_btn)
-	_btn_next.add_theme_color_override("font_color", Color("#3D2211"))
-	_btn_next.add_theme_font_size_override("font_size", 18)
+	_btn_next.texture_normal = tex_next
+	_btn_next.ignore_texture_size = true
+	_btn_next.stretch_mode = TextureButton.STRETCH_KEEP_ASPECT_CENTERED
+	_btn_next.custom_minimum_size = Vector2(68, 68)
+	_btn_next.pivot_offset = Vector2(34, 34)
+	_btn_next.button_down.connect(func():
+		_btn_next.scale = Vector2(0.90, 0.90)
+		AudioDirector.play_sfx("wood_tap")
+	)
+	_btn_next.button_up.connect(func(): _btn_next.scale = Vector2.ONE)
 	_btn_next.pressed.connect(next_page)
 	add_child(_btn_next)
 
@@ -220,7 +228,9 @@ func _update_layout() -> void:
 		_title_banner.position = Vector2(16.0, 8.0)
 		_title_banner.size = Vector2(page_w - 32.0, banner_h)
 
-		var bubble_h := 30.0
+		# P0-3: bubble 30px + font 16 không đọc được từ xa — lên 58px để
+		# chứa 2 dòng lời Việt 22px, Leo lùi xuống tương ứng.
+		var bubble_h := 58.0
 		_speech_bubble.position = Vector2(16.0, 8.0 + banner_h + 4.0)
 		_speech_bubble.size = Vector2(page_w - 32.0, bubble_h)
 
@@ -246,14 +256,26 @@ func _update_layout() -> void:
 			_pet_companion.position = Vector2(page_w - pet_size - 28.0, page_h - pet_size + 14.0)
 			_pet_companion.set_facing_left(true)
 
-	# Nút lật trang ôm sát mép viền ngoài bìa sách
+	# Nút lật trang gỗ 2.5D nằm gọn trong mép viền mạ vàng của bìa sách (không tràn ra ngoài)
 	if _btn_prev != null and _btn_next != null:
-		var btn_s := 42.0
+		var btn_s := 68.0
 		var btn_y := (size.y - btn_s) * 0.5
 		_btn_prev.size = Vector2(btn_s, btn_s)
-		_btn_prev.position = Vector2(size.x * 0.02, btn_y)
+		_btn_prev.position = Vector2(12.0, btn_y)
 		_btn_next.size = Vector2(btn_s, btn_s)
-		_btn_next.position = Vector2(size.x * 0.98 - btn_s, btn_y)
+		_btn_next.position = Vector2(size.x - btn_s - 12.0, btn_y)
+
+
+## Cập nhật giao diện khi vào/thoát chế độ Chơi Tự Do
+func set_freeplay_mode(enabled: bool) -> void:
+	if _title_banner != null:
+		_title_banner.visible = not enabled
+	if _speech_bubble != null:
+		_speech_bubble.visible = not enabled
+	if _btn_prev != null:
+		_btn_prev.visible = not enabled
+	if _btn_next != null:
+		_btn_next.visible = not enabled
 
 
 ## Nạp dữ liệu trang bài hát

@@ -17,9 +17,13 @@ extends Control
 signal mode_selected(mode: int)
 
 const MAIN_SIZE := Vector2(96.0, 96.0)
-const DOCK_BTN_SIZE := Vector2(68.0, 68.0)
+## Apple Kids: mỗi nút dock >= 88pt để bé chạm trúng.
+const DOCK_BTN_SIZE := Vector2(88.0, 88.0)
 const DOCK_GAP := 10.0
-const AUTO_CLOSE_DELAY := 4.0
+## P1: 4s che sách quá lâu — 2s đủ chọn, tự gập nhanh.
+const AUTO_CLOSE_DELAY := 2.0
+## P1: giữ 0.5s mới bung khay; tap thường chỉ xoay mode, hết che sách oan.
+const LONG_PRESS_SECONDS := 0.5
 
 const ICONS := [
 	preload("res://assets/art/ui_inst_auto.png"),
@@ -43,6 +47,8 @@ var _label_tween: Tween
 var _bounce_tween: Tween
 
 var _aura_angle: float = 0.0
+var _press_held: float = -1.0
+var _long_press_fired: bool = false
 
 
 func _ready() -> void:
@@ -54,7 +60,9 @@ func _ready() -> void:
 
 	if is_instance_valid(GameState):
 		GameState.instrument_mode_changed.connect(_on_game_state_mode_changed)
+		GameState.free_play_changed.connect(_on_free_play_changed)
 		_current_mode = GameState.instrument_mode
+		visible = not GameState.free_play
 	_update_visuals()
 
 
@@ -63,6 +71,13 @@ func _process(delta: float) -> void:
 	_aura_angle = fmod(_aura_angle + delta * 1.8, TAU)
 	if _main_face != null:
 		_main_face.queue_redraw()
+
+	# P1: đo giữ nút chính để phân biệt tap / long-press.
+	if _press_held >= 0.0:
+		_press_held += delta
+		if not _long_press_fired and _press_held >= LONG_PRESS_SECONDS:
+			_long_press_fired = true
+			open_dock()
 
 	# Đếm thời gian tự động gập khay
 	if _dock_open:
@@ -132,7 +147,11 @@ func _build_ui() -> void:
 	_main_btn.add_child(_main_face)
 	_main_face.draw.connect(_draw_main_face)
 
-	_main_btn.pressed.connect(_on_main_button_pressed)
+	# P1: tap = xoay mode, long-press 0.5s = bung khay. Dùng button_down/up
+	# để đo thời gian giữ thay vì pressed (pressed bung khay ngay cả khi
+	# bé chỉ muốn đổi 1 nấc).
+	_main_btn.button_down.connect(_on_main_button_down)
+	_main_btn.button_up.connect(_on_main_button_up)
 
 	# 3. Nhãn nổi hiển thị tên nhạc cụ bằng tiếng Việt (floating popup pill)
 	_floating_label = PanelContainer.new()
@@ -235,14 +254,32 @@ func _draw_main_face() -> void:
 	], [arrow_col])
 
 
+func _on_main_button_down() -> void:
+	_press_held = 0.0
+	_long_press_fired = false
+
+
+func _on_main_button_up() -> void:
+	# Nhả trước 0.5s = tap: xoay 1 nấc, KHÔNG bung khay. Giữ đủ lâu đã
+	# bung khay ở _process thì nhả chỉ reset timer, không xoay thêm.
+	var was_long := _long_press_fired
+	_press_held = -1.0
+	_long_press_fired = false
+	if _dock_open:
+		_auto_close_timer = AUTO_CLOSE_DELAY
+		return
+	if not was_long:
+		var next_mode := (_current_mode + 1) % Notes.mode_count()
+		select_mode(next_mode)
+
+
 func _on_main_button_pressed() -> void:
+	# Giữ tương thích ngược nếu còn nối ở scene cũ: hành vi = tap.
 	if _dock_open:
 		close_dock()
 	else:
-		# Chạm nút chính: xoay vòng chế độ tiếp theo và mở nhẹ khay gợi ý
 		var next_mode := (_current_mode + 1) % Notes.mode_count()
 		select_mode(next_mode)
-		open_dock()
 
 
 func _on_dock_btn_pressed(mode_idx: int) -> void:
@@ -268,6 +305,12 @@ func _on_game_state_mode_changed(mode: int) -> void:
 	if _current_mode != mode:
 		_current_mode = mode
 		_update_visuals()
+
+
+func _on_free_play_changed(enabled: bool) -> void:
+	# Free Play đã có FreePlayTopBar (4 slot lớn) ở giữa trên.
+	# Ẩn switcher nhỏ góc phải để còn đúng 1 bộ đổi nhạc cụ trên màn hình.
+	visible = not enabled
 
 
 func _update_visuals() -> void:

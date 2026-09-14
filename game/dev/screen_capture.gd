@@ -55,4 +55,13 @@ func _wait_and_capture() -> void:
 		img_star.save_png(path_star)
 		print("SCREENSHOT_STAR_EYES_SAVED_OK: ", path_star)
 
+	# 4. Chụp kiểm tra chế độ Chơi Tự Do
+	GameState.free_play = true
+	for i in 15:
+		await get_tree().process_frame
+	var img_free := get_viewport().get_texture().get_image()
+	if img_free != null:
+		img_free.save_png("res://docs/screenshots/free_play_revamped.png")
+		print("SCREENSHOT_FREE_PLAY_SAVED_OK")
+
 	get_tree().quit()

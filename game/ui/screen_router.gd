@@ -198,8 +198,10 @@ func close_active_overlay() -> void:
 # ---------------------------------------------------------------- Xử Lý Sự Kiện --
 
 func _on_main_menu_play() -> void:
-	# Đóng menu và bắt đầu chơi
-	pass
+	# Fix UI 7 nhóm: trước đây là pass — menu tự đóng nhưng router không dọn
+	# các overlay khác (map/level/goodnight) nên có thể kẹt paused.
+	# Đóng sạch để ván chơi chạy lại ngay.
+	close_active_overlay()
 
 
 func _on_main_menu_levels() -> void:
@@ -256,13 +258,22 @@ func _on_bedtime_expired() -> void:
 
 
 func _on_reward_claimed(_badge_index: int) -> void:
-	if _chapter_end != null:
+	# Fix UI 7 nhóm: trước đây mở chapter_end chồng lên chest chưa đóng
+	# (2 overlay cùng pause, bộ đếm _open_count lệch, bé thấy 2 lớp phủ).
+	if _chest_reward != null and _chest_reward.is_open():
+		_chest_reward.close_overlay()
+	if _chapter_end != null and not _chapter_end.is_open():
 		_chapter_end.play_for_chapter(_pending_chapter_reward)
 
 
 ## Xử lý hoàn thành chương (gọi từ main.gd khi trang cuối kết thúc)
 func handle_chapter_completed(chapter_index: int) -> void:
 	_pending_chapter_reward = chapter_index
+	# Fix UI 7 nhóm: chống mở chồng nếu chapter_end/chest đã mở (double signal).
+	if _chapter_end != null and _chapter_end.is_open():
+		return
+	if _chest_reward != null and _chest_reward.is_open():
+		return
 	if enable_chest_before_concert:
 		_chest_reward.show_reward(chapter_index)
 	else:

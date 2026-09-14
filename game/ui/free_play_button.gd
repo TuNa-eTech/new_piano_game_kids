@@ -84,8 +84,14 @@ func _on_button_up() -> void:
 
 
 func _on_toggled(pressed_state: bool) -> void:
+	# P1 radio: bật Tự do mà Jukebox đang chạy thì Jukebox tự tắt trong
+	# GameState — phát thêm fairy_dust để phụ huynh/bé nghe ra "đã chuyển mode",
+	# thay vì nhạc dừng đột ngột không báo.
+	var killed_auto := pressed_state and GameState.auto_play
 	AudioDirector.play_sfx("free_play_toggle")
 	GameState.free_play = pressed_state
+	if killed_auto:
+		AudioDirector.play_sfx("fairy_dust")
 	_face.queue_redraw()
 
 
@@ -99,7 +105,8 @@ func _draw_face() -> void:
 	var c := _face.size * 0.5
 	var r := minf(_face.size.x, _face.size.y) * 0.5
 	var on := GameState.free_play
-	var ink := _accent if on else Color(1, 1, 1, 0.55)
+	# Fix UI 7 nhóm: ink tắt 0.55 chìm — nâng lên 0.85 để thấy trên gỗ tối.
+	var ink := _accent if on else Color(1, 1, 1, 0.85)
 
 	if _free_play_texture != null:
 		var tex_size := r * 1.15

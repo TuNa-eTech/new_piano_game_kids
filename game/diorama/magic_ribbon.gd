@@ -243,12 +243,13 @@ func _draw_guiding_stream() -> void:
 		var t := float(s) / float(segments)
 		var p := (1.0 - t) * (1.0 - t) * _guide_from + 2.0 * (1.0 - t) * t * ctrl + t * t * _guide_to
 		points.append(p)
-		var a := sin(t * PI) * (0.35 + 0.25 * pulse)
+		# P0-3: alpha gốc 0.35 quá mờ trên nền sách sáng — lên 0.60.
+		var a := sin(t * PI) * (0.60 + 0.28 * pulse)
 		colors.append(Color(_guide_color.r, _guide_color.g, _guide_color.b, a))
 
 	if points.size() >= 2:
-		draw_polyline_colors(points, colors, 14.0, true)
-		draw_polyline_colors(points, colors, 4.0, true)
+		draw_polyline_colors(points, colors, 18.0, true)
+		draw_polyline_colors(points, colors, 5.0, true)
 
 	var font := ThemeDB.fallback_font
 	for i in 5:

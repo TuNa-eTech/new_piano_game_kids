@@ -69,6 +69,10 @@ func _notification(what: int) -> void:
 
 
 func _input(event: InputEvent) -> void:
+	# Fix UI 7 nhóm: nút ẩn (visible=false) vẫn nhận _input toàn cục.
+	# Chặn để không mở map vô hình khi TopInstrumentBar/ScoreBoard đã gỡ.
+	if not is_visible_in_tree():
+		return
 	if event is InputEventScreenTouch:
 		_on_touch(event)
 	elif event is InputEventScreenDrag and event.index == _finger:

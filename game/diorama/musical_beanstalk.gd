@@ -34,9 +34,9 @@ const LEAF_POSITIONS: Array[Vector2] = [
 	Vector2(0.72, 0.65), # D4 (Lá dưới phải)
 	Vector2(0.26, 0.52), # E4 (Lá giữa trái)
 	Vector2(0.74, 0.48), # F4 (Lá giữa phải)
-	Vector2(0.30, 0.35), # G4 (Lá trên trái)
-	Vector2(0.68, 0.28), # A4 (Lá trên phải)
-	Vector2(0.48, 0.16), # B4 (Lá đọt ngọn gần rương)
+	Vector2(0.30, 0.35), # G4/A4 (Lá trên trái)
+	Vector2(0.68, 0.28), # A4/C5 (Lá trên phải)
+	Vector2(0.74, 0.18), # B4/D5 (Lá đọt ngọn thoáng bên phải rương)
 ]
 
 const LEAF_COLORS: Array[Color] = [

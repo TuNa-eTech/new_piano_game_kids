@@ -27,6 +27,12 @@ var instrument_mode: int = 0: # Notes.InstrumentMode.AUTO
 		instrument_mode = value
 		instrument_mode_changed.emit(value)
 
+
+## Helper tương thích ngược (tools/capture_*.gd + TopInstrumentBar cũ gọi).
+## Nguồn sự thật vẫn là property instrument_mode ở trên.
+func set_instrument_mode(mode: int) -> void:
+	instrument_mode = clampi(mode, 0, 4)
+
 ## Chơi Tự Do: không gợi ý, không chuỗi — chỉ đàn, con vật và cây mọc theo mỗi
 ## nốt. Tài liệu nói đây là chế độ trẻ ở lại lâu nhất và phụ huynh quay video
 ## nhiều nhất, nên nó phải có ở v1.

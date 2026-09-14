@@ -72,7 +72,7 @@ func _ready() -> void:
 	_start_crystal_glow()
 	resized.connect(_update_layout)
 	_update_layout()
-	set_speech_text("TAP THE MUSICAL LEAVES\nTO FIND THE TREASURE!")
+	set_speech_text("CHẠM LÁ NHẠC\nĐỂ TÌM KHO BÁU!")
 	if GameState != null:
 		GameState.free_play_changed.connect(_on_free_play_changed)
 		GameState.page_changed.connect(_on_game_page_changed)
@@ -134,6 +134,8 @@ func _setup_freeplay_elements() -> void:
 
 
 func _on_free_play_changed(enabled: bool) -> void:
+	if _story_book != null:
+		_story_book.set_freeplay_mode(enabled)
 	if enabled:
 		if _wiz_party_tex != null:
 			_wizard.texture = _wiz_party_tex
@@ -230,19 +232,20 @@ func _update_layout() -> void:
 	_speech_bubble.position = Vector2(book_w * 0.08, book_h * 0.20)
 	_speech_bubble.visible = false
 
-	# Cụm thạch anh xanh ngọc ở góc trái tiền cảnh (ngồi tự nhiên sát trên gờ nẹp bàn đàn)
+	# Cụm thạch anh xanh ngọc ở góc trái tiền cảnh (lùi 24px khỏi gờ đàn
+	# để vuốt gliss không quệt trúng).
 	var cry_w := ref_w * (86.0 / 1024.0)
 	var cry_h := ref_h * (95.0 / 572.0)
 	_crystal_cyan.size = Vector2(cry_w, cry_h)
-	_crystal_cyan.position = Vector2(12.0, 464.0 - cry_h + 8.0)
+	_crystal_cyan.position = Vector2(12.0, 464.0 - cry_h - 16.0)
 	_crystal_cyan.pivot_offset = Vector2(cry_w * 0.5, cry_h * 0.5)
 	_crystal_cyan.visible = true
 
-	# Rương báu cỏ tiền cảnh góc phải (ngồi vững chãi sát gờ nẹp bàn đàn)
+	# Rương báu cỏ tiền cảnh góc phải (lùi 24px khỏi gờ đàn).
 	var ch_w := ref_w * (90.0 / 1024.0)
 	var ch_h := ref_h * (100.0 / 572.0)
 	_chest_ground.size = Vector2(ch_w, ch_h)
-	_chest_ground.position = Vector2(ref_w - ch_w - 20.0, 464.0 - ch_h + 8.0)
+	_chest_ground.position = Vector2(ref_w - ch_w - 20.0, 464.0 - ch_h - 16.0)
 	_chest_ground.pivot_offset = Vector2(ch_w * 0.5, ch_h * 0.5)
 	_chest_ground.visible = true
 
@@ -250,7 +253,7 @@ func _update_layout() -> void:
 	var mag_w := ref_w * (52.0 / 1024.0)
 	var mag_h := ref_h * (80.0 / 572.0)
 	_crystal_magenta.size = Vector2(mag_w, mag_h)
-	_crystal_magenta.position = Vector2(ref_w - ch_w - mag_w - 28.0, 464.0 - mag_h + 8.0)
+	_crystal_magenta.position = Vector2(ref_w - ch_w - mag_w - 28.0, 464.0 - mag_h - 16.0)
 	_crystal_magenta.pivot_offset = Vector2(mag_w * 0.5, mag_h * 0.5)
 	_crystal_magenta.visible = true
 
@@ -375,7 +378,9 @@ func _setup_interactive_particles() -> void:
 
 
 func _setup_interactions() -> void:
-	_book_spread.mouse_filter = Control.MOUSE_FILTER_PASS
+	# Nền sách không nhận chạm để vuốt gliss từ sách xuống phím không bị nuốt.
+	# Chỉ hotspot nhỏ (phù thủy/pha lê/rương) mới STOP.
+	_book_spread.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_wizard.mouse_filter = Control.MOUSE_FILTER_STOP
 	_crystal_cyan.mouse_filter = Control.MOUSE_FILTER_STOP
 	_crystal_magenta.mouse_filter = Control.MOUSE_FILTER_STOP
@@ -434,9 +439,11 @@ func interact_wizard() -> void:
 		_wizard_sparkles.position = _wizard.size * Vector2(0.65, 0.25)
 		_wizard_sparkles.restart()
 
-	# Đổi câu cổ vũ trên bong bóng thoại
-	_cheer_index = (_cheer_index + 1) % WIZARD_CHEERS.size()
-	set_speech_text(WIZARD_CHEERS[_cheer_index])
+	# Đổi câu cổ vũ trên bong bóng thoại — nhưng KHÔNG đè prompt bài hát
+	# khi đang học (guided). Prompt lời bài là la bàn của bé lúc WAITING.
+	if GameState == null or GameState.free_play:
+		_cheer_index = (_cheer_index + 1) % WIZARD_CHEERS.size()
+		set_speech_text(WIZARD_CHEERS[_cheer_index])
 
 	if _story_book != null:
 		_story_book.on_note_struck(randi_range(0, 6))
