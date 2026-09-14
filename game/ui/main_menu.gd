@@ -61,9 +61,7 @@ func _ready() -> void:
 
 func open_overlay() -> void:
 	super.open_overlay()
-	var audio := _get_audio()
-	if audio != null and audio.has_method("play_main_menu_music"):
-		audio.play_main_menu_music(0.1)
+	AudioDirector.play_main_menu_music(0.1)
 
 	# Hiệu ứng bùng nổ chào đón sôi động ngay khi vừa vào màn hình chính
 	if _play_container != null:
@@ -81,15 +79,6 @@ func open_overlay() -> void:
 
 
 
-func _get_audio() -> Node:
-	if Engine.has_singleton("AudioDirector"):
-		return Engine.get_singleton("AudioDirector")
-	var root_node: Node = get_tree().root if get_tree() else null
-	if root_node != null and root_node.has_node("AudioDirector"):
-		return root_node.get_node("AudioDirector")
-	return null
-
-
 func _build() -> void:
 	_add_backdrop(Color(0.02, 0.04, 0.03, 0.98))
 
@@ -97,8 +86,6 @@ func _build() -> void:
 	var stage_clean_path := "res://assets/menu/tex_menu_stage_clean.jpg"
 	if ResourceLoader.exists(stage_clean_path):
 		_bg_texture = load(stage_clean_path)
-	elif ResourceLoader.exists("res://docs/mock-main-menu.jpeg"):
-		_bg_texture = load("res://docs/mock-main-menu.jpeg")
 
 	_bg_rect = TextureRect.new()
 	_bg_rect.name = "BackgroundEnvironment"
@@ -200,9 +187,7 @@ func _build_toy_hotspots() -> void:
 	book_btn.add_theme_stylebox_override("hover", empty)
 	book_btn.add_theme_stylebox_override("pressed", empty)
 	book_btn.pressed.connect(func():
-		var audio := _get_audio()
-		if audio != null and audio.has_method("play_sfx"):
-			audio.play_sfx("page_turn")
+		AudioDirector.play_sfx("page_turn")
 		if _burst_layer != null:
 			_burst_layer.emit_burst(book_btn.get_global_rect().get_center(), Color(1.0, 0.95, 0.65, 0.9), 20)
 	)
@@ -221,9 +206,7 @@ func _build_toy_hotspots() -> void:
 	crystal_btn.add_theme_stylebox_override("hover", empty)
 	crystal_btn.add_theme_stylebox_override("pressed", empty)
 	crystal_btn.pressed.connect(func():
-		var audio := _get_audio()
-		if audio != null and audio.has_method("play_ting"):
-			audio.play_ting()
+		AudioDirector.play_ting()
 		if _burst_layer != null:
 			_burst_layer.emit_burst(crystal_btn.get_global_rect().get_center(), Color(0.3, 0.95, 0.95, 0.9), 16)
 	)
@@ -242,9 +225,7 @@ func _build_toy_hotspots() -> void:
 	chest_btn.add_theme_stylebox_override("hover", empty)
 	chest_btn.add_theme_stylebox_override("pressed", empty)
 	chest_btn.pressed.connect(func():
-		var audio := _get_audio()
-		if audio != null and audio.has_method("play_sfx"):
-			audio.play_sfx("star_ting")
+		AudioDirector.play_sfx("star_ting")
 		if _burst_layer != null:
 			_burst_layer.emit_burst(chest_btn.get_global_rect().get_center(), Color(1.0, 0.85, 0.35, 0.95), 18)
 	)
@@ -263,9 +244,7 @@ func _build_toy_hotspots() -> void:
 	table_vio_btn.add_theme_stylebox_override("hover", empty)
 	table_vio_btn.add_theme_stylebox_override("pressed", empty)
 	table_vio_btn.pressed.connect(func():
-		var audio := _get_audio()
-		if audio != null and audio.has_method("play_sfx"):
-			audio.play_sfx("violin_pluck", -3.0)
+		AudioDirector.play_sfx("violin_pluck", -3.0)
 		if _burst_layer != null:
 			var center := table_vio_btn.get_global_rect().get_center()
 			_burst_layer.emit_burst(center, Color(1.0, 0.88, 0.45, 0.95), 14)
@@ -286,9 +265,7 @@ func _build_toy_hotspots() -> void:
 	table_harp_btn.add_theme_stylebox_override("hover", empty)
 	table_harp_btn.add_theme_stylebox_override("pressed", empty)
 	table_harp_btn.pressed.connect(func():
-		var audio := _get_audio()
-		if audio != null and audio.has_method("play_sfx"):
-			audio.play_sfx("harp_chime", -4.0)
+		AudioDirector.play_sfx("harp_chime", -4.0)
 		if _burst_layer != null:
 			var center := table_harp_btn.get_global_rect().get_center()
 			_burst_layer.emit_burst(center, Color(1.0, 0.95, 0.60, 0.98), 18)
@@ -299,12 +276,11 @@ func _build_toy_hotspots() -> void:
 
 ## Khối hiển thị mỹ thuật & hoạt ảnh cho 2 cây đàn (Accordion & Violin)
 func _build_instrument_props() -> void:
-	var audio := _get_audio()
-	var accordion := AccordionProp.new(_burst_layer, audio)
+	var accordion := AccordionProp.new(_burst_layer, AudioDirector)
 	accordion.name = "AccordionProp"
 	add_child(accordion)
 
-	var violin := ViolinProp.new(_burst_layer, audio)
+	var violin := ViolinProp.new(_burst_layer, AudioDirector)
 	violin.name = "ViolinProp"
 	add_child(violin)
 
@@ -427,20 +403,14 @@ func _on_play_pressed() -> void:
 		var center := _play_btn.get_global_rect().get_center()
 		_burst_layer.emit_burst(center, Color(1.0, 0.95, 0.55, 0.98), 32)
 		_burst_layer.emit_musical_notes(center, 4)
-	var audio := _get_audio()
-	if audio != null:
-		if audio.has_method("play_sfx"):
-			audio.play_sfx("page_turn")
-		if audio.has_method("play_gameplay_music"):
-			audio.play_gameplay_music(1.0)
+	AudioDirector.play_sfx("page_turn")
+	AudioDirector.play_gameplay_music(1.0)
 	close_overlay()
 	play_pressed.emit()
 
 
 func _on_levels_pressed() -> void:
-	var audio := _get_audio()
-	if audio != null and audio.has_method("play_sfx"):
-		audio.play_sfx("star_ting")
+	AudioDirector.play_sfx("star_ting")
 	levels_pressed.emit()
 
 
@@ -676,7 +646,7 @@ class AccordionProp extends Control:
 		if _is_reacting:
 			return
 		_is_reacting = true
-		if _audio_node != null and _audio_node.has_method("play_sfx"):
+		if _audio_node != null:
 			_audio_node.play_sfx("accordion_breath", -3.0)
 		if _burst_layer != null:
 			var center := get_global_rect().get_center()
@@ -751,7 +721,7 @@ class ViolinProp extends Control:
 		if _is_reacting:
 			return
 		_is_reacting = true
-		if _audio_node != null and _audio_node.has_method("play_sfx"):
+		if _audio_node != null:
 			_audio_node.play_sfx("violin_pluck", -3.0)
 		if _burst_layer != null:
 			var center := get_global_rect().get_center()

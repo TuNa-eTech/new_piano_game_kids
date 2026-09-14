@@ -85,6 +85,13 @@ func _build() -> void:
 	add_child(_stage)
 
 	# 1. Phông nền toàn cảnh Sân Khấu Rừng & Nhà Nấm từ mock-chest-reward.jpeg
+	# ⚠️ NỢ KỸ THUẬT — ẢNH MOCKUP ĐANG CHẠY THẬT TRONG GAME.
+	# Đây là `if` chứ không phải `elif`: không có nhánh asset thật nào phía trên,
+	# nên tấm .jpeg trong docs/ CHÍNH LÀ phông nền phát hành của màn này.
+	# Asset thật mà docs/art-pipeline-chest-reward-2.5d.md đặt tên là `tex_bg_chest_forest_diorama.png`
+	# — CHƯA ĐƯỢC DỰNG. Gỡ dòng dưới trước khi có nó thì màn này trắng trơn.
+	# Khi asset về: đổi thành `if ResourceLoader.exists(<asset thật>)` rồi xoá hẳn
+	# nhánh mockup, và bỏ docs/ khỏi gói export.
 	if ResourceLoader.exists("res://docs/mock-chest-reward.jpeg"):
 		_bg_texture = load("res://docs/mock-chest-reward.jpeg")
 
@@ -357,17 +364,13 @@ func _on_claim_pressed() -> void:
 func _play_sfx(sfx_name: String) -> void:
 	if not is_inside_tree():
 		return
-	var ad := get_node_or_null("/root/AudioDirector")
-	if ad != null and ad.has_method("play_sfx"):
-		ad.play_sfx(sfx_name)
+	AudioDirector.play_sfx(sfx_name)
 
 
 func _play_note(instrument_idx: int, note_idx: int, time: float = 0.0) -> void:
 	if not is_inside_tree():
 		return
-	var ad := get_node_or_null("/root/AudioDirector")
-	if ad != null and ad.has_method("play_instrument_note"):
-		ad.play_instrument_note(instrument_idx, note_idx, time)
+	AudioDirector.play_instrument_note(instrument_idx, note_idx, time)
 
 
 

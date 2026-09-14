@@ -57,6 +57,13 @@ func _build() -> void:
 	add_child(_stage)
 
 	# Phông nền toàn cảnh Bản đồ Chương từ mock-chapter-map.jpeg
+	# ⚠️ NỢ KỸ THUẬT — ẢNH MOCKUP ĐANG CHẠY THẬT TRONG GAME.
+	# Đây là `if` chứ không phải `elif`: không có nhánh asset thật nào phía trên,
+	# nên tấm .jpeg trong docs/ CHÍNH LÀ phông nền phát hành của màn này.
+	# Asset thật mà docs/art-pipeline-chapter-map-2.5d.md đặt tên là `tex_bg_chapter_forest.png`
+	# — CHƯA ĐƯỢC DỰNG. Gỡ dòng dưới trước khi có nó thì màn này trắng trơn.
+	# Khi asset về: đổi thành `if ResourceLoader.exists(<asset thật>)` rồi xoá hẳn
+	# nhánh mockup, và bỏ docs/ khỏi gói export.
 	if ResourceLoader.exists("res://docs/mock-chapter-map.jpeg"):
 		_bg_texture = load("res://docs/mock-chapter-map.jpeg")
 
@@ -157,9 +164,7 @@ func _build() -> void:
 func open_map() -> void:
 	for card in _cards:
 		card.refresh()
-	var ad := _get_audio()
-	if ad != null and ad.has_method("play_sfx"):
-		ad.play_sfx("menu_open")
+	AudioDirector.play_sfx("menu_open")
 	open_overlay()
 	_play_entry_animation()
 
@@ -201,9 +206,7 @@ func close_map() -> void:
 
 
 func _on_back_pressed() -> void:
-	var ad := _get_audio()
-	if ad != null and ad.has_method("play_sfx"):
-		ad.play_sfx("menu_open")
+	AudioDirector.play_sfx("menu_open")
 	if _back_btn != null:
 		var tw := create_tween()
 		tw.tween_property(_back_btn, "scale", Vector2(0.85, 0.85), 0.08).set_trans(Tween.TRANS_QUAD)
@@ -212,9 +215,7 @@ func _on_back_pressed() -> void:
 
 
 func _on_star_jar_pressed() -> void:
-	var ad := _get_audio()
-	if ad != null and ad.has_method("play_sfx"):
-		ad.play_sfx("star_ting")
+	AudioDirector.play_sfx("star_ting")
 	if _star_jar_btn != null:
 		var tw := create_tween()
 		tw.tween_property(_star_jar_btn, "scale", Vector2(1.22, 1.22), 0.10).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
@@ -230,43 +231,26 @@ func _on_card_pressed(chapter: int) -> void:
 	if chapter >= 0 and chapter < _cards.size():
 		_cards[chapter].play_tap_feedback()
 
-	var gs := _get_game_state()
-	var is_unlocked := true
-	if gs != null and gs.has_method("chapter_unlocked"):
-		is_unlocked = gs.chapter_unlocked(chapter)
+	var is_unlocked := GameState.chapter_unlocked(chapter)
 
-	var ad := _get_audio()
 	if not is_unlocked:
-		if ad != null and ad.has_method("play_sfx"):
-			ad.play_sfx("padlock_rattle")
+		AudioDirector.play_sfx("padlock_rattle")
 		if _burst_layer != null and chapter < _cards.size():
 			var center := _cards[chapter].get_global_rect().get_center()
 			_burst_layer.emit_burst(center, Color(0.85, 0.45, 0.20, 0.8), 8)
 		return
 
-	if ad != null:
-		if ad.has_method("play_sfx"):
-			ad.play_sfx("chapter_select")
-		if ad.has_method("play_instrument_note"):
-			ad.play_instrument_note(chapter, 3, 0.0)
+	AudioDirector.play_sfx("chapter_select")
+	AudioDirector.play_instrument_note(chapter, 3, 0.0)
 
 	if _burst_layer != null and chapter < _cards.size():
 		var center := _cards[chapter].get_global_rect().get_center()
 		_burst_layer.emit_burst(center, Color(1.0, 0.92, 0.45, 0.95), 26)
 		_burst_layer.emit_burst(center, Color(1.0, 0.78, 0.25, 0.85), 16)
 
-	if gs != null and gs.has_method("select_chapter"):
-		gs.select_chapter(chapter)
+	GameState.select_chapter(chapter)
 	chapter_selected.emit(chapter)
 	close_map()
-
-
-func _get_audio() -> Node:
-	return get_node_or_null("/root/AudioDirector")
-
-
-func _get_game_state() -> Node:
-	return get_node_or_null("/root/GameState")
 
 
 ## Lớp phát hiệu ứng bùng nổ bụi sao vàng khi tương tác (Starlight Burst)

@@ -68,8 +68,6 @@ func _build() -> void:
 	# 1. Phông nền toàn cảnh rừng đêm từ mock-goodnight-bedtime.jpeg
 	if ResourceLoader.exists("res://assets/art/bg_goodnight_forest_25d.png"):
 		_bg_texture = load("res://assets/art/bg_goodnight_forest_25d.png")
-	elif ResourceLoader.exists("res://docs/mock-goodnight-bedtime.jpeg"):
-		_bg_texture = load("res://docs/mock-goodnight-bedtime.jpeg")
 
 	var bg_rect := TextureRect.new()
 	bg_rect.name = "BackgroundDiorama"
@@ -365,9 +363,7 @@ func _play_lullaby() -> void:
 
 
 func _play_sfx(sfx_name: String) -> void:
-	var ad := get_node_or_null("/root/AudioDirector")
-	if ad != null and ad.has_method("play_sfx"):
-		ad.play_sfx(sfx_name)
+	AudioDirector.play_sfx(sfx_name)
 
 
 ## Hạt đom đóm đêm bay chậm êm ái

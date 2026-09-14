@@ -71,9 +71,7 @@ func _process(delta: float) -> void:
 			_held = 0.0
 			_ratio = 0.0
 			_animate_release()
-			var audio := get_node_or_null("/root/AudioDirector")
-			if audio != null and audio.has_method("play_sfx"):
-				audio.play_sfx("hold_complete")
+			AudioDirector.play_sfx("hold_complete")
 			activated.emit()
 			queue_redraw()
 			return

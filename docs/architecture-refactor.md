@@ -356,8 +356,10 @@ vẫn **đúng 3 lỗi cũ** — mốc nền không đổi.
 | GĐ | Trạng thái | Commit | Kiểm chứng |
 | :---: | :--- | :--- | :--- |
 | **1** | ✅ Xong | `410c189` | 3 lỗi nền, không lỗi mới |
-| **2a** | ✅ Xong | `fecc549` | 3 lỗi nền, không lỗi mới |
-| 0 · 2b · 3 · 4 · 5 · 6 · 7 | ⬜ Chưa làm | — | — |
+| **2a** | ✅ Xong | `fecc549` | 3 lỗi nền + 2 test 2.5D ĐẠT toàn bộ |
+| **0** | 🟡 Xong 6/8 màn | *(đang làm)* | 19 tham chiếu `res://docs/` → còn 4 |
+| **5** | ✅ Xong | *(đang làm)* | cổng nhanh sạch + 3 lỗi nền |
+| 2b · 3 · 4 · 6 · 7 | ⬜ Chưa làm | — | — |
 
 **Giai Đoạn 1** — `_open_count` (static int) → ngăn xếp giữ chính các đối tượng
 `PauseOverlay`. Bất biến: ván chơi chạy lại ⟺ ngăn xếp rỗng. `close_active_overlay()`

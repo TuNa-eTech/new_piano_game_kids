@@ -116,9 +116,7 @@ func _on_stars_changed(total: int) -> void:
 	# tiếp theo — bé không còn tưởng "mất sao".
 	if was_full:
 		wiggle()
-		var audio := get_node_or_null("/root/AudioDirector")
-		if audio != null and audio.has_method("play_sfx"):
-			audio.play_sfx("fairy_dust")
+		AudioDirector.play_sfx("fairy_dust")
 	queue_redraw()
 
 

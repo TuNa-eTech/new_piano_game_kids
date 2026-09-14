@@ -88,8 +88,6 @@ func _build() -> void:
 	# 1. Phông nền toàn cảnh rừng đêm từ mock-parental-corner.jpeg
 	if ResourceLoader.exists("res://assets/art/bg_parental_corner_forest_25d.png"):
 		_bg_texture = load("res://assets/art/bg_parental_corner_forest_25d.png")
-	elif ResourceLoader.exists("res://docs/mock-parental-corner.jpeg"):
-		_bg_texture = load("res://docs/mock-parental-corner.jpeg")
 
 	var bg_rect := TextureRect.new()
 	bg_rect.name = "BackgroundDiorama"
@@ -385,13 +383,10 @@ func _sync_state_from_engine() -> void:
 			_volume_slider.value = _volume_val
 
 	# Đồng bộ bộ đếm giờ ngủ từ GameState nếu có
-	var gs := get_node_or_null("/root/GameState")
-	if gs != null and "bedtime_minutes" in gs:
-		var mins: int = gs.bedtime_minutes
-		var found_idx := _timer_presets.find(mins)
-		if found_idx >= 0:
-			_timer_idx = found_idx
-		_update_timer_label()
+	var found_idx := _timer_presets.find(GameState.bedtime_minutes)
+	if found_idx >= 0:
+		_timer_idx = found_idx
+	_update_timer_label()
 
 
 func _on_volume_changed(val: float) -> void:
@@ -420,9 +415,7 @@ func _on_timer_dial_pressed() -> void:
 	_update_timer_label()
 
 	# Cập nhật GameState
-	var gs := get_node_or_null("/root/GameState")
-	if gs != null and gs.has_method("set_bedtime_timer"):
-		gs.set_bedtime_timer(mins)
+	GameState.set_bedtime_timer(mins)
 
 	if _burst_layer != null and _timer_dial_btn != null:
 		_burst_layer.emit_burst(_timer_dial_btn.get_global_rect().get_center(), Color("#FFD768"), 18)
@@ -499,9 +492,7 @@ func _on_close_pressed() -> void:
 
 
 func _play_sfx(sfx_name: String) -> void:
-	var ad := get_node_or_null("/root/AudioDirector")
-	if ad != null and ad.has_method("play_sfx"):
-		ad.play_sfx(sfx_name)
+	AudioDirector.play_sfx(sfx_name)
 
 
 ## Lớp hiệu ứng bụi sao bung nở cho Góc Phụ Huynh

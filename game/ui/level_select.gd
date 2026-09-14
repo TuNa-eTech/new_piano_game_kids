@@ -126,8 +126,6 @@ func _build() -> void:
 	# 1. Phông nền toàn cảnh Level Select từ mock-level-select.jpeg
 	if ResourceLoader.exists("res://assets/art/bg_level_select_forest_25d.png"):
 		_bg_texture = load("res://assets/art/bg_level_select_forest_25d.png")
-	elif ResourceLoader.exists("res://docs/mock-level-select.jpeg"):
-		_bg_texture = load("res://docs/mock-level-select.jpeg")
 
 	var bg_rect := TextureRect.new()
 	bg_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -291,12 +289,8 @@ func open_for_chapter(chapter: int) -> void:
 		_title_label.text = "Chương %d: %s" % [chapter + 1, ch_name]
 
 	var base_page := chapter * Chapters.pages_per_chapter()
-	var current_page := 0
-	var max_page := 0
-	var gs := get_node_or_null("/root/GameState")
-	if gs != null:
-		current_page = gs.page_index
-		max_page = gs.max_page_reached
+	var current_page: int = GameState.page_index
+	var max_page: int = GameState.max_page_reached
 
 	for i in 5:
 		var page := base_page + i
@@ -403,9 +397,7 @@ func _on_star_jar_pressed() -> void:
 
 
 func _play_sfx(sfx_name: String) -> void:
-	var ad := get_node_or_null("/root/AudioDirector")
-	if ad != null and ad.has_method("play_sfx"):
-		ad.play_sfx(sfx_name)
+	AudioDirector.play_sfx(sfx_name)
 
 
 ## Node hiển thị trạng thái và vẽ vòng sáng vàng trên bục gỗ

@@ -74,8 +74,6 @@ func _build() -> void:
 	# 1. Phông nền toàn cảnh từ mock-parental-gate.jpeg
 	if ResourceLoader.exists("res://assets/art/bg_parental_gate_forest_25d.png"):
 		_bg_texture = load("res://assets/art/bg_parental_gate_forest_25d.png")
-	elif ResourceLoader.exists("res://docs/mock-parental-gate.jpeg"):
-		_bg_texture = load("res://docs/mock-parental-gate.jpeg")
 
 	var bg_rect := TextureRect.new()
 	bg_rect.name = "BackgroundDiorama"
@@ -304,9 +302,7 @@ func _shake_node(node: Control) -> void:
 
 
 func _play_sfx(sfx_name: String) -> void:
-	var ad := get_node_or_null("/root/AudioDirector")
-	if ad != null and ad.has_method("play_sfx"):
-		ad.play_sfx(sfx_name)
+	AudioDirector.play_sfx(sfx_name)
 
 
 ## Lớp hiệu ứng bụi sao bung nở cho Cổng Phụ Huynh

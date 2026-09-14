@@ -114,8 +114,6 @@ func _build() -> void:
 	_bg_forest.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	if ResourceLoader.exists("res://assets/art/tex_bg_twilight_forest.png"):
 		_bg_forest.texture = load("res://assets/art/tex_bg_twilight_forest.png")
-	elif ResourceLoader.exists("res://docs/mock-grand-finale.jpeg"):
-		_bg_forest.texture = load("res://docs/mock-grand-finale.jpeg")
 	_diorama.add_child(_bg_forest)
 
 	# Đom đóm vàng lập lòe trong rừng
@@ -552,9 +550,7 @@ func _enter(next: Phase) -> void:
 	match next:
 		Phase.FRUIT:
 			_tree.fruit()
-			var ad := _get_audio()
-			if ad != null and ad.has_method("play_sfx"):
-				ad.play_sfx("chest_open")
+			AudioDirector.play_sfx("chest_open")
 		Phase.REST:
 			_lit = -1
 			_footer.visible = true
@@ -565,9 +561,7 @@ func _tick_singing() -> void:
 	var due := int(_timer / NOTE_INTERVAL)
 	while _played < _sequence.size() and due > _played:
 		var note: int = _sequence[_played]
-		var ad := _get_audio()
-		if ad != null and ad.has_method("play_note_pitched"):
-			ad.play_note_pitched(note, 1.0, CELEBRATION_DB)
+		AudioDirector.play_note_pitched(note, 1.0, CELEBRATION_DB)
 		_tree.clear_singing()
 		_tree.sing_leaf(note)
 		_tree.bloom(note, _sequence.size())
@@ -578,10 +572,6 @@ func _tick_singing() -> void:
 	# Chuyển sang Phase.FRUIT khi đã tấu trọn vẹn giai điệu
 	if _played >= _sequence.size() and _timer >= _sequence.size() * NOTE_INTERVAL:
 		_enter(Phase.FRUIT)
-
-
-func _get_audio() -> Node:
-	return get_node_or_null("/root/AudioDirector")
 
 
 func _on_continue() -> void:

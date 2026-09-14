@@ -38,9 +38,7 @@ func _on_gui_input(event: InputEvent) -> void:
 			_is_pressed = false
 			_animate_release()
 			activated.emit()
-			var audio = get_node_or_null("/root/AudioDirector")
-			if audio != null and audio.has_method("play_ting"):
-				audio.play_ting()
+			AudioDirector.play_ting()
 		accept_event()
 
 

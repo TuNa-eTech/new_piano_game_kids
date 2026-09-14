@@ -108,10 +108,8 @@ func _connect_signals() -> void:
 	_chest_reward.reward_claimed.connect(_on_reward_claimed)
 
 	# 6. GameState Bedtime Timer
-	var gs := _get_game_state()
-	if gs != null and gs.has_signal("bedtime_expired"):
-		if not gs.bedtime_expired.is_connected(_on_bedtime_expired):
-			gs.bedtime_expired.connect(_on_bedtime_expired)
+	if not GameState.bedtime_expired.is_connected(_on_bedtime_expired):
+		GameState.bedtime_expired.connect(_on_bedtime_expired)
 
 	# 7. ParentalGate
 	_parental_gate.gate_unlocked.connect(_on_parental_gate_unlocked)
@@ -119,10 +117,6 @@ func _connect_signals() -> void:
 
 	# 8. ParentalCorner
 	_parental_corner.closed.connect(_on_parental_corner_closed)
-
-
-func _get_game_state() -> Node:
-	return get_node_or_null("/root/GameState")
 
 
 # ---------------------------------------------------------------- Điều Hướng --
@@ -232,9 +226,7 @@ func _on_chapter_selected(chapter: int) -> void:
 
 
 func _on_level_selected(page: int) -> void:
-	var gs := _get_game_state()
-	if gs != null and gs.has_method("set_page"):
-		gs.set_page(page)
+	GameState.set_page(page)
 	_level_select.close_overlay()
 	_chapter_map.close_map()
 
@@ -252,9 +244,7 @@ func _on_goodnight_wake_up() -> void:
 func _on_parental_gate_unlocked() -> void:
 	if _target_after_gate == "wake_up":
 		_goodnight_screen.close_overlay()
-		var gs := _get_game_state()
-		if gs != null and gs.has_method("set_bedtime_timer"):
-			gs.set_bedtime_timer(0)
+		GameState.set_bedtime_timer(0)
 	elif _target_after_gate == "parental_corner":
 		open_parental_corner()
 	_target_after_gate = ""

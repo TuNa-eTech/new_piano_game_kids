@@ -49,12 +49,8 @@ func _ready() -> void:
 	_glow_pos = SLOT_CENTERS[0]
 	_build_ui()
 
-	var gs = get_node_or_null("/root/GameState")
-	if gs != null:
-		if gs.has_signal("instrument_mode_changed"):
-			gs.instrument_mode_changed.connect(_on_game_state_instrument_changed)
-		if "instrument_mode" in gs:
-			_selected_index = clampi(gs.instrument_mode, 0, 4)
+	GameState.instrument_mode_changed.connect(_on_game_state_instrument_changed)
+	_selected_index = clampi(GameState.instrument_mode, 0, 4)
 	_apply_visual_states(true)
 
 
@@ -152,26 +148,20 @@ func select_instrument(index: int) -> void:
 		tw.tween_property(icon, "scale", Vector2(1.20, 1.20), 0.15)
 
 	# Phát âm thanh phản hồi xúc giác + nốt mẫu của nhạc cụ
-	var audio = get_node_or_null("/root/AudioDirector")
-	if audio != null:
-		if audio.has_method("play_sfx"):
-			audio.play_sfx("wood_tap")
-		match index:
-			0: # Violin
-				audio.play_sfx("violin_pluck")
-			1: # Flute
-				if audio.has_method("play_instrument_note"):
-					audio.play_instrument_note(0, 0, 0.0)
-			2: # Drum
-				audio.play_sfx("soft_boing")
-			3: # Trumpet
-				audio.play_sfx("accordion_breath")
-			4: # Harp
-				audio.play_sfx("harp_chime")
+	AudioDirector.play_sfx("wood_tap")
+	match index:
+		0: # Violin
+			AudioDirector.play_sfx("violin_pluck")
+		1: # Flute
+			AudioDirector.play_instrument_note(0, 0, 0.0)
+		2: # Drum
+			AudioDirector.play_sfx("soft_boing")
+		3: # Trumpet
+			AudioDirector.play_sfx("accordion_breath")
+		4: # Harp
+			AudioDirector.play_sfx("harp_chime")
 
-	var gs = get_node_or_null("/root/GameState")
-	if gs != null and "instrument_mode" in gs:
-		gs.instrument_mode = index
+	GameState.instrument_mode = index
 
 	instrument_selected.emit(index)
 

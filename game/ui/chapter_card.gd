@@ -73,10 +73,7 @@ func pop_up_intro(delay: float = 0.0) -> void:
 
 
 func refresh() -> void:
-	var gs := _get_game_state()
-	var unlocked := true
-	if gs != null and gs.has_method("chapter_unlocked"):
-		unlocked = gs.chapter_unlocked(chapter)
+	var unlocked := GameState.chapter_unlocked(chapter)
 	disabled = false
 	if _shader_mat != null:
 		_shader_mat.set_shader_parameter("is_unlocked", unlocked)
@@ -85,10 +82,7 @@ func refresh() -> void:
 
 
 func play_tap_feedback() -> void:
-	var gs := _get_game_state()
-	var unlocked := true
-	if gs != null and gs.has_method("chapter_unlocked"):
-		unlocked = gs.chapter_unlocked(chapter)
+	var unlocked := GameState.chapter_unlocked(chapter)
 	if _tilt_tween != null and _tilt_tween.is_valid():
 		_tilt_tween.kill()
 	_tilt_tween = create_tween()
@@ -144,10 +138,7 @@ func _reset_tilt() -> void:
 func _draw_face() -> void:
 	var w := _face.size.x
 	var h := _face.size.y
-	var gs := _get_game_state()
-	var unlocked := true
-	if gs != null and gs.has_method("chapter_unlocked"):
-		unlocked = gs.chapter_unlocked(chapter)
+	var unlocked := GameState.chapter_unlocked(chapter)
 	var r := Rect2(0, 0, w, h)
 	var pulse := 0.5 + 0.5 * sin(_idle_time * 2.8)
 
@@ -196,13 +187,8 @@ func _draw_face() -> void:
 	var dot_x := w * 0.5 - dot_gap * (pages - 1) * 0.5
 	var dot_y := h * 0.88
 
-	var max_page := 0
-	var cur_page := 0
-	if gs != null:
-		if "max_page_reached" in gs:
-			max_page = gs.max_page_reached
-		if "page_index" in gs:
-			cur_page = gs.page_index
+	var max_page: int = GameState.max_page_reached
+	var cur_page: int = GameState.page_index
 
 	for i in pages:
 		var page := first + i
@@ -214,10 +200,6 @@ func _draw_face() -> void:
 			_face.draw_circle(centre, dot_r * 0.8, Color("#F5D77F"))
 		else:
 			_face.draw_circle(centre, dot_r, Color(0.3, 0.35, 0.38, 0.6))
-
-
-func _get_game_state() -> Node:
-	return get_node_or_null("/root/GameState")
 
 
 func _draw_leather_strap(w: float, h: float) -> void:
