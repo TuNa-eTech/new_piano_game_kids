@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://c8lionwalkfix"]
+
+[ext_resource type="Script" path="res://game/dev/test_lion_walk_fix.gd" id="1_lionwalk"]
+
+[node name="TestLionWalkFix" type="Node"]
+script = ExtResource("1_lionwalk")

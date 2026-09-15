@@ -238,16 +238,31 @@ Nếu có lấy file từ thư viện ngoài, luật giấy phép:
 | Tên file | Bài hát | Nhịp | Vòng hợp âm | Giấy phép | Tác giả | Ngày tạo |
 |---|---|---|---|---|---|---|
 | `bgm_main_menu_theme.ogg` | "Kỳ Diệu Rừng Nhạc" (Main Menu Theme) | 84 BPM | C Maj9 - F Maj7 - Am9 - Gsus4 (Harp, Celesta, Marimba, Flute) | MIT / In-house | Antigravity | 2026-09-11 |
-| `bgm_baby_shark.ogg` | Baby Shark | 85 BPM | C - C - Am - F (Ukulele & Marimba) | MIT / In-house | Antigravity | 2026-09-11 |
-| `bgm_wheels_on_the_bus.ogg` | The Wheels on the Bus | 80 BPM | C - G - C - C (Bouncing Pizzicato) | MIT / In-house | Antigravity | 2026-09-11 |
-| `bgm_johny_johny.ogg` | Johny Johny Yes Papa | 76 BPM | C - G - C - G (Music Box & Guitar) | MIT / In-house | Antigravity | 2026-09-11 |
-| `bgm_twinkle_twinkle.ogg` | Twinkle Twinkle Little Star | 68 BPM | C - F - C - G (Celesta & Concert Harp) | MIT / In-house | Antigravity | 2026-09-11 |
-| `bgm_if_youre_happy.ogg` | If You're Happy and You Know It | 84 BPM | C - G - C - G (Happy Kalimba & Rhythm) | MIT / In-house | Antigravity | 2026-09-11 |
-| `bgm_old_macdonald.ogg` | Old MacDonald Had a Farm | 82 BPM | C - F - C - G (Rustic Folk Guitar) | MIT / In-house | Antigravity | 2026-09-11 |
-| `bgm_abc_song.ogg` | ABC Song | 70 BPM | C - F - C - G (Lullaby Bells & Piano) | MIT / In-house | Antigravity | 2026-09-11 |
-| `bgm_baa_baa_black_sheep.ogg` | Baa Baa Black Sheep | 72 BPM | C - F - C - G (Pastoral Flute & Pad) | MIT / In-house | Antigravity | 2026-09-11 |
-| `bgm_five_little_monkeys.ogg` | Five Little Monkeys | 80 BPM | C - G - C - G (Cheeky Marimba & Bass) | MIT / In-house | Antigravity | 2026-09-11 |
-| `bgm_heads_shoulders.ogg` | Heads, Shoulders, Knees and Toes | 86 BPM | C - G - C - G (Playful Tines & Ukulele) | MIT / In-house | Antigravity | 2026-09-11 |
+| `bgm_baby_shark.ogg` | Baby Shark | 85 BPM | C - C - Am - F (Ukulele & Marimba, nhún doo-doo offbeat, motif G5×3) | MIT / In-house | Antigravity | 2026-09-15 (v2) |
+| `bgm_wheels_on_the_bus.ogg` | The Wheels on the Bus | 80 BPM | C - G - F - C (Oom-Pah + chuông ting-ting, motif lăn C5-D5-E5-G5) | MIT / In-house | Antigravity | 2026-09-15 (v2) |
+| `bgm_johny_johny.ogg` | Johny Johny Yes Papa | 76 BPM | C - G - Am - G (Music Box hỏi-đáp E5-D5) | MIT / In-house | Antigravity | 2026-09-15 (v2) |
+| `bgm_twinkle_twinkle.ogg` | Twinkle Twinkle Little Star | 68 BPM | C - F - Dm - G (Celesta sao băng G5-C6-E6) | MIT / In-house | Antigravity | 2026-09-15 (v2) |
+| `bgm_if_youre_happy.ogg` | If You're Happy and You Know It | 84 BPM | C - G - Em - G (Kalimba + vỗ tay gỗ 2&4) | MIT / In-house | Antigravity | 2026-09-15 (v2) |
+| `bgm_old_macdonald.ogg` | Old MacDonald Had a Farm | 82 BPM | C - F - Dm - G (Folk fingerpick, motif đi xuống) | MIT / In-house | Antigravity | 2026-09-15 (v2) |
+| `bgm_abc_song.ogg` | ABC Song | 70 BPM | C - Am - F - G (Chuông học chữ C5-D5-E5) | MIT / In-house | Antigravity | 2026-09-15 (v2) |
+| `bgm_baa_baa_black_sheep.ogg` | Baa Baa Black Sheep | 72 BPM | C - Dm - F - G (Sáo gỗ lead G4-A4-G4) | MIT / In-house | Antigravity | 2026-09-15 (v2) |
+| `bgm_five_little_monkeys.ogg` | Five Little Monkeys | 80 BPM | C - G - Am - G (Shuffle + woodblock, motif nhảy E5-G5-A5) | MIT / In-house | Antigravity | 2026-09-15 (v2) |
+| `bgm_heads_shoulders.ogg` | Heads, Shoulders, Knees and Toes | 86 BPM | C - G - Am - G (Motion 8th + shaker, motif chạm tay đi lên) | MIT / In-house | Antigravity | 2026-09-15 (v2) |
+
+Engine v2 (`tools/gen_songbook_audio.py`): 5 lớp pad + bass mộc + gõ gỗ + motif
+signature + fill bar cuối, giữ loop seamless (quantize + crossfade) và peak
+`-21dB`. Mỗi BGM trộn 1 tiếng pet thật giữa vòng (`PET_VOICE_BY_ID`, peak
+`-26dB`). 3 bài trùng tune gốc phân biệt bằng voicing: Twinkle C-F-Dm-G,
+ABC C-Am-F-G, Baa Baa C-Dm-F-G.
+
+### 7. Vocal guide la-la + nhạc adaptive (2026-09-15)
+
+| Tên file | Nội dung | Dùng ở đâu |
+|---|---|---|
+| `voiceguide_<id>.ogg` (10 file, 15–30KB, one-shot `loop=false`) | Giọng hum theo đúng câu hát đầu của từng bài, ~-14dBFS | `CallResponse._tick_waiting`: bé đơ 4s lần đầu → `AudioDirector.play_voiceguide()`; bé chạm lại → `stop_voiceguide()` |
+| Adaptive ducking | `duck_music(-6dB)` lúc `LEAD_IN`/`SINGING`, `unduck_music()` lúc `WAITING`/`FRUITING`, `set_music_intensity(true)` lúc `FREE` | `CallResponse._enter()` → `AudioDirector` (tween riêng `_duck_tween`, không đụng crossfade đổi bài) |
+
+Tổng `assets/audio/songbook/`: 720KB → ~1.0MB (+280KB, trong budget 5–10MB).
 
 
 

@@ -82,6 +82,8 @@ func _begin_page(first: bool = false) -> void:
 	_tree.reset_page()
 	_tree.set_sequence(_sequence)
 
+	# Đổi bài: dừng vocal guide cũ rồi mới phát BGM mới.
+	AudioDirector.stop_voiceguide()
 	# Phát nhạc nền backing track chuẩn 10 bài hát của Songbook
 	if Songbook.is_valid(_page):
 		var song := Songbook.get_song(_page)
@@ -158,6 +160,8 @@ func _enter(next: State) -> void:
 			_tree.clear_hint()
 			if _keyboard != null:
 				_keyboard.clear_hint_key()
+			# Chuẩn bị hát mẫu: nhạc lặng dần để bé hướng tai vào cây.
+			AudioDirector.duck_music()
 			var p := _get_phrase_prompt()
 			prompt_updated.emit(p if not p.is_empty() else "Lắng nghe khu rừng nào... ♫")
 		State.SINGING:
@@ -165,6 +169,7 @@ func _enter(next: State) -> void:
 			_tree.clear_hint()
 			if _keyboard != null:
 				_keyboard.clear_hint_key()
+			AudioDirector.duck_music()
 			var p := _get_phrase_prompt()
 			prompt_updated.emit(p if not p.is_empty() else "Giai điệu đang ngân vang! ♫")
 		State.WAITING:
@@ -172,6 +177,8 @@ func _enter(next: State) -> void:
 			_idle = 0.0
 			_idle_repeats = 0
 			_auto_play_timer = 0.0
+			# Tới lượt bé: nhạc nổi lại nâng đỡ.
+			AudioDirector.unduck_music()
 			_refresh_hint()
 		State.FRUITING:
 			_replay_index = 0
@@ -179,12 +186,14 @@ func _enter(next: State) -> void:
 			_tree.clear_hint()
 			if _keyboard != null:
 				_keyboard.clear_hint_key()
+			AudioDirector.unduck_music()
 			AudioDirector.play_sfx("chest_open")
 			prompt_updated.emit("Cây thần nở hoa rực rỡ! ★")
 		State.PAGE_TURN:
 			_tree.clear_hint()
 			if _keyboard != null:
 				_keyboard.clear_hint_key()
+			AudioDirector.stop_voiceguide()
 			prompt_updated.emit("Lật sang trang mới...")
 			page_turn_started.emit()
 		State.FREE:
@@ -193,6 +202,9 @@ func _enter(next: State) -> void:
 			if _keyboard != null:
 				_keyboard.clear_hint_key()
 			_step = 0
+			# Chơi Tự Do: nhạc thưa nhẹ để bé làm chủ sân khấu.
+			AudioDirector.stop_voiceguide()
+			AudioDirector.set_music_intensity(true)
 			prompt_updated.emit("Bé thỏa thích chơi đàn! ♬")
 
 
@@ -259,6 +271,12 @@ func _tick_waiting(delta: float) -> void:
 	if _idle >= IDLE_HINT_SECONDS:
 		_idle = 0.0
 		if _step < _sequence.size():
+			# Lần đầu bé đơ: hát mẫu vocal guide la-la theo câu hát (nếu có),
+			# các lần sau mới nhắc bằng nốt pitched to dần như cũ.
+			if _idle_repeats == 0 and Songbook.is_valid(_page):
+				var vg := Songbook.get_voiceguide(_page)
+				if not vg.is_empty():
+					AudioDirector.play_voiceguide(vg)
 			# Lần 1 nhắc nhẹ, lần 2+ to dần + pulse lại hint để bé thấy.
 			var vol_db := -10.0 if _idle_repeats == 0 else -4.0
 			AudioDirector.play_note_pitched(_sequence[_step], 1.0, vol_db)
@@ -283,6 +301,8 @@ func _tick_fruiting() -> void:
 func _on_note_played(note_index: int) -> void:
 	_idle = 0.0
 	_idle_repeats = 0
+	# Bé đã chạm lại: dừng vocal guide nhắc để nhường tai cho tiếng đàn của bé.
+	AudioDirector.stop_voiceguide()
 
 	if _state != State.WAITING or _step >= _sequence.size():
 		# Ngoài lúc chờ đáp thì vẫn là chơi tự do: cây vẫn cao thêm một chút.

@@ -25,12 +25,10 @@ func _run_test(main) -> void:
 	await RenderingServer.frame_post_draw
 
 	var img := get_viewport().get_texture().get_image()
-	var path := "/Users/anhtu/.gemini/antigravity/brain/48246db2-f5ca-47db-a8a9-79f414bcedf5/screen_grand_finale_rendered.png"
 	var doc_path := "docs/grand_finale_rendered.png"
 	if img != null:
-		img.save_png(path)
 		img.save_png(doc_path)
-		print("GRAND_FINALE_SCREENSHOT_SAVED_OK: ", path)
+		print("GRAND_FINALE_SCREENSHOT_SAVED_OK: ", doc_path)
 	else:
 		printerr("IMG_IS_NULL")
 	get_tree().quit(0)

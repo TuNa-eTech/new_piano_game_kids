@@ -56,18 +56,9 @@ func _build() -> void:
 	_stage.mouse_filter = Control.MOUSE_FILTER_PASS
 	add_child(_stage)
 
-	# Phông nền toàn cảnh Bản đồ Chương từ mock-chapter-map.jpeg
-	# ⚠️ PHÔNG NỀN TẠM — chưa có asset thật.
-	# Asset chính thức mà docs/art-pipeline-chapter-map-2.5d.md đặt tên là
-	# `tex_bg_chapter_forest.png` và CHƯA ĐƯỢC DỰNG. Trong lúc chờ, màn này dùng bản
-	# tạm trong assets/placeholder/ (chính là tấm concept, nhưng nằm đúng chỗ của
-	# một tài nguyên chạy thật — trước đây nó nằm trong docs/, khiến thư mục tài
-	# liệu >10 MB bị kéo cả vào gói phát hành).
-	# Khi asset thật về: đổi đường dẫn rồi xoá dòng placeholder.
+	# Phông nền toàn cảnh Bản đồ Chương chính thức (tex_bg_chapter_forest.png)
 	if ResourceLoader.exists("res://assets/art/tex_bg_chapter_forest.png"):
 		_bg_texture = load("res://assets/art/tex_bg_chapter_forest.png")
-	elif ResourceLoader.exists("res://assets/placeholder/art/placeholder_bg_chapter_map.jpg"):
-		_bg_texture = load("res://assets/placeholder/art/placeholder_bg_chapter_map.jpg")
 
 	var bg_rect := TextureRect.new()
 	bg_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -102,7 +93,30 @@ func _build() -> void:
 	_back_btn.add_theme_stylebox_override("pressed", empty_style)
 	_back_btn.item_rect_changed.connect(func(): _back_btn.pivot_offset = _back_btn.size * 0.5)
 	_back_btn.pressed.connect(_on_back_pressed)
+	if ResourceLoader.exists("res://assets/art/ui_btn_wood_circle_back.png"):
+		var back_icon := TextureRect.new()
+		back_icon.name = "BackIcon"
+		back_icon.texture = load("res://assets/art/ui_btn_wood_circle_back.png")
+		back_icon.set_anchors_preset(Control.PRESET_FULL_RECT)
+		back_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		back_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		back_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		_back_btn.add_child(back_icon)
 	_stage.add_child(_back_btn)
+
+	# --- 1b. BẢNG RUY BĂNG TIÊU ĐỀ GỖ 'Chapter Selection Map' ---
+	if ResourceLoader.exists("res://assets/art/ui_banner_ribbon_title.png"):
+		var banner := TextureRect.new()
+		banner.name = "TitleBanner"
+		banner.texture = load("res://assets/art/ui_banner_ribbon_title.png")
+		banner.anchor_left = 0.28
+		banner.anchor_top = 0.015
+		banner.anchor_right = 0.72
+		banner.anchor_bottom = 0.235
+		banner.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		banner.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		banner.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_stage.add_child(banner)
 
 	# --- 2. NÚT ĐIỀU HƯỚNG BỔ TRỢ (ẨN ĐỂ BẢO TỒN THẨM MỸ BANNER) ---
 	_menu_btn = Button.new()
@@ -113,9 +127,9 @@ func _build() -> void:
 
 	# --- 3. BA THẺ CHƯƠNG NỔI 2.5D (INTERACTIVE POP-UP CARDS) ---
 	var card_rects := [
-		[0.152, 0.225, 0.370, 0.735],
-		[0.388, 0.225, 0.606, 0.735],
-		[0.624, 0.225, 0.842, 0.735]
+		[0.170, 0.235, 0.355, 0.765],
+		[0.410, 0.235, 0.595, 0.765],
+		[0.650, 0.235, 0.835, 0.765]
 	]
 
 	for i in Chapters.count():
@@ -153,6 +167,28 @@ func _build() -> void:
 	_star_jar_btn.add_theme_stylebox_override("pressed", empty_style)
 	_star_jar_btn.item_rect_changed.connect(func(): _star_jar_btn.pivot_offset = _star_jar_btn.size * 0.5)
 	_star_jar_btn.pressed.connect(_on_star_jar_pressed)
+	if ResourceLoader.exists("res://assets/art/ui_star_jar_top_right.png"):
+		var jar_icon := TextureRect.new()
+		jar_icon.name = "JarIcon"
+		jar_icon.texture = load("res://assets/art/ui_star_jar_top_right.png")
+		jar_icon.set_anchors_preset(Control.PRESET_FULL_RECT)
+		jar_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		jar_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		jar_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		_star_jar_btn.add_child(jar_icon)
+
+	var star_lbl := Label.new()
+	star_lbl.name = "StarCountLabel"
+	star_lbl.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
+	star_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	star_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	star_lbl.text = "★ %d" % GameState.stars
+	star_lbl.add_theme_font_size_override("font_size", 13)
+	star_lbl.add_theme_color_override("font_color", Color("#F8CE65"))
+	star_lbl.add_theme_color_override("font_outline_color", Color("#532E16"))
+	star_lbl.add_theme_constant_override("outline_size", 3)
+	_star_jar_btn.add_child(star_lbl)
+
 	_stage.add_child(_star_jar_btn)
 
 	# --- 5. LỚP BÙNG NỔ BỤI SAO VÀNG (STARLIGHT BURST VFX) ---
@@ -166,6 +202,10 @@ func _build() -> void:
 func open_map() -> void:
 	for card in _cards:
 		card.refresh()
+	if _star_jar_btn != null and _star_jar_btn.has_node("StarCountLabel"):
+		var lbl := _star_jar_btn.get_node("StarCountLabel") as Label
+		if lbl != null:
+			lbl.text = "★ %d" % GameState.stars
 	AudioDirector.play_sfx("menu_open")
 	open_overlay()
 	_play_entry_animation()

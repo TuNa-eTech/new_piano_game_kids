@@ -122,15 +122,32 @@ func _test_page_navigation() -> void:
 	var pages_received: Array[int] = []
 	book.page_turn_requested.connect(func(p): pages_received.append(p))
 
+	# Quyển sách KHÔNG tự đổi trang nữa: hai nút chỉ nêu yêu cầu, còn thứ tự
+	# "cuộn giấy trước, đổi dữ liệu sau" do DioramaStage cầm trịch (xem ⑥).
 	book.load_page(0)
 	book.next_page()
-	# Đợi tween hoàn thành
-	await get_tree().create_timer(0.45).timeout
-	_check("next_page() lật sang trang 1 (bài 2)", book._current_page == 1)
+	await get_tree().process_frame
+	_check("next_page() xin lật sang trang 1 (bài 2)",
+		pages_received.size() == 1 and pages_received[0] == 1,
+		"nhận %s" % str(pages_received))
+	_check("next_page() KHÔNG tự đổi trang", book._current_page == 0)
 
+	pages_received.clear()
+	book.load_page(1)
 	book.prev_page()
-	await get_tree().create_timer(0.45).timeout
-	_check("prev_page() lật về trang 0 (bài 1)", book._current_page == 0)
+	await get_tree().process_frame
+	_check("prev_page() xin lật về trang 0 (bài 1)",
+		pages_received.size() == 1 and pages_received[0] == 0,
+		"nhận %s" % str(pages_received))
+
+	pages_received.clear()
+	book.load_page(9)
+	book.next_page()
+	book.load_page(0)
+	book.prev_page()
+	await get_tree().process_frame
+	_check("hết biên thì không xin lật nữa", pages_received.is_empty(),
+		"nhận %s" % str(pages_received))
 
 	book.queue_free()
 
@@ -156,4 +173,99 @@ func _test_diorama_integration() -> void:
 	diorama.load_page(3) # Twinkle Twinkle (Owl)
 	_check("Diorama load_page(3) thành công", diorama._story_book._current_page == 3)
 
+	await _test_page_curl(diorama)
+
 	diorama.queue_free()
+
+
+## Hồi quy cho lỗi đã gặp: PageCurl từng là con của BookSpread — node bị ẩn ngay
+## trong _setup_story_book() — nên suốt nhiều tháng hoạt ảnh vẫn chạy, tiếng giấy
+## vẫn kêu, mà không một khung hình nào được vẽ. Test này canh đúng ba điều mà
+## mắt người nhìn thấy: tờ giấy CÓ hiện ra, nó phủ đúng nửa trang đang lật, và
+## nội dung chỉ đổi SAU khi giấy đã che kín.
+func _test_page_curl(diorama: DioramaStage) -> void:
+	print("\n⑥ Kiểm tra hoạt ảnh cuộn trang (PageCurl)")
+	var book: StoryBook = diorama._story_book
+	var curl: PageCurl = diorama.get_page_curl()
+	_check("DioramaStage có PageCurl", curl != null)
+	if curl == null:
+		return
+	_check("PageCurl nằm trong StoryBook, không phải node bị ẩn",
+		curl.get_parent() == book and book.is_visible_in_tree())
+
+	diorama.load_page(3)
+	GameState.set_page(3)
+	await get_tree().process_frame
+
+	# --- Lật tới: cuộn trang PHẢI ---
+	diorama.request_page_turn(4, 0.6)
+	await get_tree().process_frame
+	_check("lật tới: tờ giấy hiện ra", curl.visible)
+	_check("lật tới: giấy phủ đúng trang phải",
+		is_equal_approx(curl.position.x, book._right_page.position.x)
+		and is_equal_approx(curl.size.x, book._right_page.size.x),
+		"curl x=%.1f w=%.1f" % [curl.position.x, curl.size.x])
+	_check("lật tới: nội dung CHƯA đổi lúc giấy còn phẳng", book._current_page == 3,
+		"đang ở trang %d" % book._current_page)
+
+	await curl.sheet_covered
+	_check("giấy che kín rồi mới đổi nội dung", book._current_page == 4,
+		"đang ở trang %d" % book._current_page)
+	_check("đang lật thì khoá hai nút, bé bấm dồn không xếp hàng được",
+		book._btn_prev.disabled and book._btn_next.disabled)
+
+	await curl.flip_completed
+	await get_tree().process_frame
+	_check("lật xong thì giấy biến mất", not curl.visible)
+	_check("lật xong thì mở khoá nút", not book._btn_prev.disabled)
+	_check("lật xong đứng đúng trang 5", GameState.page_index == 4 and book._current_page == 4,
+		"GameState %d · sách %d" % [GameState.page_index, book._current_page])
+
+	# --- Lật lui: cuộn trang TRÁI ---
+	diorama.request_page_turn(3, 0.6)
+	await get_tree().process_frame
+	_check("lật lui: giấy phủ đúng trang trái",
+		is_equal_approx(curl.position.x, book._left_page.position.x)
+		and is_equal_approx(curl.size.x, book._left_page.size.x),
+		"curl x=%.1f w=%.1f" % [curl.position.x, curl.size.x])
+	await curl.flip_completed
+	await get_tree().process_frame
+	_check("lật lui xong đứng đúng trang 4", book._current_page == 3,
+		"đang ở trang %d" % book._current_page)
+
+	# --- Đúng thứ bé chạm: HAI NÚT MŨI TÊN ---
+	# Hai đoạn test trên gọi thẳng request_page_turn(), nên nếu sợi dây
+	# page_turn_requested -> DioramaStage đứt thì chúng vẫn xanh trong khi hai nút
+	# trên màn hình bấm không ăn gì. Đây là đúng hình dạng của con bug vừa sửa:
+	# hoạt ảnh chạy ngon, chỉ là chẳng ai gọi tới.
+	diorama.load_page(3)
+	GameState.set_page(3)
+	await get_tree().process_frame
+
+	book._btn_next.pressed.emit()
+	await get_tree().process_frame
+	_check("bấm nút ▶ thì giấy cuộn trang phải thật",
+		curl.visible and is_equal_approx(curl.position.x, book._right_page.position.x))
+	await curl.flip_completed
+	await get_tree().process_frame
+	_check("bấm nút ▶ sang đúng bài kế", book._current_page == 4,
+		"đang ở trang %d" % book._current_page)
+
+	book._btn_prev.pressed.emit()
+	await get_tree().process_frame
+	_check("bấm nút ◀ thì giấy cuộn trang trái thật",
+		curl.visible and is_equal_approx(curl.position.x, book._left_page.position.x))
+	await curl.flip_completed
+	await get_tree().process_frame
+	_check("bấm nút ◀ về đúng bài trước", book._current_page == 3,
+		"đang ở trang %d" % book._current_page)
+
+	# --- Trang cuối KHÔNG đi qua đường này: để CallResponse phát chapter_completed ---
+	GameState.set_page(Songbook.count() - 1)
+	await get_tree().process_frame
+	var page_before: int = GameState.page_index
+	diorama.flip_page(0.6)
+	await get_tree().process_frame
+	_check("trang cuối thì không tự lật, nhường advance_page() lo vòng chương",
+		not curl.visible and GameState.page_index == page_before,
+		"trang %d" % GameState.page_index)

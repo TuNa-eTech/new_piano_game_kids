@@ -14,10 +14,31 @@ var _shader_mat: ShaderMaterial
 var _tilt_tween: Tween
 var _entry_tween: Tween
 var _idle_time: float = 0.0
+var _card_tex: Texture2D = null
+var _star_jar_cradle_tex: Texture2D = null
+var _padlock_tex: Texture2D = null
+var _leather_strap_tex: Texture2D = null
 
 
 func setup(index: int) -> void:
 	chapter = index
+	var card_paths := [
+		"res://assets/art/card_ch1_flute.png",
+		"res://assets/art/card_ch2_kalimba.png",
+		"res://assets/art/card_ch3_chimes.png"
+	]
+	if index >= 0 and index < card_paths.size() and ResourceLoader.exists(card_paths[index]):
+		_card_tex = load(card_paths[index])
+	elif ResourceLoader.exists("res://assets/art/card_chapter.png"):
+		_card_tex = load("res://assets/art/card_chapter.png")
+
+	if ResourceLoader.exists("res://assets/art/spr_star_jar_cradle.png"):
+		_star_jar_cradle_tex = load("res://assets/art/spr_star_jar_cradle.png")
+	if ResourceLoader.exists("res://assets/art/spr_padlock_brass.png"):
+		_padlock_tex = load("res://assets/art/spr_padlock_brass.png")
+	if ResourceLoader.exists("res://assets/art/spr_leather_belt_strap.png"):
+		_leather_strap_tex = load("res://assets/art/spr_leather_belt_strap.png")
+
 	focus_mode = Control.FOCUS_NONE
 	mouse_filter = Control.MOUSE_FILTER_STOP
 
@@ -142,22 +163,36 @@ func _draw_face() -> void:
 	var r := Rect2(0, 0, w, h)
 	var pulse := 0.5 + 0.5 * sin(_idle_time * 2.8)
 
-	if not unlocked:
-		# Với Chương 3 (chapter == 2): Đã có sẵn ổ khóa và đai da vẽ tay trong concept
-		if chapter == 2:
-			return
+	if _card_tex != null:
+		_face.draw_texture_rect(_card_tex, r, false)
 
-		# Đối với các chương khác khi bị khóa
+	if not unlocked:
+		# Khi bị khóa: vẽ lớp phủ mờ bo tròn theo khung thẻ
 		var style := StyleBoxFlat.new()
-		style.bg_color = Color(0.06, 0.08, 0.12, 0.52)
-		style.set_corner_radius_all(24)
+		style.bg_color = Color(0.05, 0.07, 0.10, 0.48)
+		style.set_corner_radius_all(22)
 		_face.draw_style_box(style, r)
 
-		_draw_leather_strap(w, h)
-		_draw_lock(Vector2(w * 0.5, h * 0.52), minf(w, h) * 0.18)
+		# Đai da thắt ngang
+		if _leather_strap_tex != null:
+			var strap_h := h * 0.16
+			var strap_y := h * 0.48 - strap_h * 0.5
+			var strap_rect := Rect2(-w * 0.04, strap_y, w * 1.08, strap_h)
+			_face.draw_texture_rect(_leather_strap_tex, strap_rect, false)
+		else:
+			_draw_leather_strap(w, h)
+
+		# Ổ khóa đồng hoàng gia 3D
+		if _padlock_tex != null:
+			var lock_w := w * 0.46
+			var lock_h := lock_w * (200.0 / 160.0)
+			var lock_rect := Rect2(w * 0.5 - lock_w * 0.5, h * 0.48 - lock_h * 0.48, lock_w, lock_h)
+			_face.draw_texture_rect(_padlock_tex, lock_rect, false)
+		else:
+			_draw_lock(Vector2(w * 0.5, h * 0.48), minf(w, h) * 0.18)
 		return
 
-	# Khi chương mở: vẽ viền hào quang vàng nhịp thở mềm mại
+	# Khi chương mở: viền hào quang vàng nhịp thở mềm mại
 	var glow_style := StyleBoxFlat.new()
 	glow_style.bg_color = Color.TRANSPARENT
 	glow_style.border_color = Color(1.0, 0.92, 0.50, 0.18 + 0.22 * pulse)
@@ -172,8 +207,14 @@ func _draw_face() -> void:
 	active_style.set_corner_radius_all(24)
 	_face.draw_style_box(active_style, r)
 
-	# Điểm nhấn bụi sao lấp lánh cho Thẻ Chương 1 (nơi có Lọ Sao nôi lá)
-	if chapter == 0:
+	# Đạo cụ Lọ sao nôi lá non nổi bật ở chân Thẻ Chương 1
+	if chapter == 0 and _star_jar_cradle_tex != null:
+		var jar_w := w * 0.74
+		var jar_h := jar_w # 1:1
+		var jar_float := sin(_idle_time * 2.5) * 2.5
+		var jar_rect := Rect2(w * 0.5 - jar_w * 0.5, h * 0.76 - jar_h * 0.5 + jar_float, jar_w, jar_h)
+		_face.draw_texture_rect(_star_jar_cradle_tex, jar_rect, false)
+	elif chapter == 0:
 		var star_pos := Vector2(w * 0.5, h * 0.76)
 		var star_pulse := 0.5 + 0.5 * sin(_idle_time * 3.6)
 		_face.draw_circle(star_pos, 4.0 * (1.0 + 0.25 * star_pulse), Color(1.0, 0.96, 0.65, 0.75 + 0.25 * star_pulse))
@@ -185,7 +226,7 @@ func _draw_face() -> void:
 	var dot_r := minf(w, h) * 0.038
 	var dot_gap := dot_r * 3.2
 	var dot_x := w * 0.5 - dot_gap * (pages - 1) * 0.5
-	var dot_y := h * 0.88
+	var dot_y := h * 0.92
 
 	var max_page: int = GameState.max_page_reached
 	var cur_page: int = GameState.page_index

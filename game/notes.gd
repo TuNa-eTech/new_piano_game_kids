@@ -19,37 +19,30 @@ extends RefCounted
 static var TABLE: Array[Dictionary] = [
 	{
 		"note": "C4", "freq": 261.63, "animal": "Sư tử", "color": Color("#E0644F"),
-		"sample": "res://assets/placeholder/notes/note_c4_su_tu.wav",
 		"voice": "lion", "pitch": 0.667,
 	},
 	{
 		"note": "D4", "freq": 293.66, "animal": "Gấu", "color": Color("#E08A2E"),
-		"sample": "res://assets/placeholder/notes/note_d4_gau.wav",
 		"voice": "bear", "pitch": 0.749,
 	},
 	{
 		"note": "E4", "freq": 329.63, "animal": "Thỏ", "color": Color("#D8619A"),
-		"sample": "res://assets/placeholder/notes/note_e4_tho.wav",
 		"voice": "rabbit", "pitch": 0.841,
 	},
 	{
 		"note": "G4", "freq": 392.00, "animal": "Mèo", "color": Color("#3F9455"),
-		"sample": "res://assets/placeholder/notes/note_g4_meo.wav",
 		"voice": "cat", "pitch": 1.000,
 	},
 	{
 		"note": "A4", "freq": 440.00, "animal": "Khỉ", "color": Color("#3877B5"),
-		"sample": "res://assets/placeholder/notes/note_a4_khi.wav",
 		"voice": "monkey", "pitch": 1.122,
 	},
 	{
 		"note": "C5", "freq": 523.25, "animal": "Voi", "color": Color("#7C5CC4"),
-		"sample": "res://assets/placeholder/notes/note_c5_voi.wav",
 		"voice": "elephant", "pitch": 1.335,
 	},
 	{
 		"note": "D5", "freq": 587.33, "animal": "Cú", "color": Color("#C7A017"),
-		"sample": "res://assets/placeholder/notes/note_d5_cu.wav",
 		"voice": "owl", "pitch": 1.498,
 	},
 ]

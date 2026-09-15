@@ -49,6 +49,7 @@ var _lion_textures: Dictionary = {}
 var _wizard_jump_frames: Array[Texture2D] = []
 var _wizard_walk_frames: Array[Texture2D] = []
 var _lion_jump_frames: Array[Texture2D] = []
+var _lion_walk_frames: Array[Texture2D] = []
 var _wizard_anim_timer: float = 0.0
 var _lion_anim_timer: float = 0.0
 
@@ -134,6 +135,15 @@ func _load_textures() -> void:
 
 	if not _lion_jump_frames.is_empty():
 		_lion_textures["idle"] = _lion_jump_frames[0]
+
+	# Chuỗi frame đi bộ của sư tử. Thư mục này có thể chưa được dựng; khi đó
+	# _lion_walk_frames rỗng và mọi nhánh dùng nó đều tự lui về ảnh tĩnh
+	# lion_walk.png, KHÔNG mượn tạm frame nhảy (nhảy và đi khác nhịp hoàn toàn).
+	_lion_walk_frames.clear()
+	for i in 8:
+		var w := "res://assets/characters/lion/anims/walk/walk_%d.png" % i
+		if ResourceLoader.exists(w):
+			_lion_walk_frames.append(load(w))
 
 
 func _setup_nodes() -> void:
@@ -236,7 +246,10 @@ func _process(delta: float) -> void:
 		var idx: int = clamp(int(_wizard_anim_timer * 9.0), 0, _wizard_jump_frames.size() - 1)
 		_wizard_rect.texture = _wizard_jump_frames[idx]
 
-	if _lion_state == AnimState.JUMP and not _lion_jump_frames.is_empty():
+	if _lion_state == AnimState.WALK and not _lion_walk_frames.is_empty():
+		var idx: int = int(_lion_anim_timer * 7.0) % _lion_walk_frames.size()
+		_lion_rect.texture = _lion_walk_frames[idx]
+	elif _lion_state == AnimState.JUMP and not _lion_jump_frames.is_empty():
 		var idx: int = clamp(int(_lion_anim_timer * 9.5), 0, _lion_jump_frames.size() - 1)
 		_lion_rect.texture = _lion_jump_frames[idx]
 
@@ -667,7 +680,9 @@ func _set_wizard_state(s: AnimState) -> void:
 func _set_lion_state(s: AnimState) -> void:
 	_lion_state = s
 	_lion_anim_timer = 0.0
-	if s == AnimState.JUMP and not _lion_jump_frames.is_empty():
+	if s == AnimState.WALK and not _lion_walk_frames.is_empty():
+		_lion_rect.texture = _lion_walk_frames[0]
+	elif s == AnimState.JUMP and not _lion_jump_frames.is_empty():
 		_lion_rect.texture = _lion_jump_frames[0]
 	else:
 		var s_name := _state_to_name(s)

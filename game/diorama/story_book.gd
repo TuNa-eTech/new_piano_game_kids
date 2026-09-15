@@ -8,11 +8,15 @@ extends Control
 ## - Trang Phải: Sân khấu Cây Đậu Thần Âm Nhạc và Rương Kho Báu.
 ## - Điều hướng lật trang chuyển bài (Prev / Next) và tự động lật khi hoàn thành.
 
+const PageCurl = preload("res://game/diorama/page_curl.gd")
 const WizardLeo = preload("res://game/diorama/wizard_leo.gd")
 const PetCompanion = preload("res://game/diorama/pet_companion.gd")
 const MusicalBeanstalk = preload("res://game/diorama/musical_beanstalk.gd")
 
 signal page_turn_requested(new_page: int)
+signal page_covered
+signal page_half_flipped
+signal flip_completed
 signal chest_opened
 
 var _current_page: int = 0
@@ -37,8 +41,10 @@ var _btn_prev: TextureButton
 var _btn_next: TextureButton
 
 # Hiệu ứng lật trang
-var _flip_layer: ColorRect
+var _page_curl: PageCurl
+var _dip_tween: Tween
 var _is_flipping: bool = false
+var _freeplay: bool = false
 
 
 func _ready() -> void:
@@ -46,16 +52,15 @@ func _ready() -> void:
 	_setup_book_frame()
 	_setup_left_page()
 	_setup_right_page()
+	_setup_page_curl()
 	_setup_navigation_buttons()
 	resized.connect(_update_layout)
 	_update_layout()
 
-	# Khởi động với trang hiện tại của GameState
-	if GameState != null:
-		GameState.page_changed.connect(load_page)
-		load_page(GameState.page_index)
-	else:
-		load_page(0)
+	# Khởi động với trang hiện tại của GameState. KHÔNG nối thẳng page_changed
+	# vào load_page: DioramaStage là nơi duy nhất quyết định lúc nào thay nội
+	# dung, vì nó phải đợi nếp giấy che kín trang mới được đổi.
+	load_page(GameState.page_index if GameState != null else 0)
 
 
 func _setup_book_frame() -> void:
@@ -95,9 +100,11 @@ func _setup_left_page() -> void:
 
 	_title_label = Label.new()
 	_title_label.name = "TitleLabel"
-	_title_label.text = "Trang 1/10: Cá Mập Con 🦈"
+	_title_label.text = "Page 1/10: Baby Shark 🦈"
 	_title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_title_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_title_label.clip_text = true
+	_title_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	# Fix UI 7 nhóm: chữ 14px chìm trên điện thoại — nâng lên 18px cho phụ huynh đọc.
 	_title_label.add_theme_font_size_override("font_size", 18)
 	_title_label.add_theme_color_override("font_color", Color("#FFF7E6"))
@@ -163,6 +170,18 @@ func _setup_right_page() -> void:
 	_pet_companion = PetCompanion.new()
 	_pet_companion.name = "PetCompanion"
 	_right_page.add_child(_pet_companion)
+
+
+## Tờ giấy cuộn nằm ngay trong quyển sách, phủ đúng một nửa trang. Trước đây nó
+## là con của BookSpread — node bị ẩn từ _setup_story_book() — nên hoạt ảnh vẫn
+## chạy, âm thanh vẫn kêu, mà không một khung hình nào được vẽ ra.
+func _setup_page_curl() -> void:
+	_page_curl = PageCurl.new()
+	_page_curl.name = "PageCurl"
+	_page_curl.sheet_covered.connect(func(): page_covered.emit())
+	_page_curl.page_half_flipped.connect(func(): page_half_flipped.emit())
+	_page_curl.flip_completed.connect(_on_curl_finished)
+	add_child(_page_curl)
 
 
 func _setup_navigation_buttons() -> void:
@@ -272,10 +291,8 @@ func set_freeplay_mode(enabled: bool) -> void:
 		_title_banner.visible = not enabled
 	if _speech_bubble != null:
 		_speech_bubble.visible = not enabled
-	if _btn_prev != null:
-		_btn_prev.visible = not enabled
-	if _btn_next != null:
-		_btn_next.visible = not enabled
+	_freeplay = enabled
+	_update_nav_buttons()
 
 
 ## Nạp dữ liệu trang bài hát
@@ -286,10 +303,11 @@ func load_page(page_idx: int) -> void:
 	_current_page = clampi(page_idx, 0, total_songs - 1)
 	_song_data = Songbook.get_song(_current_page)
 
-	# Cập nhật banner tiêu đề
-	var title: String = _song_data.get("vietnamese_title", _song_data.get("title", ""))
+	# Cập nhật banner tiêu đề (luôn hiển thị tên bài tiếng Anh trên màn hình)
+	var en_title: String = _song_data.get("title", "")
+	var vi_title: String = _song_data.get("vietnamese_title", en_title)
 	var emoji: String = _song_data.get("pet_emoji", "✨")
-	_title_label.text = "Trang %d/%d: %s %s" % [_current_page + 1, total_songs, title, emoji]
+	_title_label.text = "Page %d/%d: %s %s" % [_current_page + 1, total_songs, en_title, emoji]
 
 	# Cập nhật lời bài hát mở đầu
 	var phrases: Array = _song_data.get("phrases", [])
@@ -299,10 +317,9 @@ func load_page(page_idx: int) -> void:
 		if not lyrics.is_empty():
 			set_speech_text("♫ %s ♫" % lyrics)
 		else:
-			set_speech_text("♪ %s ♪" % title)
+			set_speech_text("♪ %s ♪" % vi_title)
 	else:
-		var en_title: String = _song_data.get("title", "")
-		set_speech_text("♪ %s · %s ♪" % [title, en_title])
+		set_speech_text("♪ %s · %s ♪" % [vi_title, en_title])
 
 	# Cập nhật BPM và trạng thái cho Cậu bé Leo
 	var bpm: float = _song_data.get("bpm", 80.0)
@@ -319,9 +336,20 @@ func load_page(page_idx: int) -> void:
 	if _beanstalk != null:
 		_beanstalk.reset_page()
 
-	# Cập nhật hiển thị nút lật trang
-	_btn_prev.visible = (_current_page > 0)
-	_btn_next.visible = (_current_page < total_songs - 1)
+	_update_nav_buttons()
+
+
+## Một chỗ duy nhất quyết định hai nút lật có hiện hay không: Chơi Tự Do thì giấu
+## hẳn, hết biên trang thì giấu nút tương ứng, đang lật dở thì khoá để bé bấm dồn
+## không xếp hàng được hai ba lượt lật chồng lên nhau.
+func _update_nav_buttons() -> void:
+	if _btn_prev == null or _btn_next == null:
+		return
+	var total: int = Songbook.count()
+	_btn_prev.visible = not _freeplay and _current_page > 0
+	_btn_next.visible = not _freeplay and _current_page < total - 1
+	_btn_prev.disabled = _is_flipping
+	_btn_next.disabled = _is_flipping
 
 
 ## Đặt nội dung khung thoại (lời bài hát / gợi ý)
@@ -373,41 +401,92 @@ func set_leo_expression(expr: int, duration: float = 1.2) -> void:
 		_wizard_leo.set_expression(expr, duration)
 
 
-## Lật sang trang tiếp theo
+func current_page() -> int:
+	return _current_page
+
+
+## Dành cho công cụ chụp hình và test soi tiến độ hoạt ảnh.
+func get_page_curl() -> PageCurl:
+	return _page_curl
+
+
+func is_flipping() -> bool:
+	return _is_flipping
+
+
+## Lật sang trang tiếp theo — chỉ NÊU YÊU CẦU.
+## Quyển sách không tự đổi trang: DioramaStage cầm trịch thứ tự "cuộn giấy trước,
+## đổi dữ liệu sau", còn GameState mới là nơi giữ số trang thật.
 func next_page() -> void:
 	if _is_flipping or _current_page >= Songbook.count() - 1:
 		return
-	_flip_to_page(_current_page + 1)
+	page_turn_requested.emit(_current_page + 1)
 
 
 ## Lật về trang trước
 func prev_page() -> void:
 	if _is_flipping or _current_page <= 0:
 		return
-	_flip_to_page(_current_page - 1)
+	page_turn_requested.emit(_current_page - 1)
 
 
-func _flip_to_page(target_page: int) -> void:
+## Chạy hoạt ảnh cuộn giấy trên đúng nửa trang sẽ bị lật.
+## forward = true lật tới (cuộn trang phải), false lật lui (cuộn trang trái).
+func play_flip(forward: bool, duration: float = 0.95) -> void:
+	if _page_curl == null:
+		return
 	_is_flipping = true
-	AudioDirector.play_sfx("soft_boing")
+	_update_nav_buttons()
+	_place_curl(forward)
+	_dip_opposite_page(forward, duration)
+	_page_curl.flip_page(duration, forward)
 
-	# Hiệu ứng thu phóng lật trang mượt mà
-	var tw := create_tween().bind_node(self)
-	tw.tween_property(_left_page, "modulate:a", 0.0, 0.18)
-	tw.parallel().tween_property(_right_page, "modulate:a", 0.0, 0.18)
-	tw.finished.connect(func():
-		load_page(target_page)
-		if GameState != null:
-			GameState.set_page(target_page)
-		page_turn_requested.emit(target_page)
 
-		var tw_in := create_tween().bind_node(self)
-		tw_in.tween_property(_left_page, "modulate:a", 1.0, 0.22)
-		tw_in.parallel().tween_property(_right_page, "modulate:a", 1.0, 0.22)
-		tw_in.finished.connect(func():
-			_is_flipping = false
-		)
-	)
+## Đặt tờ giấy cuộn trùng khít nửa trang đang lật. Lấy thẳng hình chữ nhật của
+## node trang, không chép lại con số bố cục — bố cục đổi thì nếp cuộn đổi theo.
+func _place_curl(forward: bool) -> void:
+	var page: Control = _right_page if forward else _left_page
+	if page == null or _page_curl == null:
+		return
+	_page_curl.position = page.position
+	_page_curl.size = page.size
+
+
+## Nếp giấy chỉ che được nửa trang đang lật, nhưng đổi bài thì NỬA KIA cũng đổi
+## theo (tên bài, lời hát, Leo, thú cưng). Kéo nửa kia chìm vào bóng tối đúng lúc
+## nội dung bị tráo rồi thả sáng lại, để không có cú nháy "chữ đổi trước, giấy
+## cuộn sau".
+##
+## Tối màu chứ KHÔNG hạ alpha: hạ alpha thì trang thủng ra, thấy cả hình in trên
+## bìa sách nằm dưới — nhìn như trang giấy biến mất. Tối màu đọc ra đúng thứ mà
+## mắt chờ đợi: bóng của tờ giấy đang dựng lên hắt sang nửa trang bên kia.
+const DIP_SHADOW := Color(0.34, 0.30, 0.27, 1.0)
+
+
+func _dip_opposite_page(forward: bool, duration: float) -> void:
+	var page: Control = _left_page if forward else _right_page
+	if page == null:
+		return
+	if _dip_tween != null and _dip_tween.is_valid():
+		_dip_tween.kill()
+	page.modulate = Color.WHITE
+	# Chạm đáy đúng lúc PageCurl báo sheet_covered (~21% thời lượng, đã tính cả
+	# đường cong gia tốc), rồi mới thả sáng lại.
+	_dip_tween = create_tween().bind_node(self)
+	_dip_tween.tween_property(page, "modulate", DIP_SHADOW, duration * 0.21) \
+		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+	_dip_tween.tween_property(page, "modulate", Color.WHITE, duration * 0.36) \
+		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT).set_delay(duration * 0.06)
+
+
+func _on_curl_finished() -> void:
+	_is_flipping = false
+	if _left_page != null:
+		_left_page.modulate = Color.WHITE
+	if _right_page != null:
+		_right_page.modulate = Color.WHITE
+	_update_nav_buttons()
+	flip_completed.emit()
 
 
 ## Lấy toạ độ lá nốt nhạc trên trang phải để hướng dải lụa ma thuật

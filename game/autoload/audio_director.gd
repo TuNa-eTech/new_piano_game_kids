@@ -36,7 +36,10 @@ static var SFX_NAMES: Array[String] = [
 
 ## Pad hoà âm nền — docs/gameplay-design.html · Quyết định 02:
 ## "biến mọi nốt bé bấm thành một phần của bản nhạc, và lấp khoảng lặng khi bé nghĩ".
-const PAD_STREAM := "res://assets/placeholder/music/pad_c_am_f_g.wav"
+## Đã gỡ `PAD_STREAM` trỏ vào assets/placeholder/music/pad_c_am_f_g.wav: cả
+## bgm_main_menu_theme.ogg lẫn bgm_forest_loop.ogg đều có trên đĩa, nên nhánh
+## lùi về pad tổng hợp kia là code chết — 689 KB đi theo gói phát hành mà không
+## bao giờ phát ra tiếng.
 
 ## Số ID gần nhất giữ lại để overlay đếm được số nốt đang kêu.
 ## Mảng cấp phát sẵn — đường nóng không được cấp phát gì.
@@ -51,7 +54,7 @@ var backend: Backend = Backend.POLYPHONIC:
 
 var _streams: Array[AudioStream] = []
 ## Cao độ cố định của từng phím. Với giọng thú Bước 3 (tất cả thu ở G4) đây là
-## hệ số dịch; với placeholder Tuần 1 (mỗi file đã đúng cao độ) đây là 1,0.
+## hệ số dịch từ G4 về nốt của phím.
 ## Quyết MỘT LẦN lúc khởi động rồi tra bảng — đường nóng không được có nhánh if.
 var _pitches: PackedFloat32Array = PackedFloat32Array()
 ## Nốt đàn nền phát chồng dưới giọng thú cho dày tiếng. Chưa có thì bỏ qua.
@@ -84,6 +87,14 @@ var _cached_latency_ms: float = 0.0
 var _pad_player: AudioStreamPlayer
 var _music_tween: Tween
 var _current_music_path: String = ""
+## Mức đích của nhạc nền + độ lặng adaptive hiện tại (Phase adaptive 2026-09).
+## play_music_track() ghi _music_target_db; duck/unduck chỉ cộng _duck_db vào,
+## nên đổi bài không làm mất trạng thái lặng.
+var _music_target_db: float = 0.0
+var _duck_db: float = 0.0
+var _duck_tween: Tween
+## Player riêng cho vocal guide la-la (one-shot, bus SFX cho rõ trên nhạc đã lặng).
+var _voiceguide_player: AudioStreamPlayer
 
 ## tên SFX -> stream đã nạp. Nạp MỘT LẦN lúc khởi động; đường nóng chỉ tra bảng.
 var _sfx: Dictionary = {}
@@ -105,6 +116,7 @@ func _ready() -> void:
 	_setup_pool()
 	_setup_pad()
 	_setup_sfx()
+	_setup_voiceguide()
 
 	refresh_latency()
 	call_deferred("_connect_game_state")
@@ -134,31 +146,30 @@ func set_chapter_instrument(chapter_idx: int) -> void:
 		_active_inst_streams = _chapter_instruments[ch]
 
 
-## Bước 3 thả bảy file voice_<con vật>_g4.wav vào assets/audio/ là tự chuyển
-## sang giọng thật. Chưa đủ bảy file thì dùng placeholder Tuần 1 — KHÔNG trộn
-## nửa nọ nửa kia, vì bảy phím nửa giọng thật nửa sóng tổng hợp còn khó nghe hơn
-## là bảy phím placeholder đồng đều.
+## Bảy giọng thú thật là nguồn DUY NHẤT cho 7 phím đàn. Bảng nốt không còn
+## trường "sample" trỏ vào assets/placeholder/notes/ nữa: bảy file tổng hợp đó
+## (mỗi file 103,4 KB ≈ 724 KB) chưa bao giờ phát ra tiếng vì đủ 7/7 giọng thật
+## luôn có mặt, nhưng vẫn bị kéo vào gói phát hành.
+##
+## Thiếu giọng thật giờ là lỗi cấu hình nghiêm trọng, không phải trạng thái chạy
+## được: im lặng ở đây sẽ khiến 7 phím đàn câm mà không ai biết.
 func _preload_samples() -> void:
 	_streams.resize(Notes.count())
 	_pitches.resize(Notes.count())
 
-	var voice_paths: Array[String] = []
+	var missing: Array[String] = []
 	for i in Notes.count():
-		voice_paths.append("%svoice_%s_g4.wav" % [SFX_DIR, Notes.voice_of(i)])
-
-	var have_voices := true
-	for path in voice_paths:
-		if not ResourceLoader.exists(path):
-			have_voices = false
-			break
-
-	for i in Notes.count():
-		var path: String = voice_paths[i] if have_voices else Notes.TABLE[i]["sample"]
-		var stream: AudioStream = load(path)
+		var path := "%svoice_%s_g4.wav" % [SFX_DIR, Notes.voice_of(i)]
+		var stream: AudioStream = load(path) if ResourceLoader.exists(path) else null
 		if stream == null:
-			push_error("AudioDirector: không nạp được sample %s" % path)
+			missing.append(path)
+			push_error("AudioDirector: thiếu giọng thú %s — phím %d sẽ câm" % [path, i])
 		_streams[i] = stream
-		_pitches[i] = Notes.pitch_of(i) if have_voices else 1.0
+		_pitches[i] = Notes.pitch_of(i)
+
+	if not missing.is_empty():
+		push_error("AudioDirector: thiếu %d/%d giọng thú. Chạy tools/gen_*_voices.py rồi thử lại."
+			% [missing.size(), Notes.count()])
 
 	var base_path := "%snote_base_g4.wav" % SFX_DIR
 	if ResourceLoader.exists(base_path):
@@ -205,7 +216,7 @@ func _setup_pad() -> void:
 	var menu_path := "%sbgm_main_menu_theme.ogg" % SFX_DIR
 	var forest_path := "%sbgm_forest_loop.ogg" % SFX_DIR
 	var is_menu := GameState.show_main_menu_on_launch and ResourceLoader.exists(menu_path)
-	var initial_path := menu_path if is_menu else (forest_path if ResourceLoader.exists(forest_path) else PAD_STREAM)
+	var initial_path := menu_path if is_menu else forest_path
 	var stream: AudioStream = load(initial_path)
 	if stream == null:
 		push_error("AudioDirector: không nạp được pad %s" % initial_path)
@@ -249,6 +260,8 @@ func play_music_track(path: String, fade_sec: float = 0.6, target_db: float = 0.
 		return
 
 	_current_music_path = path
+	_music_target_db = target_db
+	var effective_db := target_db + _duck_db
 	var new_stream: AudioStream = load(path)
 	if new_stream == null:
 		return
@@ -263,11 +276,72 @@ func play_music_track(path: String, fade_sec: float = 0.6, target_db: float = 0.
 			_pad_player.stream = new_stream
 			_pad_player.play()
 		)
-		_music_tween.tween_property(_pad_player, "volume_db", target_db, fade_sec * 0.5)
+		_music_tween.tween_property(_pad_player, "volume_db", effective_db, fade_sec * 0.5)
 	else:
-		_pad_player.volume_db = target_db
+		_pad_player.volume_db = effective_db
 		_pad_player.stream = new_stream
 		_pad_player.play()
+
+
+## Lặng nhạc nền xuống khi cây hát mẫu để bé nghe rõ nốt gọi (adaptive).
+## Không đụng _music_tween của đổi bài — tween riêng, cộng dồn vào đích.
+func duck_music(offset_db: float = -6.0, sec: float = 0.4) -> void:
+	if _pad_player == null:
+		return
+	_duck_db = offset_db
+	if _duck_tween != null and _duck_tween.is_valid():
+		_duck_tween.kill()
+	_duck_tween = create_tween()
+	_duck_tween.tween_property(_pad_player, "volume_db", _music_target_db + _duck_db, sec)
+
+
+## Nhạc nổi lại khi tới lượt bé đàn / ăn mừng.
+func unduck_music(sec: float = 0.4) -> void:
+	if _pad_player == null:
+		return
+	_duck_db = 0.0
+	if _duck_tween != null and _duck_tween.is_valid():
+		_duck_tween.kill()
+	_duck_tween = create_tween()
+	_duck_tween.tween_property(_pad_player, "volume_db", _music_target_db, sec)
+
+
+## Chơi Tự Do: nhạc thưa nhẹ để bé làm chủ sân khấu.
+func set_music_intensity(low: bool) -> void:
+	if low:
+		duck_music(-4.0, 0.6)
+	else:
+		unduck_music(0.6)
+
+
+## Player one-shot cho vocal guide — độc lập khỏi crossfade của nhạc nền.
+func _setup_voiceguide() -> void:
+	var bus := BUS_SFX if AudioServer.get_bus_index(BUS_SFX) != -1 else &"Master"
+	_voiceguide_player = AudioStreamPlayer.new()
+	_voiceguide_player.name = "VoiceguidePlayer"
+	_voiceguide_player.bus = bus
+	add_child(_voiceguide_player)
+
+
+## Phát vocal guide la-la theo câu hát đầu. Thiếu file thì im lặng bỏ qua
+## (game vẫn nhắc bằng nốt pitched như cũ).
+func play_voiceguide(vg_path: String, volume_db: float = 0.0) -> void:
+	if vg_path.is_empty() or _voiceguide_player == null:
+		return
+	if not ResourceLoader.exists(vg_path):
+		return
+	var stream: AudioStream = load(vg_path)
+	if stream == null:
+		return
+	_voiceguide_player.stop()
+	_voiceguide_player.stream = stream
+	_voiceguide_player.volume_db = volume_db
+	_voiceguide_player.play()
+
+
+func stop_voiceguide() -> void:
+	if _voiceguide_player != null and _voiceguide_player.playing:
+		_voiceguide_player.stop()
 
 
 ## SFX đi qua một AudioStreamPolyphonic riêng trên bus SFX, tách hẳn khỏi bus
@@ -522,8 +596,8 @@ func has_sfx(sfx_name: String) -> bool:
 
 
 ## Tiếng "ting" khi một hạt sao rơi vào lọ (Quyết định 04).
-## Có sfx_star_ting.wav thì dùng nó; chưa có thì lùi về placeholder của Tuần 1 —
-## chính nốt cao nhất kéo lên một quãng tám.
+## Có sfx_star_ting.wav thì dùng nó; chưa có thì lấy nốt cao nhất của bảng nốt
+## kéo lên một quãng tám.
 func play_ting() -> void:
 	if _sfx.has("star_ting"):
 		play_sfx("star_ting")
@@ -600,6 +674,10 @@ func _exit_tree() -> void:
 	if _pad_player != null:
 		_pad_player.stop()
 		_pad_player.stream = null
+
+	if _voiceguide_player != null:
+		_voiceguide_player.stop()
+		_voiceguide_player.stream = null
 
 	if _poly_player != null:
 		_poly_player.stop()

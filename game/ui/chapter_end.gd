@@ -284,7 +284,7 @@ func _build() -> void:
 		_arrow_next_tex = load("res://assets/art/ui_arrow_next.png")
 
 	_hint = Label.new()
-	_hint.text = "Muốn giữ lại buổi diễn? Bật quay màn hình của máy — buổi diễn sẽ tự chạy lại."
+	_hint.text = "Want to save this show? Turn on screen recording — the show will replay automatically."
 	_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_hint.modulate = Color(1, 1, 1, 0.75)
 	_hint.add_theme_font_size_override("font_size", 16)

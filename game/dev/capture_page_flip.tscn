@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://b1ni6uwl6nevm"]
+
+[ext_resource type="Script" path="res://game/dev/capture_page_flip.gd" id="1_capture"]
+
+[node name="CapturePageFlip" type="Node"]
+script = ExtResource("1_capture")

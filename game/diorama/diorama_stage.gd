@@ -42,8 +42,11 @@ var _wiz_normal_tex: Texture2D
 var _wiz_party_tex: Texture2D
 
 var _story_book: StoryBook
-var _page_curl: PageCurl
 var _fireflies: CPUParticles2D
+
+## Trang đã đổi trong GameState nhưng chưa được vẽ ra, vì nếp giấy còn đang cuộn.
+## -1 nghĩa là không có gì đang chờ.
+var _pending_page: int = -1
 
 # Thành phần Màn 03 Sân Khấu Chơi Tự Do (docs/mock-free-play.jpeg)
 var _beanstalk_freeplay: TextureRect
@@ -63,7 +66,6 @@ func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_PASS
 	_setup_textures()
 	_setup_story_book()
-	_setup_page_curl()
 	_setup_fireflies()
 	_setup_freeplay_elements()
 	_setup_interactive_particles()
@@ -82,10 +84,9 @@ func _ready() -> void:
 func _setup_story_book() -> void:
 	_story_book = StoryBook.new()
 	_story_book.name = "StoryBook"
-	_story_book.page_turn_requested.connect(func(new_page: int):
-		if GameState != null and GameState.page_index != new_page:
-			GameState.set_page(new_page)
-	)
+	_story_book.page_turn_requested.connect(_on_book_page_turn_requested)
+	_story_book.page_covered.connect(_on_page_covered)
+	_story_book.flip_completed.connect(_on_page_flip_completed)
 	_story_book.chest_opened.connect(func():
 		interact_chest()
 	)
@@ -178,22 +179,18 @@ func _setup_textures() -> void:
 		_wizard.texture = _wiz_normal_tex
 	_wizard.visible = false # Đã có sẵn chú phù thủy vẽ tuyệt đẹp trong storybook_beanstalk_diorama_25d
 
-	if ResourceLoader.exists("res://assets/art/crystal_cyan_mock_clean.png"):
-		_crystal_cyan.texture = load("res://assets/art/crystal_cyan_mock_clean.png")
-	elif ResourceLoader.exists("res://assets/art/crystal_cyan_stump.png"):
-		_crystal_cyan.texture = load("res://assets/art/crystal_cyan_stump.png")
+	if ResourceLoader.exists("res://assets/art/spr_prop_crystal_cyan.png"):
+		_crystal_cyan.texture = load("res://assets/art/spr_prop_crystal_cyan.png")
 	_crystal_cyan.visible = true
 
-	if ResourceLoader.exists("res://assets/art/crystal_magenta_mock_clean.png"):
-		_crystal_magenta.texture = load("res://assets/art/crystal_magenta_mock_clean.png")
-	elif ResourceLoader.exists("res://assets/art/crystal_magenta_stump.png"):
-		_crystal_magenta.texture = load("res://assets/art/crystal_magenta_stump.png")
+	if ResourceLoader.exists("res://assets/art/spr_prop_crystal_purple.png"):
+		_crystal_magenta.texture = load("res://assets/art/spr_prop_crystal_purple.png")
 	_crystal_magenta.visible = true
 
-	if ResourceLoader.exists("res://assets/art/chest_ground_mock.png"):
-		_chest_ground.texture = load("res://assets/art/chest_ground_mock.png")
-	elif ResourceLoader.exists("res://assets/art/chest_ground.png"):
-		_chest_ground.texture = load("res://assets/art/chest_ground.png")
+	if ResourceLoader.exists("res://assets/art/spr_prop_small_closed_chest.png"):
+		_chest_ground.texture = load("res://assets/art/spr_prop_small_closed_chest.png")
+	elif ResourceLoader.exists("res://assets/art/chest_closed.png"):
+		_chest_ground.texture = load("res://assets/art/chest_closed.png")
 
 	if ResourceLoader.exists("res://assets/art/fx_sparkle.png"):
 		_sparkle_tex = load("res://assets/art/fx_sparkle.png")
@@ -234,35 +231,28 @@ func _update_layout() -> void:
 
 	# Cụm thạch anh xanh ngọc ở góc trái tiền cảnh (lùi 24px khỏi gờ đàn
 	# để vuốt gliss không quệt trúng).
-	var cry_w := ref_w * (86.0 / 1024.0)
-	var cry_h := ref_h * (95.0 / 572.0)
+	var cry_w := ref_w * (100.0 / 1024.0)
+	var cry_h := ref_h * (110.0 / 572.0)
 	_crystal_cyan.size = Vector2(cry_w, cry_h)
 	_crystal_cyan.position = Vector2(12.0, 464.0 - cry_h - 16.0)
 	_crystal_cyan.pivot_offset = Vector2(cry_w * 0.5, cry_h * 0.5)
 	_crystal_cyan.visible = true
 
 	# Rương báu cỏ tiền cảnh góc phải (lùi 24px khỏi gờ đàn).
-	var ch_w := ref_w * (90.0 / 1024.0)
-	var ch_h := ref_h * (100.0 / 572.0)
+	var ch_w := ref_w * (135.0 / 1024.0)
+	var ch_h := ref_h * (104.0 / 572.0)
 	_chest_ground.size = Vector2(ch_w, ch_h)
 	_chest_ground.position = Vector2(ref_w - ch_w - 20.0, 464.0 - ch_h - 16.0)
 	_chest_ground.pivot_offset = Vector2(ch_w * 0.5, ch_h * 0.5)
 	_chest_ground.visible = true
 
 	# Cụm thạch anh hồng tím cạnh rương báu
-	var mag_w := ref_w * (52.0 / 1024.0)
-	var mag_h := ref_h * (80.0 / 572.0)
+	var mag_w := ref_w * (100.0 / 1024.0)
+	var mag_h := ref_h * (110.0 / 572.0)
 	_crystal_magenta.size = Vector2(mag_w, mag_h)
 	_crystal_magenta.position = Vector2(ref_w - ch_w - mag_w - 28.0, 464.0 - mag_h - 16.0)
 	_crystal_magenta.pivot_offset = Vector2(mag_w * 0.5, mag_h * 0.5)
 	_crystal_magenta.visible = true
-
-	# Trang sách phải uốn cong (PageCurl)
-	if _page_curl != null:
-		var page_w := book_w * 0.46
-		var page_h := book_h * 0.88
-		_page_curl.size = Vector2(page_w, page_h)
-		_page_curl.position = Vector2(book_w * 0.50, book_h * 0.06)
 
 	# Cây đậu thần âm nhạc Màn 03 trang phải
 	if _beanstalk_freeplay != null:
@@ -518,12 +508,6 @@ func interact_book(pos: Vector2) -> void:
 		prop_interacted.emit("book")
 
 
-func _setup_page_curl() -> void:
-	_page_curl = PageCurl.new()
-	_page_curl.name = "PageCurl"
-	_book_spread.add_child(_page_curl)
-
-
 ## CPUParticles2D tạo đàn đom đóm và bụi sao thần tiên bay lơ lửng quanh sách
 func _setup_fireflies() -> void:
 	_fireflies = CPUParticles2D.new()
@@ -558,9 +542,45 @@ func _setup_fireflies() -> void:
 ## Gọi từ CallResponse khi kết thúc giai điệu để lật sang trang mới
 func flip_page(duration: float = 0.95) -> void:
 	if _story_book != null:
-		_story_book.next_page()
-	if _page_curl != null:
-		_page_curl.flip_page(duration)
+		request_page_turn(_story_book.current_page() + 1, duration)
+
+
+## Lật lui một trang — nút mũi tên trái và công cụ chụp hình dùng đường này.
+func flip_page_back(duration: float = 0.95) -> void:
+	if _story_book != null:
+		request_page_turn(_story_book.current_page() - 1, duration)
+
+
+## Đổi trang KÈM hoạt ảnh cuộn giấy. Một đường duy nhất cho cả nút mũi tên lẫn
+## lần lật tự động cuối bài, nên hai bên không thể lệch nhau về sau.
+##
+## Thứ tự ở đây là thứ tự bắt buộc:
+##   ① cuộn giấy chạy trước — nếu đổi GameState trước thì _on_game_page_changed
+##      thấy is_flipping() == false và thay nội dung ngay khi trang còn phẳng,
+##      bé nhìn thấy trang mới rồi mới thấy giấy cuộn qua.
+##   ② GameState.set_page() sau — vòng chơi dựng lại bài hát ngay lúc bé bấm,
+##      còn phần LỘ RA thì hoãn tới lúc nếp giấy che kín (page_half_flipped).
+##
+## Trang cuối cố tình KHÔNG đi qua đây: để CallResponse hết 1,2 giây PAGE_TURN
+## rồi gọi advance_page() — đó là đường duy nhất phát chapter_completed.
+func request_page_turn(target_page: int, duration: float = 0.95) -> void:
+	if _story_book == null or _story_book.is_flipping():
+		return
+	var current := _story_book.current_page()
+	if target_page == current or target_page < 0 or target_page >= Songbook.count():
+		return
+
+	_story_book.play_flip(target_page > current, duration)
+	if GameState != null and GameState.page_index != target_page:
+		GameState.set_page(target_page)
+	else:
+		# GameState đã đứng sẵn ở trang đích (chỉ mỗi hình là chưa đổi) nên
+		# page_changed sẽ không kêu — tự xếp hàng để nửa nhịp sau còn lộ ra.
+		_pending_page = target_page
+
+
+func get_page_curl() -> PageCurl:
+	return _story_book.get_page_curl() if _story_book != null else null
 
 
 func load_page(page_idx: int) -> void:
@@ -568,8 +588,29 @@ func load_page(page_idx: int) -> void:
 		_story_book.load_page(page_idx)
 
 
+func _on_book_page_turn_requested(new_page: int) -> void:
+	request_page_turn(new_page)
+
+
 func _on_game_page_changed(page_idx: int) -> void:
+	# Đang cuộn giấy thì hoãn: trang mới chỉ được vẽ khi tờ giấy đã che kín.
+	if _story_book != null and _story_book.is_flipping():
+		_pending_page = page_idx
+		return
 	load_page(page_idx)
+
+
+func _on_page_covered() -> void:
+	if _pending_page < 0:
+		return
+	load_page(_pending_page)
+	_pending_page = -1
+
+
+## Lưới an toàn: hoạt ảnh bị cắt ngang (đổi cảnh, thoát tree) thì trang vẫn phải
+## về đúng chỗ, không kẹt lại ở nội dung cũ.
+func _on_page_flip_completed() -> void:
+	_on_page_covered()
 
 
 func get_leaf_global_position(note_index: int) -> Vector2:

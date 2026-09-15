@@ -7,11 +7,11 @@ func _init() -> void:
 	canvas.fill(Color("#081C14"))
 
 	# 1. Nền Sân Khấu Sách Nổi & Rừng Cổ Tích
-	var mock_src := Image.load_from_file("res://docs/mock-chest-reward.jpeg")
-	if mock_src != null:
-		mock_src.convert(Image.FORMAT_RGBA8)
-		mock_src.resize(1280, 720, Image.INTERPOLATE_LANCZOS)
-		canvas.blit_rect(mock_src, Rect2i(0, 0, 1280, 720), Vector2i.ZERO)
+	var bg_src := Image.load_from_file("res://assets/art/tex_bg_chest_forest_diorama.png")
+	if bg_src != null:
+		bg_src.convert(Image.FORMAT_RGBA8)
+		bg_src.resize(1280, 720, Image.INTERPOLATE_LANCZOS)
+		canvas.blit_rect(bg_src, Rect2i(0, 0, 1280, 720), Vector2i.ZERO)
 
 	# 2. Rương Báu Thần Bung Nắp (spr_chest_open_gold.png)
 	# Tọa độ tương đối trên canvas 1280x720: X ~ 490, Y ~ 335, kích thước ~ 340x320
@@ -75,9 +75,10 @@ func _init() -> void:
 	print("[OK] Đã lưu preview kết quả vào: ", out_docs)
 
 	var brain_dir := "/Users/anhtu/.gemini/antigravity/brain/1171fe0b-ebf8-489d-bfa3-fb9dbef92b31/"
-	var out_brain := brain_dir + "chest_reward_rendered.png"
-	canvas.save_png(out_brain)
-	print("[OK] Đã lưu bản sao vào brain artifact: ", out_brain)
+	if DirAccess.dir_exists_absolute(brain_dir):
+		var out_brain := brain_dir + "chest_reward_rendered.png"
+		canvas.save_png(out_brain)
+		print("[OK] Đã lưu bản sao vào brain artifact: ", out_brain)
 
 	quit(0)
 
