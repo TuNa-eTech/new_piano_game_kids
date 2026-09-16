@@ -123,9 +123,9 @@ func _build() -> void:
 	_stage.mouse_filter = Control.MOUSE_FILTER_PASS
 	add_child(_stage)
 
-	# 1. Phông nền toàn cảnh Level Select từ mock-level-select.jpeg
-	if ResourceLoader.exists("res://assets/art/bg_level_select_forest_25d.png"):
-		_bg_texture = load("res://assets/art/bg_level_select_forest_25d.png")
+	# 1. Phông nền sạch Level Select (không dính chữ, không dính đạo cụ)
+	if ResourceLoader.exists("res://assets/art/tex_bg_level_select_clean.png"):
+		_bg_texture = load("res://assets/art/tex_bg_level_select_clean.png")
 
 	var bg_rect := TextureRect.new()
 	bg_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -144,72 +144,104 @@ func _build() -> void:
 
 	var empty_style := StyleBoxEmpty.new()
 
-	# --- 3. NÚT QUAY LẠI (GÓC TRÊN TRÁI) ---
-	# Tọa độ tương đối theo mock: X ~ 1.8% - 17.8%, Y ~ 3.6% - 14.2%
+	# --- 3. NÚT QUAY LẠI GỖ 2.5D ZERO-TEXT (GÓC TRÊN TRÁI) ---
 	_back_btn = Button.new()
 	_back_btn.name = "BtnBack"
-	_back_btn.anchor_left = 0.018
-	_back_btn.anchor_top = 0.036
-	_back_btn.anchor_right = 0.178
-	_back_btn.anchor_bottom = 0.142
-	_back_btn.focus_mode = Control.FOCUS_NONE
-	_back_btn.mouse_filter = Control.MOUSE_FILTER_STOP
 	_back_btn.flat = true
-	_back_btn.add_theme_stylebox_override("normal", empty_style)
-	_back_btn.add_theme_stylebox_override("hover", empty_style)
-	_back_btn.add_theme_stylebox_override("pressed", empty_style)
-	_back_btn.item_rect_changed.connect(func(): _back_btn.pivot_offset = _back_btn.size * 0.5)
+	_back_btn.focus_mode = Control.FOCUS_NONE
+	_back_btn.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	_back_btn.anchor_left = 0.022
+	_back_btn.anchor_top = 0.035
+	_back_btn.anchor_right = 0.098
+	_back_btn.anchor_bottom = 0.170
+	_back_btn.offset_left = 0.0
+	_back_btn.offset_top = 0.0
+	_back_btn.offset_right = 0.0
+	_back_btn.offset_bottom = 0.0
+	_back_btn.pivot_offset = Vector2(49.0, 49.0)
+	_back_btn.resized.connect(func(): _back_btn.pivot_offset = _back_btn.size * 0.5)
+
+	for state in ["normal", "hover", "focus", "pressed", "disabled"]:
+		_back_btn.add_theme_stylebox_override(state, empty_style)
+
+	var back_icon := TextureRect.new()
+	back_icon.name = "BackIcon"
+	back_icon.set_anchors_preset(Control.PRESET_FULL_RECT)
+	back_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	back_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	back_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	if ResourceLoader.exists("res://assets/art/ui_btn_wood_back.png"):
+		back_icon.texture = load("res://assets/art/ui_btn_wood_back.png")
+	_back_btn.add_child(back_icon)
+
+	_back_btn.button_down.connect(func():
+		var tw := create_tween()
+		tw.tween_property(_back_btn, "scale", Vector2(0.88, 0.88), 0.06)
+	)
+	_back_btn.button_up.connect(func():
+		var tw := create_tween()
+		tw.tween_property(_back_btn, "scale", Vector2(1.06, 1.06), 0.08)
+		tw.tween_property(_back_btn, "scale", Vector2.ONE, 0.06)
+	)
 	_back_btn.pressed.connect(_on_back_pressed)
 	_stage.add_child(_back_btn)
 
 	# --- 4. HŨ SAO THỦY TINH (GÓC TRÊN PHẢI) ---
-	# Tọa độ tương đối theo mock: X ~ 90.5% - 98.0%, Y ~ 1.8% - 18.0%
 	_star_jar_btn = Button.new()
 	_star_jar_btn.name = "BtnStarJar"
-	_star_jar_btn.anchor_left = 0.905
-	_star_jar_btn.anchor_top = 0.018
-	_star_jar_btn.anchor_right = 0.980
-	_star_jar_btn.anchor_bottom = 0.180
-	_star_jar_btn.focus_mode = Control.FOCUS_NONE
-	_star_jar_btn.mouse_filter = Control.MOUSE_FILTER_STOP
 	_star_jar_btn.flat = true
-	_star_jar_btn.add_theme_stylebox_override("normal", empty_style)
-	_star_jar_btn.add_theme_stylebox_override("hover", empty_style)
-	_star_jar_btn.add_theme_stylebox_override("pressed", empty_style)
-	_star_jar_btn.item_rect_changed.connect(func(): _star_jar_btn.pivot_offset = _star_jar_btn.size * 0.5)
+	_star_jar_btn.focus_mode = Control.FOCUS_NONE
+	_star_jar_btn.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	_star_jar_btn.anchor_left = 0.905
+	_star_jar_btn.anchor_top = 0.020
+	_star_jar_btn.anchor_right = 0.980
+	_star_jar_btn.anchor_bottom = 0.170
+	_star_jar_btn.offset_left = 0.0
+	_star_jar_btn.offset_top = 0.0
+	_star_jar_btn.offset_right = 0.0
+	_star_jar_btn.offset_bottom = 0.0
+	_star_jar_btn.pivot_offset = Vector2(48.0, 54.0)
+	_star_jar_btn.resized.connect(func(): _star_jar_btn.pivot_offset = _star_jar_btn.size * 0.5)
+
+	for state in ["normal", "hover", "focus", "pressed", "disabled"]:
+		_star_jar_btn.add_theme_stylebox_override(state, empty_style)
+
+	var jar_icon := TextureRect.new()
+	jar_icon.name = "StarJarIcon"
+	jar_icon.set_anchors_preset(Control.PRESET_FULL_RECT)
+	jar_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	jar_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	jar_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	if ResourceLoader.exists("res://assets/art/ui_star_jar.png"):
+		jar_icon.texture = load("res://assets/art/ui_star_jar.png")
+	_star_jar_btn.add_child(jar_icon)
+
 	_star_jar_btn.pressed.connect(_on_star_jar_pressed)
 	_stage.add_child(_star_jar_btn)
 
-	# --- 5. TIÊU ĐỀ CHƯƠNG TRÊN BẢNG GỖ (TRUNG TÂM PHÍA TRÊN) ---
-	# Tọa độ tương đối: X ~ 30.0% - 70.0%, Y ~ 3.6% - 20.0%
+	# --- 5. TIÊU ĐỀ CHƯƠNG TRÊN BẢNG RUY BĂNG GỖ (TRUNG TÂM PHÍA TRÊN) ---
 	_title_label = Label.new()
 	_title_label.name = "ChapterTitleLabel"
-	_title_label.anchor_left = 0.30
-	_title_label.anchor_top = 0.036
-	_title_label.anchor_right = 0.70
-	_title_label.anchor_bottom = 0.20
+	_title_label.anchor_left = 0.28
+	_title_label.anchor_top = 0.038
+	_title_label.anchor_right = 0.72
+	_title_label.anchor_bottom = 0.175
 	_title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_title_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_title_label.add_theme_font_size_override("font_size", 22)
+	_title_label.add_theme_font_size_override("font_size", 26)
 	_title_label.add_theme_color_override("font_color", Color("#FFF5D0"))
-	_title_label.add_theme_color_override("font_shadow_color", Color(0.12, 0.06, 0.02, 0.8))
+	_title_label.add_theme_color_override("font_shadow_color", Color(0.18, 0.08, 0.02, 0.9))
 	_title_label.add_theme_constant_override("shadow_offset_x", 2)
 	_title_label.add_theme_constant_override("shadow_offset_y", 2)
 	_title_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_stage.add_child(_title_label)
 
 	# --- 6. 5 BỤC GỖ ÂM NHẠC (1..5) TRÊN CON ĐƯỜNG ĐÁ ---
-	# Tọa độ tương ứng chính xác vị trí 5 bục gỗ trong mock:
-	# Bục 1: X ~ 14.5% - 26.5%, Y ~ 62% - 84%
-	# Bục 2: X ~ 29.5% - 41.5%, Y ~ 56% - 78%
-	# Bục 3: X ~ 44.0% - 56.0%, Y ~ 56% - 78%
-	# Bục 4: X ~ 58.0% - 72.0%, Y ~ 46% - 84% (Có bạn Thỏ & Hào quang vàng)
-	# Bục 5: X ~ 74.5% - 86.5%, Y ~ 58% - 84% (Có Rương Báu Thần)
 	var pad_rects := [
 		[0.145, 0.62, 0.265, 0.84],
 		[0.295, 0.56, 0.415, 0.78],
 		[0.440, 0.56, 0.560, 0.78],
-		[0.580, 0.46, 0.720, 0.84],
+		[0.580, 0.56, 0.720, 0.84],
 		[0.745, 0.58, 0.865, 0.84]
 	]
 
@@ -230,30 +262,86 @@ func _build() -> void:
 		btn.add_theme_stylebox_override("disabled", empty_style)
 		btn.item_rect_changed.connect(func(): btn.pivot_offset = btn.size * 0.5)
 
+		# 1. Bục gỗ cắt lát 2.5D
+		var pad_img := TextureRect.new()
+		pad_img.name = "PadWoodTexture"
+		pad_img.set_anchors_preset(Control.PRESET_FULL_RECT)
+		pad_img.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		pad_img.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		pad_img.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		if ResourceLoader.exists("res://assets/art/spr_level_pad_wood.png"):
+			pad_img.texture = load("res://assets/art/spr_level_pad_wood.png")
+		btn.add_child(pad_img)
+
+		# 2. Số nổi 3D trên thớt gỗ
+		var num_lbl := Label.new()
+		num_lbl.name = "PadNumberLabel"
+		num_lbl.text = str(i + 1)
+		num_lbl.set_anchors_preset(Control.PRESET_FULL_RECT)
+		num_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		num_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		num_lbl.add_theme_font_size_override("font_size", 28)
+		num_lbl.add_theme_color_override("font_color", Color("#FFFDF7"))
+		num_lbl.add_theme_color_override("font_shadow_color", Color("#4E2A14"))
+		num_lbl.add_theme_constant_override("shadow_offset_x", 2)
+		num_lbl.add_theme_constant_override("shadow_offset_y", 2)
+		num_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		num_lbl.offset_top = -14.0
+		num_lbl.offset_bottom = -14.0
+		btn.add_child(num_lbl)
+
+		# 3. Cụm 3 sao vàng lơ lửng phía trên bục (hiện khi đã hoàn thành)
+		var stars_img := TextureRect.new()
+		stars_img.name = "PadStarsCluster"
+		stars_img.anchor_left = 0.02
+		stars_img.anchor_top = -0.52
+		stars_img.anchor_right = 0.98
+		stars_img.anchor_bottom = 0.05
+		stars_img.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		stars_img.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		stars_img.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		stars_img.visible = false
+		if ResourceLoader.exists("res://assets/art/ui_stars_3_cluster.png"):
+			stars_img.texture = load("res://assets/art/ui_stars_3_cluster.png")
+		btn.add_child(stars_img)
+
+		# 4. Rương báu thần trên bục 5
+		if i == 4:
+			_chest_node = TextureRect.new()
+			_chest_node.name = "TreasureChestPad5"
+			_chest_node.anchor_left = 0.08
+			_chest_node.anchor_top = -0.62
+			_chest_node.anchor_right = 0.92
+			_chest_node.anchor_bottom = 0.28
+			_chest_node.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+			_chest_node.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+			_chest_node.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			if ResourceLoader.exists("res://assets/art/spr_level_chest_gold.png"):
+				_chest_node.texture = load("res://assets/art/spr_level_chest_gold.png")
+			btn.add_child(_chest_node)
+
+		# 5. Vòng hào quang vàng và hiệu ứng khóa (LevelPadIndicator)
 		var pad_draw := LevelPadIndicator.new(i)
 		pad_draw.set_anchors_preset(Control.PRESET_FULL_RECT)
 		pad_draw.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		btn.add_child(pad_draw)
 		_pad_indicators.append(pad_draw)
 
-		# Prop bạn Thỏ trên bục 4
-		if i == 3:
-			_bunny_node = Control.new()
-			_bunny_node.name = "BunnyMascotAnchor"
-			_bunny_node.set_anchors_preset(Control.PRESET_FULL_RECT)
-			_bunny_node.mouse_filter = Control.MOUSE_FILTER_IGNORE
-			btn.add_child(_bunny_node)
-
-		# Prop Rương Báu trên bục 5
-		if i == 4:
-			_chest_node = Control.new()
-			_chest_node.name = "ChestAnchor"
-			_chest_node.set_anchors_preset(Control.PRESET_FULL_RECT)
-			_chest_node.mouse_filter = Control.MOUSE_FILTER_IGNORE
-			btn.add_child(_chest_node)
-
 		_stage.add_child(btn)
 		_level_buttons.append(btn)
+
+	# Tạo sẵn Bạn Thỏ Trắng Mascot (sẽ tự nhảy đến bục hiện tại khi mở màn)
+	_bunny_node = TextureRect.new()
+	_bunny_node.name = "BunnyMascot"
+	_bunny_node.anchor_left = 0.08
+	_bunny_node.anchor_top = -0.78
+	_bunny_node.anchor_right = 0.92
+	_bunny_node.anchor_bottom = 0.28
+	_bunny_node.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_bunny_node.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	_bunny_node.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	if ResourceLoader.exists("res://assets/art/spr_bunny_mascot_stand.png"):
+		_bunny_node.texture = load("res://assets/art/spr_bunny_mascot_stand.png")
 
 	# --- 7. CÁC ĐIỂM TƯƠNG TÁC XÚC GIÁC BÍ MẬT (INTERACTIVE PROPS & EASTER EGGS) ---
 	_setup_interactive_props(empty_style)
@@ -283,35 +371,67 @@ func open_for_chapter(chapter: int) -> void:
 		"Lâu Đài Chuông Gió"
 	]
 	var ch_name: String = chapter_names[clampi(chapter, 0, 2)]
-	if chapter == 0:
-		_title_label.text = "" # Bảng gỗ trong mock đã có sẵn chữ chạm khắc tuyệt đẹp
-	else:
-		_title_label.text = "Chương %d: %s" % [chapter + 1, ch_name]
+	_title_label.text = "Chương %d: %s" % [chapter + 1, ch_name]
 
 	var base_page := chapter * Chapters.pages_per_chapter()
 	var current_page: int = GameState.page_index
 	var max_page: int = GameState.max_page_reached
 
+	# Xác định bục bài học hiện tại của bé trong chương này (0..4)
+	var active_idx := clampi(current_page - base_page, 0, 4)
+	if current_page < base_page:
+		active_idx = 0
+	elif current_page >= base_page + 5:
+		active_idx = 4
+
+	# Gắn Bạn Thỏ Trắng vào đúng bục hiện tại của bé!
+	if _bunny_node != null:
+		if _bunny_node.get_parent() != null:
+			_bunny_node.get_parent().remove_child(_bunny_node)
+		_level_buttons[active_idx].add_child(_bunny_node)
+
 	for i in 5:
 		var page := base_page + i
 		var btn := _level_buttons[i]
 		var is_unlocked := page <= max_page
+		var is_completed := page < current_page
+		var is_current := (i == active_idx)
 		btn.disabled = not is_unlocked
 
-		# Ngắt kết nối cũ nếu có
+		# Cụm 3 sao vàng cho bài đã hoàn thành
+		var stars: Control = btn.get_node_or_null("PadStarsCluster")
+		if stars != null:
+			stars.visible = is_completed and not is_current
+
+		# Tinh chỉnh vị trí số để không bị che
+		var num_lbl: Label = btn.get_node_or_null("PadNumberLabel")
+		if num_lbl != null:
+			if i == 4 and _chest_node != null:
+				num_lbl.offset_top = 18.0
+				num_lbl.offset_bottom = 18.0
+			else:
+				num_lbl.offset_top = -14.0
+				num_lbl.offset_bottom = -14.0
+
 		for conn in btn.pressed.get_connections():
 			btn.pressed.disconnect(conn.callable)
 		btn.pressed.connect(_on_level_btn_pressed.bind(page, i))
 
 		if i < _pad_indicators.size():
-			_pad_indicators[i].update_state(page, current_page, is_unlocked)
+			_pad_indicators[i].update_state(page, current_page, is_unlocked, is_current)
+
+	# Cập nhật tọa độ dải nốt nhạc bay quanh bạn Thỏ
+	if _notes_emitter != null and active_idx < _level_buttons.size():
+		var btn_center := _level_buttons[active_idx].get_global_rect().get_center()
+		if btn_center != Vector2.ZERO:
+			_notes_emitter.set_target_center(btn_center)
 
 	_play_sfx("menu_open")
 	open_overlay()
-	_play_entry_animation()
+	_play_entry_animation(active_idx)
 
 
-func _play_entry_animation() -> void:
+func _play_entry_animation(active_idx: int = 3) -> void:
 	# 1. Toàn bộ sân khấu sách nổi nhún mở nhẹ nhàng
 	if _stage != null:
 		_stage.pivot_offset = _stage.size * 0.5
@@ -339,11 +459,11 @@ func _play_entry_animation() -> void:
 		var jar_tw := create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 		jar_tw.tween_property(_star_jar_btn, "scale", Vector2.ONE, 0.38)
 
-	# 4. Bụi sao vàng bùng nổ chúc mừng ngay trên bục hiện tại (bục số 4)
-	if _burst_layer != null and _level_buttons.size() > 3:
+	# 4. Bụi sao vàng bùng nổ chúc mừng ngay trên bục hiện tại của bé
+	if _burst_layer != null and active_idx < _level_buttons.size():
 		get_tree().create_timer(0.28).timeout.connect(func():
-			if _burst_layer != null and _level_buttons.size() > 3 and is_instance_valid(_level_buttons[3]):
-				var center := _level_buttons[3].get_global_rect().get_center()
+			if _burst_layer != null and active_idx < _level_buttons.size() and is_instance_valid(_level_buttons[active_idx]):
+				var center := _level_buttons[active_idx].get_global_rect().get_center()
 				_burst_layer.emit_burst(center, Color(1.0, 0.92, 0.45, 0.95), 24)
 		)
 
@@ -412,14 +532,14 @@ class LevelPadIndicator extends Control:
 		_idx = idx
 		name = "LevelPadIndicator"
 
-	func update_state(page: int, current_page: int, unlocked: bool) -> void:
+	func update_state(page: int, current_page: int, unlocked: bool, current: bool = false) -> void:
 		_page = page
-		_is_current = (page == current_page)
+		_is_current = current
 		_is_unlocked = unlocked
 		queue_redraw()
 
 	func _process(delta: float) -> void:
-		if _is_current or _idx == 3 or _idx == 4:
+		if _is_current or _idx == 4:
 			_time += delta
 			queue_redraw()
 
@@ -429,35 +549,34 @@ class LevelPadIndicator extends Control:
 
 		if not _is_unlocked:
 			# Màn bị khóa: Lớp sương tối bảo vệ & ổ khóa nhỏ
-			draw_circle(c, r, Color(0.05, 0.06, 0.08, 0.55))
+			draw_circle(c, r, Color(0.05, 0.06, 0.08, 0.52))
 			var gold := Color("#E8D9A0")
-			var bw := r * 0.6
-			var bh := r * 0.5
-			draw_rect(Rect2(c.x - bw * 0.5, c.y - bh * 0.2, bw, bh), Color("#5A3E1B"), true)
-			draw_rect(Rect2(c.x - bw * 0.5, c.y - bh * 0.2, bw, bh), gold, false, 2.0)
-			draw_arc(Vector2(c.x, c.y - bh * 0.2), bw * 0.35, PI, TAU, 12, gold, 2.5, true)
-		elif _is_current or _idx == 3:
-			# Vòng hào quang vàng ma thuật 2.5D xoay quanh bục của bạn Thỏ (Bục 4)
+			var bw := r * 0.50
+			var bh := r * 0.42
+			draw_rect(Rect2(c.x - bw * 0.5, c.y - bh * 0.15, bw, bh), Color("#4A2E1B"), true)
+			draw_rect(Rect2(c.x - bw * 0.5, c.y - bh * 0.15, bw, bh), gold, false, 2.0)
+			draw_arc(Vector2(c.x, c.y - bh * 0.15), bw * 0.35, PI, TAU, 12, gold, 2.5, true)
+		elif _is_current:
+			# Vòng hào quang vàng ma thuật 2.5D xoay quanh bục có bạn Thỏ
 			var pulse := 0.5 + 0.5 * sin(_time * 4.0)
-			# Vành sáng elip 2.5D
 			var outer_rx := r * (1.25 + 0.10 * pulse)
-			var outer_ry := outer_rx * 0.62
+			var outer_ry := outer_rx * 0.60
 			# Hào quang mờ
-			draw_colored_polygon(_make_ellipse_points(c, outer_rx, outer_ry, 32), Color(1.0, 0.88, 0.35, 0.16 + 0.10 * pulse))
+			draw_colored_polygon(_make_ellipse_points(c + Vector2(0, 10), outer_rx, outer_ry, 32), Color(1.0, 0.88, 0.35, 0.18 + 0.12 * pulse))
 			# Vành sáng rực rỡ
 			var inner_rx := r * (1.08 + 0.05 * pulse)
-			var inner_ry := inner_rx * 0.62
-			var ring_pts := _make_ellipse_points(c, inner_rx, inner_ry, 32)
+			var inner_ry := inner_rx * 0.60
+			var ring_pts := _make_ellipse_points(c + Vector2(0, 10), inner_rx, inner_ry, 32)
 			for p_idx in range(ring_pts.size() - 1):
 				var p1: Vector2 = ring_pts[p_idx]
 				var p2: Vector2 = ring_pts[p_idx + 1]
 				var shimmer := 0.5 + 0.5 * sin(_time * 6.0 + float(p_idx) * 0.4)
-				var ring_col := Color(1.0, 0.95, 0.65, 0.50 + 0.45 * shimmer)
-				draw_line(p1, p2, ring_col, 3.2, true)
+				var ring_col := Color(1.0, 0.95, 0.65, 0.55 + 0.45 * shimmer)
+				draw_line(p1, p2, ring_col, 3.5, true)
 		elif _idx == 4:
-			# Bục 5: Bụi sao lấp lánh quanh rương báu
+			# Bục 5: Ánh sáng lấp lánh nhẹ quanh rương báu
 			var pulse := 0.5 + 0.5 * sin(_time * 3.2)
-			draw_arc(c, r * 1.05, 0, TAU, 24, Color(1.0, 0.92, 0.5, 0.25 + 0.2 * pulse), 2.0, true)
+			draw_arc(c + Vector2(0, 8), r * 1.05, 0, TAU, 24, Color(1.0, 0.92, 0.5, 0.20 + 0.15 * pulse), 2.0, true)
 
 	func _make_ellipse_points(center: Vector2, rx: float, ry: float, segments: int) -> PackedVector2Array:
 		var pts := PackedVector2Array()
@@ -471,6 +590,10 @@ class LevelPadIndicator extends Control:
 class MusicalNotesLayer extends Control:
 	var _notes: Array[Dictionary] = []
 	var _timer: float = 0.0
+	var _target_center: Vector2 = Vector2.ZERO
+
+	func set_target_center(pos: Vector2) -> void:
+		_target_center = pos
 
 	func _process(delta: float) -> void:
 		_timer += delta
@@ -491,9 +614,8 @@ class MusicalNotesLayer extends Control:
 		queue_redraw()
 
 	func _spawn_note() -> void:
-		# Khu vực quanh bạn Thỏ (khoảng X ~ 65%, Y ~ 55% màn hình)
-		var center_x := size.x * 0.65
-		var center_y := size.y * 0.58
+		var center_x := _target_center.x if _target_center != Vector2.ZERO else size.x * 0.65
+		var center_y := _target_center.y if _target_center != Vector2.ZERO else size.y * 0.58
 		var colors := [
 			Color("#ED7A8E"), # Hồng sen
 			Color("#4AE5D8"), # Cyan ma thuật

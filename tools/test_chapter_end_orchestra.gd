@@ -1,10 +1,10 @@
-extends SceneTree
+extends Node
 
-func _init() -> void:
+func _ready() -> void:
 	print("=== BẮT ĐẦU KIỂM THỬ MÀN 07: ĐẠI HOAN CA 2.5D DIORAMA ===")
 
 	var root_node := Control.new()
-	root.add_child(root_node)
+	add_child(root_node)
 
 	var chapter_end := ChapterEnd.new()
 	root_node.add_child(chapter_end)
@@ -70,5 +70,17 @@ func _init() -> void:
 
 	print("[PASS] 5. Logic hoạt ảnh cử động độc bản và tương tác nốt nhạc cho cả 6 bạn hoàn toàn chính xác!")
 
+	# 6. Kiểm tra Nút Tiếp tục (Next Button) 2.5D ở góc trái và hiển thị sớm
+	assert(chapter_end._continue != null, "Nút _continue phải được khởi tạo")
+	assert(chapter_end._continue.anchor_left < 0.05, "Nút _continue phải đặt ở góc trái màn hình")
+	assert(chapter_end._continue.anchor_top < 0.08, "Nút _continue phải đặt ở góc trên, không cản sân khấu / phím đàn")
+	var btn_icon: TextureRect = chapter_end._continue.get_node_or_null("WoodButtonIcon")
+	assert(btn_icon != null and btn_icon.texture != null, "Nút _continue phải có texture nút gỗ 2.5D")
+	assert(chapter_end.hint_visible() == false, "hint_visible phải là false khi đang biểu diễn")
+	chapter_end._enter(ChapterEnd.Phase.REST)
+	assert(chapter_end.hint_visible() == true, "hint_visible phải là true khi kết thúc ở Phase.REST")
+	assert(chapter_end._continue.visible == true, "Nút _continue phải hiển thị ở Phase.REST")
+	print("[PASS] 6. Nút Tiếp tục 2.5D ở góc trái không cản sân khấu, hiển thị linh hoạt & tích hợp chuẩn xác.")
+
 	print("=== TẤT CẢ KIỂM THỬ MÀN 07 ĐẠT 100%! ===")
-	quit(0)
+	get_tree().quit(0)

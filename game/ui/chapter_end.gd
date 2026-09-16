@@ -74,6 +74,7 @@ var _animals: Control
 var _footer: Control
 var _hint: Label
 var _continue: Button
+var _is_continuing: bool = false
 var _bgm_player: AudioStreamPlayer
 var _arrow_next_tex: Texture2D
 
@@ -272,11 +273,12 @@ func _build() -> void:
 	# 10. Khay điều hướng xuất hiện sau khi diễn xong (Phase.REST)
 	_footer = VBoxContainer.new()
 	_footer.anchor_left = 0.15
-	_footer.anchor_top = 0.75
+	_footer.anchor_top = 0.78
 	_footer.anchor_right = 0.85
 	_footer.anchor_bottom = 0.98
 	_footer.alignment = BoxContainer.ALIGNMENT_CENTER
 	_footer.add_theme_constant_override("separation", 10)
+	_footer.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_footer.visible = false
 	_diorama.add_child(_footer)
 
@@ -288,15 +290,12 @@ func _build() -> void:
 	_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_hint.modulate = Color(1, 1, 1, 0.75)
 	_hint.add_theme_font_size_override("font_size", 16)
+	_hint.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_footer.add_child(_hint)
 
-	var row := HBoxContainer.new()
-	row.alignment = BoxContainer.ALIGNMENT_CENTER
-	row.add_theme_constant_override("separation", 28)
-	_footer.add_child(row)
-
-	_continue = _make_button(Color("#3F9455"), _draw_continue_arrow, _on_continue)
-	row.add_child(_continue)
+	# 11. Nút Tiếp tục 2.5D ở góc trên bên trái không cản sân khấu / phím đàn
+	_continue = _make_circular_wood_continue_button()
+	_diorama.add_child(_continue)
 
 
 func _create_musician(node_name: String, path: String, al: float, at: float, ar: float, ab: float) -> TextureRect:
@@ -313,6 +312,51 @@ func _create_musician(node_name: String, path: String, al: float, at: float, ar:
 		rect.texture = load(path)
 	_musicians_container.add_child(rect)
 	return rect
+
+
+func _make_circular_wood_continue_button() -> Button:
+	var btn := Button.new()
+	btn.name = "ContinueButton"
+	btn.flat = true
+	btn.focus_mode = Control.FOCUS_NONE
+	btn.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	btn.anchor_left = 0.022
+	btn.anchor_top = 0.035
+	btn.anchor_right = 0.098
+	btn.anchor_bottom = 0.170
+	btn.offset_left = 0.0
+	btn.offset_top = 0.0
+	btn.offset_right = 0.0
+	btn.offset_bottom = 0.0
+	btn.pivot_offset = Vector2(49.0, 49.0)
+	btn.resized.connect(func(): btn.pivot_offset = btn.size * 0.5)
+
+	var empty_box := StyleBoxEmpty.new()
+	for state in ["normal", "hover", "focus", "pressed", "disabled"]:
+		btn.add_theme_stylebox_override(state, empty_box)
+
+	var tex_rect := TextureRect.new()
+	tex_rect.name = "WoodButtonIcon"
+	tex_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
+	tex_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	tex_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	tex_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	if ResourceLoader.exists("res://assets/art/ui_btn_wood_circle_next.png"):
+		tex_rect.texture = load("res://assets/art/ui_btn_wood_circle_next.png")
+	btn.add_child(tex_rect)
+
+	btn.button_down.connect(func():
+		var tw := create_tween()
+		tw.tween_property(btn, "scale", Vector2(0.88, 0.88), 0.06)
+	)
+	btn.button_up.connect(func():
+		var tw := create_tween()
+		tw.tween_property(btn, "scale", Vector2(1.06, 1.06), 0.08)
+		tw.tween_property(btn, "scale", Vector2.ONE, 0.06)
+	)
+
+	btn.pressed.connect(_on_continue)
+	return btn
 
 
 func _make_button(accent: Color, painter: Callable, action: Callable) -> Button:
@@ -354,7 +398,26 @@ func play_for_chapter(chapter: int) -> void:
 
 
 func _start_show() -> void:
+	_is_continuing = false
 	_footer.visible = false
+	if _continue != null:
+		_continue.visible = false
+		_continue.modulate.a = 0.0
+		_continue.scale = Vector2(0.2, 0.2)
+		var tree_ref := get_tree()
+		if tree_ref != null:
+			tree_ref.create_timer(1.2, true).timeout.connect(func():
+				if is_inside_tree() and _continue != null and is_instance_valid(_continue) and not _is_continuing:
+					_continue.visible = true
+					var tw := create_tween()
+					tw.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+					tw.parallel().tween_property(_continue, "scale", Vector2.ONE, 0.5)
+					tw.parallel().tween_property(_continue, "modulate:a", 1.0, 0.4)
+			)
+		else:
+			_continue.visible = true
+			_continue.scale = Vector2.ONE
+			_continue.modulate.a = 1.0
 	_played = 0
 	_lit = -1
 	_lit_age = 0.0
@@ -422,6 +485,11 @@ func _process(delta: float) -> void:
 
 	if _key_highlights != null:
 		_key_highlights.queue_redraw()
+
+	# 6. Nhịp thở êm dịu của Nút Tiếp Tục gỗ tròn 2.5D
+	if _continue != null and _continue.visible and _continue.modulate.a >= 0.95 and not _is_continuing:
+		var breathe := 1.0 + 0.032 * sin(_anim_time * 2.8)
+		_continue.scale = Vector2(breathe, breathe)
 
 
 ## Lập trình hoạt ảnh cử động độc bản cho từng nhân vật nghệ sĩ
@@ -554,6 +622,10 @@ func _enter(next: Phase) -> void:
 		Phase.REST:
 			_lit = -1
 			_footer.visible = true
+			if _continue != null:
+				_continue.visible = true
+				_continue.modulate.a = 1.0
+				_continue.scale = Vector2.ONE
 			finished.emit()
 
 
@@ -575,9 +647,24 @@ func _tick_singing() -> void:
 
 
 func _on_continue() -> void:
-	_stop_bgm()
-	close_overlay()
-	set_process(false)
+	if _is_continuing:
+		return
+	_is_continuing = true
+	AudioDirector.play_sfx("menu_open")
+	if _continue != null and is_inside_tree():
+		var tw := create_tween()
+		tw.tween_property(_continue, "scale", Vector2(0.88, 0.88), 0.08)
+		tw.tween_property(_continue, "scale", Vector2(1.10, 1.10), 0.10)
+		tw.tween_property(_continue, "scale", Vector2.ONE, 0.08)
+		tw.tween_callback(func():
+			_stop_bgm()
+			close_overlay()
+			set_process(false)
+		)
+	else:
+		_stop_bgm()
+		close_overlay()
+		set_process(false)
 
 
 func close_overlay() -> void:

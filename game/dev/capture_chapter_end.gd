@@ -20,9 +20,8 @@ func _run_test(main) -> void:
 
 	# Chờ vào sâu trong buổi diễn hòa tấu (1.5s)
 	await get_tree().create_timer(1.5, true).timeout
-	for i in 20:
+	for i in 25:
 		await get_tree().process_frame
-	await RenderingServer.frame_post_draw
 
 	var img := get_viewport().get_texture().get_image()
 	var doc_path := "docs/grand_finale_rendered.png"
