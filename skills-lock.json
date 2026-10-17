@@ -6,6 +6,12 @@
       "sourceType": "github",
       "skillPath": "skills/godot-master/SKILL.md",
       "computedHash": "b89c601dae18af8c3f507b348fb894f4041c5cf4a300dd5847a334bb00f9a774"
+    },
+    "sprite-gen": {
+      "source": "aldegad/sprite-gen",
+      "sourceType": "github",
+      "skillPath": "SKILL.md",
+      "computedHash": "416f5c268c2c1a2ecae0843f4127bba9e18125aa39f1ba6f0cba12261452f900"
     }
   }
 }

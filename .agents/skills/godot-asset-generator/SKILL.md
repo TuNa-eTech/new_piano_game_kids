@@ -168,6 +168,25 @@ $Sprite2D.texture = frame_tex
 
 ---
 
+## Integration with `sprite-gen` (Component-Row Atlases & Advanced Pipelines)
+
+This repository also includes the [`sprite-gen`](../sprite-gen/SKILL.md) skill at `.agents/skills/sprite-gen` (`SPRITE_GEN_ROOT=.agents/skills/sprite-gen`, CLI at `.agents/skills/sprite-gen/.venv/bin/sprite-gen`).
+
+Use `sprite-gen` when you need:
+- **Component-row animation atlases** (`prepare` → `gen-set` → `extract` → `compose-atlas`) with `sprite-sheet-alpha.png`, `manifest.json.frame_layout`, and **Breathe** idle animations
+- **Video-to-loop sprite animations** (`video-set` / `video-canvas` → `video` → `video-frames` → `video-loop`)
+- **Advanced chroma/matte extraction & slicing** (`cutout --white-check`, `slice-sheet`, `ui-kit`, `unpack-atlas`)
+- **Deterministic palette swaps & asset tools** (`recolor`, `background-tile`, `shadow`, `inspect-motion`)
+
+After generating or extracting PNGs/atlases with `sprite-gen`, run `make_godot_import.py` from this skill to produce the Godot 4 `.import` sidecar:
+```bash
+# Example: Cut out or compose atlas via sprite-gen, then generate Godot .import
+.agents/skills/sprite-gen/.venv/bin/sprite-gen cutout raw_icon.png --out assets/art/icon.png --white-check
+python3 .agents/skills/godot-asset-generator/scripts/make_godot_import.py --input assets/art/icon.png --preset ui
+```
+
+---
+
 ## Common Issues & Solutions
 
 ### White Halo Around Sprite
