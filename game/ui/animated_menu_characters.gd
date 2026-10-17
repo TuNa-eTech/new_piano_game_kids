@@ -42,8 +42,8 @@ var _bubble_label: Label
 var _shadow_canvas: Control
 
 # Bộ texture nạp sẵn cho 7 trạng thái
-var _wizard_textures: Dictionary = {}
-var _lion_textures: Dictionary = {}
+var _wizard_textures: Dictionary[String, Texture2D] = {}
+var _lion_textures: Dictionary[String, Texture2D] = {}
 
 # Bộ frame hoạt ảnh tuần tự đa frame (12 animation principles)
 var _wizard_jump_frames: Array[Texture2D] = []
@@ -398,7 +398,7 @@ func _run_scenario_invite_play() -> void:
 	_scenario_tween.tween_callback(func():
 		_set_wizard_state(AnimState.ATTACK)
 		_set_lion_state(AnimState.ATTACK)
-		_bubble_label.text = "★PLAY!★"
+		_bubble_label.text = "▶🎵"
 		_play_organic_sfx("fairy_dust", -10.0)
 		_spawn_magic_notes_at(Vector2(350, GROUND_Y - 150))
 	)

@@ -404,7 +404,7 @@ func _on_play_pressed() -> void:
 		_burst_layer.emit_burst(center, Color(1.0, 0.95, 0.55, 0.98), 32)
 		_burst_layer.emit_musical_notes(center, 4)
 	AudioDirector.play_sfx("page_turn")
-	AudioDirector.play_gameplay_music(1.0)
+	AudioDirector.resume_current_gameplay_bgm(1.0)
 	close_overlay()
 	play_pressed.emit()
 

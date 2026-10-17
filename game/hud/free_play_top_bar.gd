@@ -15,7 +15,7 @@ extends Control
 
 signal instrument_selected(index: int)
 
-const BAR_SIZE := Vector2(490.0, 96.0)
+const BAR_SIZE := Vector2(440.0, 80.0)
 const SLOT_COUNT := 4
 const INSTRUMENT_NAMES := [
 	"Đại Cầm",
@@ -33,7 +33,7 @@ const INSTRUMENT_NAMES := [
 ## vắng mặt ở Free Play (vẫn có trong InstrumentSwitcher guided 5 mode).
 ## Thứ tự không liên tục là đúng, đừng "sửa" thành [0,1,2,3].
 const SLOT_TO_MODE := [0, 3, 4, 1]
-const SLOT_CENTERS: Array[float] = [85.0, 185.0, 288.0, 392.0]
+const SLOT_CENTERS: Array[float] = [76.0, 166.0, 259.0, 353.0]
 
 var _bg_rect: TextureRect
 var _selection_aura: Control
@@ -47,7 +47,7 @@ func _ready() -> void:
 	custom_minimum_size = BAR_SIZE
 	size = BAR_SIZE
 	mouse_filter = Control.MOUSE_FILTER_PASS
-	position = Vector2((1280.0 - BAR_SIZE.x) * 0.5, 8.0)
+	position = Vector2((1280.0 - BAR_SIZE.x) * 0.5, 4.0)
 
 	_build_ui()
 
@@ -89,9 +89,9 @@ func _build_ui() -> void:
 		var slot := Control.new()
 		slot.name = "Slot_%d" % i
 		var cx := SLOT_CENTERS[i]
-		slot.position = Vector2(cx - 50.0, 0)
-		slot.size = Vector2(100.0, size.y)
-		slot.pivot_offset = Vector2(50.0, size.y * 0.44)
+		slot.position = Vector2(cx - 45.0, 0)
+		slot.size = Vector2(90.0, size.y)
+		slot.pivot_offset = Vector2(45.0, size.y * 0.44)
 		slot.mouse_filter = Control.MOUSE_FILTER_STOP
 		var idx := i
 		slot.gui_input.connect(func(event: InputEvent): _on_slot_gui_input(event, idx))
@@ -128,13 +128,15 @@ func select_slot(index: int) -> void:
 	tw.tween_property(slot_node, "scale", Vector2(1.0, 1.0), 0.20)
 
 	var target_mode: int = SLOT_TO_MODE[index]
+	if is_instance_valid(GameState):
+		GameState.instrument_mode = target_mode
 
-	# Âm thanh phản hồi xúc giác
+	# Âm thanh phản hồi xúc giác (cập nhật mode trước để play_note phát đúng nhạc cụ mới)
 	if is_instance_valid(AudioDirector):
 		AudioDirector.play_sfx("wood_tap")
 		match index:
 			0: # Đại Cầm
-				AudioDirector.play_note(3) # Nốt C4
+				AudioDirector.play_note(3) # Nốt G4
 			1: # Kalimba
 				AudioDirector.play_instrument_note(1, 3, 0.0)
 			2: # Chuông Pha Lê
@@ -142,16 +144,13 @@ func select_slot(index: int) -> void:
 			3: # Giọng Thú
 				AudioDirector.play_note(3)
 
-	if is_instance_valid(GameState):
-		GameState.instrument_mode = target_mode
-
 	instrument_selected.emit(index)
 
 
 func _draw_selection_aura() -> void:
 	var center_x: float = SLOT_CENTERS[_selected_slot]
 	var center_y: float = size.y * 0.44
-	var radius := 34.0 + 2.0 * sin(_aura_phase)
+	var radius := 29.0 + 2.0 * sin(_aura_phase)
 
 	# Quầng sáng ánh kim vàng dịu tự nhiên (Soft Radial Spotlight, không vẽ viền cứng)
 	var gold_core := Color(1.0, 0.92, 0.50, 0.40)
@@ -197,7 +196,7 @@ func _on_free_play_changed(enabled: bool) -> void:
 		visible = true
 		position = Vector2(target_x, -size.y - 20.0)
 		modulate.a = 0.0
-		_slide_tween.tween_property(self, "position:y", 8.0, 0.45)
+		_slide_tween.tween_property(self, "position:y", 4.0, 0.45)
 		_slide_tween.parallel().tween_property(self, "modulate:a", 1.0, 0.3)
 	else:
 		_slide_tween.tween_property(self, "position:y", -size.y - 20.0, 0.35)

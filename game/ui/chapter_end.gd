@@ -286,7 +286,7 @@ func _build() -> void:
 		_arrow_next_tex = load("res://assets/art/ui_arrow_next.png")
 
 	_hint = Label.new()
-	_hint.text = "Want to save this show? Turn on screen recording — the show will replay automatically."
+	_hint.text = "Muốn lưu lại buổi diễn? Hãy bật quay màn hình — buổi diễn sẽ tự động lặp lại nhé!"
 	_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_hint.modulate = Color(1, 1, 1, 0.75)
 	_hint.add_theme_font_size_override("font_size", 16)
@@ -668,11 +668,14 @@ func _on_continue() -> void:
 
 
 func close_overlay() -> void:
+	set_process(false)
 	_stop_bgm()
+	AudioDirector.resume_current_gameplay_bgm()
 	super()
 
 
 func _play_bgm() -> void:
+	AudioDirector.pause_gameplay_bgm()
 	var path := "res://assets/audio/bgm_chapter_end.ogg"
 	if ResourceLoader.exists(path):
 		if _bgm_player == null:

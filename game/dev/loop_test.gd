@@ -62,7 +62,7 @@ func _ready() -> void:
 	await _run_menu_lock()
 	await _run_chapter_map()
 	await _run_free_play()
-	await _run_backgrounded_mid_hold()
+	await _run_backgrounded_mid_press()
 	await _run_chapter_end()
 	print("\n=== %s ===" % ("ĐẠT" if _fails == 0 else "TRƯỢT (%d lỗi)" % _fails))
 	get_tree().quit()
@@ -102,7 +102,7 @@ func _run() -> void:
 	print("① Cây hát rồi chờ")
 	_check("vào được trạng thái chờ đáp", await _await_state("WAITING"), _cr.state_name())
 	var seq_len := _cr.sequence_length()
-	_check("chuỗi có 3–5 nốt như thiết kế", seq_len >= 3 and seq_len <= 7, "dài %d" % seq_len)
+	_check("chuỗi có 3–8 nốt như thiết kế", seq_len >= 3 and seq_len <= 8, "dài %d" % seq_len)
 	_check("có gợi ý nốt cần chạm", _cr.expected_note() >= 0, "nốt %d" % _cr.expected_note())
 
 	# --- KHÔNG CÓ TRẠNG THÁI SAI ---
@@ -120,20 +120,27 @@ func _run() -> void:
 		"%.4f -> %.4f" % [growth_before, _tree.growth()])
 	_check("gợi ý giữ nguyên nốt cũ", _cr.expected_note() == want)
 
-	# --- Bước 3: bé đáp đúng cả chuỗi ---
-	print("\n③ Đáp đúng trọn chuỗi %d nốt" % seq_len)
+	# --- Bước 3: bé đáp đúng cả chuỗi (tất cả các câu của bài hát) ---
+	var total_phrases := maxi(1, Songbook.phrase_count(GameState.page_index))
+	print("\n③ Đáp đúng trọn bài (%d câu)" % total_phrases)
 	var stars_start := GameState.stars
-	var guard := 0
-	while _cr.state_name() == "WAITING" and guard < 32:
-		var n := _cr.expected_note()
-		if n < 0:
-			break
-		await _press(n)
-		guard += 1
-	_check("mỗi nốt đúng cho một hạt sao", GameState.stars - stars_start == seq_len,
-		"được %d / cần %d" % [GameState.stars - stars_start, seq_len])
+	var total_notes := 0
+	for p_idx in total_phrases:
+		if p_idx > 0:
+			await _await_state("WAITING", 14.0)
+		var guard := 0
+		while _cr.state_name() == "WAITING" and guard < 32:
+			var n := _cr.expected_note()
+			if n < 0:
+				break
+			await _press(n)
+			total_notes += 1
+			guard += 1
+	_check("mỗi nốt đúng cho một hạt sao", GameState.stars - stars_start == total_notes,
+		"được %d / cần %d" % [GameState.stars - stars_start, total_notes])
 	_check("cây đã lớn hết cỡ", _tree.growth() >= 0.89, "%.3f" % _tree.growth())
 	_check("cây đạt giai đoạn cuối (%d/8)" % (_tree.stage() + 1), _tree.stage() == MagicTree.STAGES - 1)
+
 
 	# --- Bước 4: cây trổ quả ---
 	print("\n④ Cây trổ quả rồi lật trang")
@@ -168,79 +175,33 @@ func _menu_centre() -> Vector2:
 	return _menu.get_global_transform() * (_menu.size * 0.5)
 
 
-## Giữ một (hoặc hai) ngón trên một điểm trong `seconds` giây thực rồi nhả.
-## Ngón thứ 2 đặt CÙNG trên nút Menu (lòng bàn tay úp) — khác ngón trên đàn
-## (gui_input cách ly nên không ảnh hưởng lượt giữ menu).
-func _hold(p: Vector2, seconds: float, second_finger: bool = false) -> void:
-	var d := InputEventScreenTouch.new()
-	d.index = 0
-	d.pressed = true
-	d.position = p
-	Input.parse_input_event(d)
-	if second_finger:
-		var palm := InputEventScreenTouch.new()
-		palm.index = 1
-		palm.pressed = true
-		palm.position = p + Vector2(20.0, 10.0)
-		Input.parse_input_event(palm)
-
-	var t := 0.0
-	while t < seconds:
-		await get_tree().process_frame
-		t += get_process_delta_time()
-
-	var u := InputEventScreenTouch.new()
-	u.index = 0
-	u.pressed = false
-	u.position = p
-	Input.parse_input_event(u)
-	if second_finger:
-		var palm_up := InputEventScreenTouch.new()
-		palm_up.index = 1
-		palm_up.pressed = false
-		palm_up.position = p + Vector2(20.0, 10.0)
-		Input.parse_input_event(palm_up)
-	await get_tree().process_frame
-
-
-## Quyết định 03: "giữ 2 giây, đủ để bé không thoát nhầm, không cản người lớn".
+## Nút Menu mở bản đồ ngay khi chạm — không còn khoá giữ 2 giây.
 func _run_menu_lock() -> void:
-	print("\n⑥ Nút Menu phải GIỮ mới mở")
+	print("\n⑥ Nút Menu mở ngay khi chạm")
 	GameState.free_play = false
 
-	# Chốt chặn của chính phép đo: nếu sự kiện chạm tổng hợp không tới được nút
-	# thì mọi kết quả "không mở" bên dưới đều đúng một cách vô nghĩa.
 	var d := InputEventScreenTouch.new()
 	d.index = 0
 	d.pressed = true
 	d.position = _menu_centre()
 	Input.parse_input_event(d)
 	await get_tree().process_frame
-	_check("chạm có tới được nút Menu (chốt chặn phép đo)", _menu.is_holding())
+	_check("chỉ mới chạm xuống thì CHƯA mở bản đồ", not _map.is_open())
+
 	var u := InputEventScreenTouch.new()
 	u.index = 0
 	u.pressed = false
 	u.position = _menu_centre()
 	Input.parse_input_event(u)
 	await get_tree().process_frame
-
-	await _hold(_menu_centre(), 1.2)
-	_check("nhả trước 2 giây thì KHÔNG mở bản đồ", not _map.is_open())
-
-	# Bàn tay trẻ con úp lên màn hình là nhiều điểm chạm cùng lúc.
-	await _hold(_menu_centre(), 2.5, true)
-	_check("giữ bằng hai ngón thì KHÔNG mở (lòng bàn tay)", not _map.is_open())
-	_menu.cancel()
-
-	await _hold(_menu_centre(), 2.4)
-	_check("giữ đủ 2 giây thì mở bản đồ", _map.is_open())
+	_check("chạm rồi nhả thì mở bản đồ ngay", _map.is_open())
 	_check("ván chơi bên dưới đã dừng", get_tree().paused)
 	_map.close_map()
 	await get_tree().process_frame
 	_menu.cancel()
 
-	# P0-1: phụ huynh giữ menu trong lúc bé đàn 2 ngón vẫn mở được map.
-	# Ngón trên đàn không bao giờ tới gui_input của nút nên không abort.
+	# P0-1: phụ huynh bấm menu trong lúc bé đàn 2 ngón vẫn mở được map bình
+	# thường — ngón trên đàn không bao giờ tới gui_input của nút nên không ảnh hưởng.
 	print("⑥b Menu mở được khi bé đang đàn")
 	var mp := _menu_centre()
 	var md := InputEventScreenTouch.new()
@@ -250,17 +211,13 @@ func _run_menu_lock() -> void:
 	Input.parse_input_event(md)
 	for i in 3:
 		await _press(i % Notes.count())
-	var t := 0.0
-	while t < 2.4:
-		await get_tree().process_frame
-		t += get_process_delta_time()
 	var mu := InputEventScreenTouch.new()
 	mu.index = 0
 	mu.pressed = false
 	mu.position = mp
 	Input.parse_input_event(mu)
 	await get_tree().process_frame
-	_check("giữ menu + bé đàn vẫn mở bản đồ", _map.is_open())
+	_check("nhả menu sau khi bé đàn vẫn mở bản đồ", _map.is_open())
 
 
 func _run_chapter_map() -> void:
@@ -336,7 +293,6 @@ func _run_chapter_map() -> void:
 	await get_tree().process_frame
 	_check("đóng bản đồ thì ván chơi chạy lại", not get_tree().paused)
 	_check("bản đồ đã ẩn", not _map.is_open())
-	_check("nút Menu sẵn sàng cho lượt giữ mới", not _menu.is_holding())
 
 
 ## Quyết định 03: "không gợi ý, không chuỗi — chỉ đàn, con vật và cây mọc theo mỗi nốt".
@@ -375,14 +331,13 @@ func _tree_hint_leaf() -> int:
 	return Melodies.for_page(GameState.page_index)[0]
 
 
-## Hồi quy cho một lỗi khoá cứng: app xuống nền GIỮA LÚC đang giữ nút Menu thì
-## sự kiện nhả ngón không bao giờ tới. Nếu nút không tự dọn, bộ đếm ngón kẹt ở 1
-## và mọi lượt giữ sau đó đều bị coi là ngón thứ hai rồi bỏ — nút Menu chết câm,
-## cả bé lẫn người lớn mất đường vào bản đồ. Bấm nút rồi bị phân tâm là việc một
-## đứa 4 tuổi làm suốt.
-func _run_backgrounded_mid_hold() -> void:
+## Hồi quy cho một lỗi khoá cứng: app xuống nền GIỮA LÚC ngón đang nhấn nút Menu
+## (chưa kịp nhả) thì sự kiện nhả ngón không bao giờ tới. Nếu nút không tự dọn,
+## bộ đếm ngón kẹt lại và lượt chạm hợp lệ tiếp theo bị coi là "ngón khác" rồi bỏ
+## qua — nút Menu chết câm. Bấm nút rồi bị phân tâm là việc một đứa 4 tuổi làm suốt.
+func _run_backgrounded_mid_press() -> void:
 	print("")
-	print("⑨ App xuống nền giữa lúc đang giữ nút Menu")
+	print("⑨ App xuống nền giữa lúc ngón đang nhấn nút Menu")
 	if _map.is_open():
 		_map.close_map()
 		await get_tree().process_frame
@@ -394,20 +349,26 @@ func _run_backgrounded_mid_hold() -> void:
 	d.pressed = true
 	d.position = p
 	Input.parse_input_event(d)
-	var t := 0.0
-	while t < 0.8:
-		await get_tree().process_frame
-		t += get_process_delta_time()
-	_check("đang giữ dở nút Menu (chốt chặn phép đo)", _menu.is_holding())
+	await get_tree().process_frame
 
 	# Ngón này KHÔNG bao giờ được nhả — app nuốt mất sự kiện đó.
 	_menu.notification(NOTIFICATION_APPLICATION_PAUSED)
 	_menu.notification(NOTIFICATION_APPLICATION_RESUMED)
 	await get_tree().process_frame
-	_check("mở lại app thì lượt giữ dở bị bỏ", not _menu.is_holding())
 
-	await _hold(p, 2.4)
-	_check("vẫn mở được bản đồ bằng lượt giữ mới", _map.is_open())
+	var u := InputEventScreenTouch.new()
+	u.index = 0
+	u.pressed = true
+	u.position = p
+	Input.parse_input_event(u)
+	await get_tree().process_frame
+	var r := InputEventScreenTouch.new()
+	r.index = 0
+	r.pressed = false
+	r.position = p
+	Input.parse_input_event(r)
+	await get_tree().process_frame
+	_check("chạm lại sau khi app xuống nền vẫn mở được bản đồ", _map.is_open())
 	_map.close_map()
 	await get_tree().process_frame
 	_menu.cancel()

@@ -32,6 +32,7 @@ var _parental_corner: Node
 
 var _target_after_gate: String = ""
 var _pending_chapter_reward: int = 0
+var _reward_from_chapter_end: bool = false
 var enable_chest_before_concert: bool = false
 
 
@@ -133,9 +134,9 @@ func open_chapter_map() -> void:
 
 ## Mở màn hình chọn bài cho chương
 func open_level_select(chapter_index: int) -> void:
+	_level_select.open_for_chapter(chapter_index)
 	if _chapter_map and _chapter_map.is_open():
 		_chapter_map.close_map()
-	_level_select.open_for_chapter(chapter_index)
 
 
 ## Mở màn hình chúc bé ngủ ngon
@@ -150,6 +151,7 @@ func open_goodnight() -> void:
 
 ## Mở màn hình nhận thưởng rương báu
 func open_chest_reward(badge_index: int) -> void:
+	_reward_from_chapter_end = false
 	_pending_chapter_reward = badge_index
 	_chest_reward.show_reward(badge_index)
 
@@ -210,30 +212,32 @@ func _on_main_menu_play() -> void:
 
 
 func _on_main_menu_levels() -> void:
-	_main_menu.close_overlay()
 	_chapter_map.open_map()
+	_main_menu.close_overlay()
 
 
 func _on_map_main_menu_requested() -> void:
-	_chapter_map.close_map()
 	_main_menu.open_overlay()
+	_chapter_map.close_map()
 
 
 func _on_chapter_selected(chapter: int) -> void:
-	# Khi bé chọn chương trên bản đồ, mở con đường chọn bài (LevelSelect)
-	_chapter_map.close_map()
+	# Khi bé chọn chương trên bản đồ, mở con đường chọn bài (LevelSelect) trước khi đóng bản đồ
 	_level_select.open_for_chapter(chapter)
+	_chapter_map.close_map()
 
 
 func _on_level_selected(page: int) -> void:
+	GameState.auto_play = false
+	GameState.free_play = false
 	GameState.set_page(page)
 	_level_select.close_overlay()
 	_chapter_map.close_map()
 
 
 func _on_level_select_back() -> void:
-	_level_select.close_overlay()
 	_chapter_map.open_map()
+	_level_select.close_overlay()
 
 
 func _on_goodnight_wake_up() -> void:
@@ -259,13 +263,14 @@ func _on_bedtime_expired() -> void:
 
 
 func _on_reward_claimed(_badge_index: int) -> void:
-	# Đây là CHUYỂN TIẾP rương → buổi diễn, không phải mở thêm một lớp nữa:
-	# đóng rương TRƯỚC rồi mới mở buổi diễn. Trước đây mở chồng lên rương chưa
-	# đóng nên bé thấy hai lớp phủ cùng lúc.
+	# Chỉ mở Buổi Diễn Rừng Xanh nếu rương được mở từ sự kiện hoàn thành chương.
+	# Nếu bé bấm vào đạo cụ rương trên sân khấu thì đóng rương và quay về bài đang chơi.
+	var should_open_concert := _reward_from_chapter_end
+	_reward_from_chapter_end = false
+	if should_open_concert and _chapter_end != null and not _chapter_end.is_open():
+		_chapter_end.play_for_chapter(_pending_chapter_reward)
 	if _chest_reward != null and _chest_reward.is_open():
 		_chest_reward.close_overlay()
-	if _chapter_end != null and not _chapter_end.is_open():
-		_chapter_end.play_for_chapter(_pending_chapter_reward)
 
 
 ## Xử lý hoàn thành chương (gọi từ main.gd khi trang cuối kết thúc)
@@ -278,8 +283,10 @@ func handle_chapter_completed(chapter_index: int) -> void:
 	if _chest_reward != null and _chest_reward.is_open():
 		return
 	if enable_chest_before_concert:
+		_reward_from_chapter_end = true
 		_chest_reward.show_reward(chapter_index)
 	else:
+		_reward_from_chapter_end = false
 		_chapter_end.play_for_chapter(chapter_index)
 
 

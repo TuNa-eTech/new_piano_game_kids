@@ -6,8 +6,8 @@ const Notes = preload("res://game/notes.gd")
 func _init() -> void:
 	print("=== KIỂM THỬ THƯ VIỆN BÀI HÁT SONGBOOK ===")
 	var total_songs := Songbook.count()
-	print("Tổng số bài hát: %d (Kỳ vọng: 10)" % total_songs)
-	assert(total_songs == 10, "Phải có đúng 10 bài hát!")
+	print("Tổng số bài hát: %d (Kỳ vọng: 15)" % total_songs)
+	assert(total_songs == 15, "Phải có đúng 15 bài hát (3 chương x 5 bài)!")
 
 	var all_ok := true
 	for i in range(total_songs):
@@ -38,7 +38,7 @@ func _init() -> void:
 				assert(Notes.is_valid(note_idx), "Chỉ số nốt %d trong bài %s không hợp lệ!" % [note_idx, s_id])
 
 	if all_ok:
-		print("===> TẤT CẢ 10 BÀI HÁT VÀ TỆP ÂM THANH ĐỀU CHUẨN XÁC 100%!")
+		print("===> TẤT CẢ 15 BÀI HÁT VÀ TỆP ÂM THANH ĐỀU CHUẨN XÁC 100%!")
 	else:
 		print("===> CẢNH BÁO: Có tệp âm thanh chưa tìm thấy!")
 	quit()

@@ -142,6 +142,7 @@ func _test_level_select_flow(router: ScreenRouter) -> void:
 func _test_goodnight_screen_flow(router: ScreenRouter) -> void:
 	print("\n④ Kiểm tra Màn Chúc Bé Ngủ Ngon (GoodnightScreen)")
 	var goodnight: GoodnightScreen = router.get_goodnight_screen()
+	var gate: PauseOverlay = router.get_parental_gate() as PauseOverlay
 
 	# Kích hoạt sự kiện hết giờ
 	GameState.bedtime_expired.emit()
@@ -149,10 +150,14 @@ func _test_goodnight_screen_flow(router: ScreenRouter) -> void:
 	_check("GoodnightScreen tự động mở khi hết giờ", goodnight.is_open())
 	_check("Ván chơi bên dưới bị tạm dừng", get_tree().paused)
 
-	# Bấm nút Đánh Thức Khu Rừng -> Mở khóa trực tiếp (không qua Cổng Phụ Huynh)
+	# Bấm nút Đánh Thức Khu Rừng -> Mở Cổng Phụ Huynh (chuẩn Apple Kids 1.3), sau khi vượt qua thì đóng GoodnightScreen
 	goodnight._on_unlock_pressed()
 	await get_tree().process_frame
-	_check("Đánh Thức Khu Rừng đóng GoodnightScreen", not goodnight.is_open())
+	_check("Bấm Đánh Thức mở Cổng Phụ Huynh bảo vệ", gate != null and gate.is_open())
+	gate.close_overlay()
+	router._on_parental_gate_unlocked()
+	await get_tree().process_frame
+	_check("Vượt Cổng Phụ Huynh đóng GoodnightScreen", not goodnight.is_open())
 	_check("Reset hẹn giờ ngủ về 0", GameState.bedtime_minutes == 0)
 	_check("Game tiếp tục chơi bình thường", not get_tree().paused)
 

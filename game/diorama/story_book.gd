@@ -18,9 +18,10 @@ signal page_covered
 signal page_half_flipped
 signal flip_completed
 signal chest_opened
+signal leaf_tapped(note_index: int)
 
 var _current_page: int = 0
-var _song_data: Dictionary = {}
+var _song_data: Dictionary[String, Variant] = {}
 
 # Node trang trái
 var _book_bg: TextureRect
@@ -164,6 +165,9 @@ func _setup_right_page() -> void:
 	_beanstalk.chest_clicked.connect(func():
 		chest_opened.emit()
 	)
+	_beanstalk.leaf_tapped.connect(func(note_idx: int):
+		leaf_tapped.emit(note_idx)
+	)
 	_right_page.add_child(_beanstalk)
 
 	# 4. Thú Cưng Đồng Hành trên Trang Phải cùng Cây Đậu Thần
@@ -198,8 +202,8 @@ func _setup_navigation_buttons() -> void:
 	_btn_prev.texture_normal = tex_back
 	_btn_prev.ignore_texture_size = true
 	_btn_prev.stretch_mode = TextureButton.STRETCH_KEEP_ASPECT_CENTERED
-	_btn_prev.custom_minimum_size = Vector2(68, 68)
-	_btn_prev.pivot_offset = Vector2(34, 34)
+	_btn_prev.custom_minimum_size = Vector2(88, 88)
+	_btn_prev.pivot_offset = Vector2(44, 44)
 	_btn_prev.button_down.connect(func():
 		_btn_prev.scale = Vector2(0.90, 0.90)
 		AudioDirector.play_sfx("wood_tap")
@@ -213,8 +217,8 @@ func _setup_navigation_buttons() -> void:
 	_btn_next.texture_normal = tex_next
 	_btn_next.ignore_texture_size = true
 	_btn_next.stretch_mode = TextureButton.STRETCH_KEEP_ASPECT_CENTERED
-	_btn_next.custom_minimum_size = Vector2(68, 68)
-	_btn_next.pivot_offset = Vector2(34, 34)
+	_btn_next.custom_minimum_size = Vector2(88, 88)
+	_btn_next.pivot_offset = Vector2(44, 44)
 	_btn_next.button_down.connect(func():
 		_btn_next.scale = Vector2(0.90, 0.90)
 		AudioDirector.play_sfx("wood_tap")
@@ -247,9 +251,9 @@ func _update_layout() -> void:
 		_title_banner.position = Vector2(16.0, 8.0)
 		_title_banner.size = Vector2(page_w - 32.0, banner_h)
 
-		# P0-3: bubble 30px + font 16 không đọc được từ xa — lên 58px để
-		# chứa 2 dòng lời Việt 22px, Leo lùi xuống tương ứng.
-		var bubble_h := 58.0
+		# P0-3: bubble 30px + font 16 không đọc được từ xa — lên 62px để
+		# chứa 2 dòng lời Việt 18-21px, Leo lùi xuống tương ứng.
+		var bubble_h := 62.0
 		_speech_bubble.position = Vector2(16.0, 8.0 + banner_h + 4.0)
 		_speech_bubble.size = Vector2(page_w - 32.0, bubble_h)
 
@@ -275,14 +279,14 @@ func _update_layout() -> void:
 			_pet_companion.position = Vector2(page_w - pet_size - 28.0, page_h - pet_size + 14.0)
 			_pet_companion.set_facing_left(true)
 
-	# Nút lật trang gỗ 2.5D nằm gọn trong mép viền mạ vàng của bìa sách (không tràn ra ngoài)
+	# Nút lật trang gỗ 2.5D cỡ 88x88 chuẩn ngón tay trẻ em nằm gọn ở rìa bìa sách
 	if _btn_prev != null and _btn_next != null:
-		var btn_s := 68.0
+		var btn_s := 88.0
 		var btn_y := (size.y - btn_s) * 0.5
 		_btn_prev.size = Vector2(btn_s, btn_s)
-		_btn_prev.position = Vector2(12.0, btn_y)
+		_btn_prev.position = Vector2(4.0, btn_y)
 		_btn_next.size = Vector2(btn_s, btn_s)
-		_btn_next.position = Vector2(size.x - btn_s - 12.0, btn_y)
+		_btn_next.position = Vector2(size.x - btn_s - 4.0, btn_y)
 
 
 ## Cập nhật giao diện khi vào/thoát chế độ Chơi Tự Do
@@ -301,13 +305,13 @@ func load_page(page_idx: int) -> void:
 	if total_songs == 0:
 		return
 	_current_page = clampi(page_idx, 0, total_songs - 1)
-	_song_data = Songbook.get_song(_current_page)
+	_song_data.assign(Songbook.get_song(_current_page))
 
-	# Cập nhật banner tiêu đề (luôn hiển thị tên bài tiếng Anh trên màn hình)
+	# Cập nhật banner tiêu đề tiếng Việt đồng nhất với các màn hình khác
 	var en_title: String = _song_data.get("title", "")
 	var vi_title: String = _song_data.get("vietnamese_title", en_title)
 	var emoji: String = _song_data.get("pet_emoji", "✨")
-	_title_label.text = "Page %d/%d: %s %s" % [_current_page + 1, total_songs, en_title, emoji]
+	_title_label.text = "%s Bài %d/%d: %s" % [emoji, _current_page + 1, total_songs, vi_title]
 
 	# Cập nhật lời bài hát mở đầu
 	var phrases: Array = _song_data.get("phrases", [])
@@ -352,13 +356,15 @@ func _update_nav_buttons() -> void:
 	_btn_next.disabled = _is_flipping
 
 
-## Đặt nội dung khung thoại (lời bài hát / gợi ý)
+## Đặt nội dung khung thoại (lời bài hát / gợi ý) kèm co giãn cỡ chữ để không cắt chữ
 func set_speech_text(text: String) -> void:
 	if _speech_label != null:
+		var fs := 18 if text.length() > 34 else 21
+		_speech_label.add_theme_font_size_override("font_size", fs)
 		_speech_label.text = text
 
 
-## Khi bé gõ nốt đàn: Đồng bộ hoạt cảnh Leo, Thú cưng và Cây đậu thần
+## Khi bé gõ đúng nốt đàn (hoặc Chơi Tự Do): Đồng bộ hoạt cảnh Leo, Thú cưng và Cây đậu thần
 func on_note_struck(note_index: int) -> void:
 	if _wizard_leo != null:
 		_wizard_leo.play_note(note_index)
@@ -366,6 +372,21 @@ func on_note_struck(note_index: int) -> void:
 		_pet_companion.play_react()
 	if _beanstalk != null:
 		_beanstalk.bloom_leaf(note_index)
+
+
+## Khi bé gõ nhầm nốt trong lúc chờ (WAITING): Leo và thú cưng vẫn hưởng ứng vui vẻ,
+## nhưng KHÔNG nở lá sai để cây chỉ nở đúng chuỗi nốt của câu nhạc.
+func on_wrong_note_struck(note_index: int) -> void:
+	if _wizard_leo != null:
+		_wizard_leo.play_note(note_index)
+	if _pet_companion != null:
+		_pet_companion.play_react()
+
+
+## Khép lại các lá đã nở để chuẩn bị cho câu nhạc tiếp theo trong bài hát nhiều câu.
+func reset_leaves() -> void:
+	if _beanstalk != null:
+		_beanstalk.reset_leaves()
 
 
 ## Cây hát: Lá nốt nhạc phát sáng và Leo gõ đàn mẫu

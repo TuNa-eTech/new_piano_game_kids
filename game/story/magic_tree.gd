@@ -59,6 +59,8 @@ func _ready() -> void:
 
 	reset_page()
 	resized.connect(queue_redraw)
+	visibility_changed.connect(func(): set_process(visible))
+	set_process(visible)
 
 
 func _process(delta: float) -> void:
@@ -73,6 +75,10 @@ func _process(delta: float) -> void:
 
 func reset_page() -> void:
 	_growth = 0.0
+	reset_leaves()
+
+
+func reset_leaves() -> void:
 	_hint_step = -1
 	_fruiting = false
 	for i in _leaf_state.size():
@@ -87,7 +93,7 @@ func set_sequence(sequence: PackedInt32Array) -> void:
 
 ## Cây hát: lá sáng lên khi tới lượt nó trong câu "gọi".
 func sing_leaf(note_index: int) -> void:
-	if Notes.is_valid(note_index) and _leaf_state[note_index] != LeafState.BLOOMED:
+	if Notes.is_valid(note_index):
 		_leaf_state[note_index] = LeafState.SINGING
 		leaf_singing.emit(note_index)
 		queue_redraw()
@@ -104,7 +110,7 @@ func clear_singing() -> void:
 ## không thanh thời gian: cây chờ vô hạn.
 func set_hint(note_index: int) -> void:
 	_hint_step = note_index
-	if Notes.is_valid(note_index) and _leaf_state[note_index] != LeafState.BLOOMED:
+	if Notes.is_valid(note_index):
 		_leaf_state[note_index] = LeafState.HINT
 	queue_redraw()
 

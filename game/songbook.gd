@@ -508,6 +508,251 @@ static var SONGS: Array[Dictionary] = [
 				"lyrics": "Head, shoul-ders, knees and toes, knees and toes"
 			}
 		]
+	},
+
+	# ------------------------------------------------------------------ 11. Ode to Joy (Chương 3 - Bài 1)
+	{
+		"id": "ode_to_joy",
+		"title": "Ode to Joy",
+		"vietnamese_title": "Khúc Ca Hân Hoan",
+		"age_range": "3–6 tuổi",
+		"bpm": 78,
+		"bgm_path": "res://assets/audio/songbook/bgm_ode_to_joy.ogg",
+		"voiceguide_path": "res://assets/audio/songbook/voiceguide_ode_to_joy.ogg",
+		"rhythm": "pastoral_flow",
+		"motif": "chuông pha lê celesta",
+		"hook_vi": "Ngân vang khúc ca hân hoan cùng Cú Mèo",
+		"chords_full": ["C", "G", "Am", "G"],
+		"color": Color("#7C5CC4"),
+		"chords": ["C", "G", "Am", "G"],
+		"description": "Giai điệu cổ điển tươi sáng được chuyển soạn êm dịu trên thang âm ngũ cung",
+		"pet_name": "Cú Mèo Thông Thái",
+		"pet_emoji": "🦉",
+		"pet_id": "owl",
+		"story_intro": "Trên đỉnh Lâu Đài Chuông Gió, bác Cú Mèo gõ nhịp chuông pha lê mừng đón bình minh!",
+		"scene_cue": "Chuông pha lê tỏa ánh sáng tím vàng lấp lánh khắp tòa lâu đài trên mây",
+		"phrases": [
+			{
+				"name": "Khúc ca mở màn (Câu 1)",
+				"notes": PackedInt32Array([2, 2, 3, 4, 4, 3, 2, 1]),
+				"solfege": ["Mi", "Mi", "Sol", "La", "La", "Sol", "Mi", "Re"],
+				"lyrics": "Joy-ful, joy-ful, sing to-geth-er"
+			},
+			{
+				"name": "Hòa nhịp niềm vui (Câu 2)",
+				"notes": PackedInt32Array([0, 0, 1, 2, 2, 1, 1]),
+				"solfege": ["Do", "Do", "Re", "Mi", "Mi", "Re", "Re"],
+				"lyrics": "Hand in hand beneath the sun"
+			},
+			{
+				"name": "Ngân vang khắp rừng (Câu 3)",
+				"notes": PackedInt32Array([2, 2, 3, 4, 4, 3, 2, 1]),
+				"solfege": ["Mi", "Mi", "Sol", "La", "La", "Sol", "Mi", "Re"],
+				"lyrics": "Ev-ery heart is full of mu-sic"
+			},
+			{
+				"name": "Khúc kết rạng ngời (Câu 4)",
+				"notes": PackedInt32Array([0, 0, 1, 2, 1, 0, 0]),
+				"solfege": ["Do", "Do", "Re", "Mi", "Re", "Do", "Do"],
+				"lyrics": "Shining bright for ev-ery-one!"
+			}
+		]
+	},
+
+	# ------------------------------------------------------------------ 12. Jingle Bells (Chương 3 - Bài 2)
+	{
+		"id": "jingle_bells",
+		"title": "Jingle Bells",
+		"vietnamese_title": "Tiếng Chuông Ngân Vang",
+		"age_range": "2–6 tuổi",
+		"bpm": 84,
+		"bgm_path": "res://assets/audio/songbook/bgm_jingle_bells.ogg",
+		"voiceguide_path": "res://assets/audio/songbook/voiceguide_jingle_bells.ogg",
+		"rhythm": "bounce_offbeat",
+		"motif": "chuông bạc leng keng",
+		"hook_vi": "Lắc chuông gió leng keng cùng Thỏ Trắng",
+		"chords_full": ["C", "F", "C", "G"],
+		"color": Color("#4AE5D8"),
+		"chords": ["C", "F", "C", "G"],
+		"description": "Điệp khúc chuông ngân rộn ràng giúp bé luyện gõ nốt lặp tiết tấu đều đặn",
+		"pet_name": "Thỏ Trắng Nhạc Sĩ",
+		"pet_emoji": "🐰",
+		"pet_id": "rabbit",
+		"story_intro": "Gió thổi qua ban công lâu đài làm dàn chuông bạc ngân lên khúc nhạc leng keng vui tai!",
+		"scene_cue": "Những bông tuyết ánh sao nhảy múa theo từng tiếng chuông ngân",
+		"phrases": [
+			{
+				"name": "Chuông ngân vang (Câu 1)",
+				"notes": PackedInt32Array([2, 2, 2, 2, 2, 2]),
+				"solfege": ["Mi", "Mi", "Mi", "Mi", "Mi", "Mi"],
+				"lyrics": "Jin-gle bells, jin-gle bells"
+			},
+			{
+				"name": "Ngân vang suốt chặng đường (Câu 2)",
+				"notes": PackedInt32Array([2, 3, 0, 1, 2]),
+				"solfege": ["Mi", "Sol", "Do", "Re", "Mi"],
+				"lyrics": "Jin-gle all the way!"
+			},
+			{
+				"name": "Cùng vui bước (Câu 3)",
+				"notes": PackedInt32Array([3, 3, 3, 2, 2, 2]),
+				"solfege": ["Sol", "Sol", "Sol", "Mi", "Mi", "Mi"],
+				"lyrics": "Oh what fun it is to ride"
+			},
+			{
+				"name": "Hát vang khúc ca (Câu 4)",
+				"notes": PackedInt32Array([2, 1, 1, 2, 1, 3]),
+				"solfege": ["Mi", "Re", "Re", "Mi", "Re", "Sol"],
+				"lyrics": "In a one-horse o-pen sleigh!"
+			}
+		]
+	},
+
+	# ------------------------------------------------------------------ 13. Yankee Doodle (Chương 3 - Bài 3)
+	{
+		"id": "yankee_doodle",
+		"title": "Yankee Doodle",
+		"vietnamese_title": "Bước Chân Nhộn Nhịp",
+		"age_range": "3–6 tuổi",
+		"bpm": 82,
+		"bgm_path": "res://assets/audio/songbook/bgm_yankee_doodle.ogg",
+		"voiceguide_path": "res://assets/audio/songbook/voiceguide_yankee_doodle.ogg",
+		"rhythm": "oom_pah",
+		"motif": "pizzicato hành khúc",
+		"hook_vi": "Dạo bước nhộn nhịp cùng Mèo Nhỏ",
+		"chords_full": ["C", "G", "C", "G"],
+		"color": Color("#ED7A8E"),
+		"chords": ["C", "G", "C", "G"],
+		"description": "Giai điệu hành khúc vui tươi giúp bé làm quen với bước nhảy quãng ngắn",
+		"pet_name": "Mèo Nhỏ Đáng Yêu",
+		"pet_emoji": "🐱",
+		"pet_id": "cat",
+		"story_intro": "Bạn Mèo Nhỏ đội chiếc mũ gắn lông vũ, tung tăng dạo bước quanh vườn mây!",
+		"scene_cue": "Những chiếc lông vũ cầu vồng bay lượn theo bước chân Mèo Nhỏ",
+		"phrases": [
+			{
+				"name": "Dạo bước đến thị trấn (Câu 1)",
+				"notes": PackedInt32Array([0, 0, 1, 2, 0, 2, 1]),
+				"solfege": ["Do", "Do", "Re", "Mi", "Do", "Mi", "Re"],
+				"lyrics": "Yan-kee Doo-dle went to town"
+			},
+			{
+				"name": "Cưỡi chú ngựa nhỏ (Câu 2)",
+				"notes": PackedInt32Array([0, 0, 1, 2, 0, 1]),
+				"solfege": ["Do", "Do", "Re", "Mi", "Do", "Re"],
+				"lyrics": "A-rid-ing on a po-ny"
+			},
+			{
+				"name": "Cài lông vũ lên mũ (Câu 3)",
+				"notes": PackedInt32Array([0, 0, 1, 2, 3, 2, 1]),
+				"solfege": ["Do", "Do", "Re", "Mi", "Sol", "Mi", "Re"],
+				"lyrics": "Stuck a feath-er in his cap"
+			},
+			{
+				"name": "Vẫy chào bạn bè (Câu 4)",
+				"notes": PackedInt32Array([0, 1, 2, 1, 0, 0]),
+				"solfege": ["Do", "Re", "Mi", "Re", "Do", "Do"],
+				"lyrics": "And called it mac-a-ro-ni!"
+			}
+		]
+	},
+
+	# ------------------------------------------------------------------ 14. Brahms' Lullaby (Chương 3 - Bài 4)
+	{
+		"id": "brahms_lullaby",
+		"title": "Brahms' Lullaby",
+		"vietnamese_title": "Khúc Hát Ru Ánh Trăng",
+		"age_range": "2–6 tuổi",
+		"bpm": 66,
+		"bgm_path": "res://assets/audio/songbook/bgm_brahms_lullaby.ogg",
+		"voiceguide_path": "res://assets/audio/songbook/voiceguide_brahms_lullaby.ogg",
+		"rhythm": "lullaby_long",
+		"motif": "hộp nhạc ru êm",
+		"hook_vi": "Đung đưa khúc hát ru cùng Gấu Nâu",
+		"chords_full": ["C", "G", "F", "C"],
+		"color": Color("#C48D52"),
+		"chords": ["C", "G", "F", "C"],
+		"description": "Khúc hát ru kinh điển dịu dàng giúp bé thư giãn và cảm nhận nhịp điệu êm ái",
+		"pet_name": "Gấu Nâu Ấm Áp",
+		"pet_emoji": "🐻",
+		"pet_id": "bear",
+		"story_intro": "Ánh trăng bạc dịu dàng chiếu qua khung cửa lâu đài, Gấu Nâu ngân nga khúc hát ru êm đềm.",
+		"scene_cue": "Đom đóm vàng và sao đêm nhẹ nhàng đung đưa quanh cành đậu thần",
+		"phrases": [
+			{
+				"name": "Hát ru đêm lành (Câu 1)",
+				"notes": PackedInt32Array([2, 2, 3, 2, 2, 3]),
+				"solfege": ["Mi", "Mi", "Sol", "Mi", "Mi", "Sol"],
+				"lyrics": "Lul-la-by and good night"
+			},
+			{
+				"name": "Dưới bầu trời đầy sao (Câu 2)",
+				"notes": PackedInt32Array([2, 3, 5, 4, 3, 3, 2]),
+				"solfege": ["Mi", "Sol", "Do5", "La", "Sol", "Sol", "Mi"],
+				"lyrics": "With pinkaz ros-es be-dight"
+			},
+			{
+				"name": "Giấc mơ ngọt ngào (Câu 3)",
+				"notes": PackedInt32Array([1, 2, 3, 1, 2, 3]),
+				"solfege": ["Re", "Mi", "Sol", "Re", "Mi", "Sol"],
+				"lyrics": "Lay thee down now and rest"
+			},
+			{
+				"name": "Ngủ ngoan tới sáng mai (Câu 4)",
+				"notes": PackedInt32Array([5, 4, 3, 2, 1, 0]),
+				"solfege": ["Do5", "La", "Sol", "Mi", "Re", "Do"],
+				"lyrics": "May thy slum-ber be blest!"
+			}
+		]
+	},
+
+	# ------------------------------------------------------------------ 15. Forest Grand Parade (Chương 3 - Bài 5)
+	{
+		"id": "little_star_march",
+		"title": "Forest Grand Parade",
+		"vietnamese_title": "Đại Hợp Xướng Rừng Nhạc",
+		"age_range": "3–6 tuổi",
+		"bpm": 84,
+		"bgm_path": "res://assets/audio/songbook/bgm_little_star_march.ogg",
+		"voiceguide_path": "res://assets/audio/songbook/voiceguide_little_star_march.ogg",
+		"rhythm": "clap_2_4",
+		"motif": "hợp xướng cả khu rừng",
+		"hook_vi": "Cùng Sư Tử Nhạc Trưởng ngân vang cả 7 nốt!",
+		"chords_full": ["C", "F", "Dm", "G"],
+		"color": Color("#F4A261"),
+		"chords": ["C", "F", "Dm", "G"],
+		"description": "Bản hòa tấu kết thúc hành trình đi qua trọn vẹn 7 phím ngũ cung từ C4 tới D5",
+		"pet_name": "Sư Tử Nhạc Trưởng",
+		"pet_emoji": "🦁",
+		"pet_id": "lion",
+		"story_intro": "Tất cả muông thú trong Rừng Nhạc cùng tụ họp dưới Lâu Đài Chuông Gió cho buổi Đại Hợp Xướng!",
+		"scene_cue": "Pháo hoa sao vàng và cầu vồng 7 sắc bừng sáng từ phím Đô trầm tới Rê cao",
+		"phrases": [
+			{
+				"name": "Bậc thang ánh sáng đi lên (Câu 1)",
+				"notes": PackedInt32Array([0, 1, 2, 3, 4, 5, 6]),
+				"solfege": ["Do", "Re", "Mi", "Sol", "La", "Do5", "Re5"],
+				"lyrics": "Sing to-geth-er up the sky!"
+			},
+			{
+				"name": "Bậc thang ánh sáng đi xuống (Câu 2)",
+				"notes": PackedInt32Array([6, 5, 4, 3, 2, 1, 0]),
+				"solfege": ["Re5", "Do5", "La", "Sol", "Mi", "Re", "Do"],
+				"lyrics": "Floating gen-tly from on high!"
+			},
+			{
+				"name": "Muông thú hòa ca (Câu 3)",
+				"notes": PackedInt32Array([0, 2, 3, 5, 6, 5, 3]),
+				"solfege": ["Do", "Mi", "Sol", "Do5", "Re5", "Do5", "Sol"],
+				"lyrics": "Ev-ery friend is here to play"
+			},
+			{
+				"name": "Khúc kết Đại Hợp Xướng (Câu 4)",
+				"notes": PackedInt32Array([4, 3, 2, 1, 0, 3, 5]),
+				"solfege": ["La", "Sol", "Mi", "Re", "Do", "Sol", "Do5"],
+				"lyrics": "Musi-cal For-est hip hoo-ray!"
+			}
+		]
 	}
 ]
 
@@ -517,7 +762,7 @@ static func count() -> int:
 
 
 static func is_valid(index: int) -> bool:
-	return SONGS.size() > 0 and index >= 0
+	return index >= 0 and index < SONGS.size()
 
 
 static func get_song(index: int) -> Dictionary:
@@ -556,7 +801,14 @@ static func get_phrase_sequence(song_index: int, phrase_index: int) -> PackedInt
 	return phrase.get("notes", PackedInt32Array())
 
 
+## Đường dẫn nhạc nền BGM của bài hát. Trống nếu chưa có.
+static func get_bgm_path(song_index: int) -> String:
+	var s := get_song(song_index)
+	return s.get("bgm_path", "")
+
+
 ## Đường dẫn vocal guide la-la theo câu hát đầu (Phase 2). Trống nếu chưa có.
 static func get_voiceguide(song_index: int) -> String:
 	var s := get_song(song_index)
 	return s.get("voiceguide_path", "")
+

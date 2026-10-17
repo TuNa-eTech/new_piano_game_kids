@@ -1,8 +1,10 @@
 extends Node2D
 
-var _brain_dir := "/Users/anhtu/.gemini/antigravity-ide/brain/49773952-7526-4797-9d56-cef7847b9ac1"
+var _brain_dir := ""
 
 func _ready() -> void:
+	_brain_dir = ProjectSettings.globalize_path("res://screenshots")
+	DirAccess.make_dir_recursive_absolute(_brain_dir)
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	SaveStore.reset_for_test()
 	PauseOverlay.reset_pause_state()
@@ -25,6 +27,16 @@ func _run_captures(main) -> void:
 	for i in 30:
 		await get_tree().process_frame
 	await _capture("screen_gameplay")
+
+	# 1a. Free Play screen
+	GameState.free_play = true
+	for i in 10:
+		await get_tree().process_frame
+	await _capture("screen_free_play")
+	GameState.free_play = false
+	for i in 10:
+		await get_tree().process_frame
+
 
 	# 1b. Gameplay screen (Stage 7 Full Magic Tree with bloomed leaves)
 	var tree: MagicTree = main.get_node("UI/MagicTree")

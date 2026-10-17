@@ -29,7 +29,7 @@ const SFX_DIR := "res://assets/audio/"
 static var SFX_NAMES: Array[String] = [
 	"star_ting", "chapter_select", "chest_open", "page_turn",
 	"menu_open", "hold_complete", "chapter_unlock", "free_play_toggle",
-	"padlock_rattle",
+	"padlock_rattle", "wood_tap",
 	"soft_boing", "fairy_dust", "giggle_cute", "soft_plop", "cute_purr",
 	"accordion_breath", "violin_pluck", "harp_chime",
 ]
@@ -97,7 +97,7 @@ var _duck_tween: Tween
 var _voiceguide_player: AudioStreamPlayer
 
 ## tên SFX -> stream đã nạp. Nạp MỘT LẦN lúc khởi động; đường nóng chỉ tra bảng.
-var _sfx: Dictionary = {}
+var _sfx: Dictionary[String, AudioStream] = {}
 var _sfx_player: AudioStreamPlayer
 var _sfx_poly: AudioStreamPlaybackPolyphonic
 
@@ -244,12 +244,31 @@ func play_gameplay_music(fade_sec: float = 0.8) -> void:
 	play_music_track(path, fade_sec, 0.0)
 
 
-## Phát nhạc nền backing track chuẩn 10 bài hát thiếu nhi (-18 dBFS)
+## Phát nhạc nền backing track chuẩn 15 bài hát thiếu nhi (-18 dBFS)
 func play_songbook_bgm(bgm_path: String, fade_sec: float = 0.6) -> void:
 	if ResourceLoader.exists(bgm_path):
 		play_music_track(bgm_path, fade_sec, 0.0) # Player volume trên bus Music (-18dB trong default_bus_layout)
 	else:
 		play_gameplay_music(fade_sec)
+
+
+## Tạm dừng nhạc nền gameplay khi các màn đặc biệt (ChapterEnd, GoodnightScreen) phát nhạc riêng
+func pause_gameplay_bgm() -> void:
+	if _music_tween != null and _music_tween.is_valid():
+		_music_tween.kill()
+	if _pad_player != null and _pad_player.playing:
+		_pad_player.stop()
+	stop_voiceguide()
+
+
+## Khôi phục đúng bản nhạc nền của trang bài hát đang mở trong GameState
+func resume_current_gameplay_bgm(fade_sec: float = 0.6) -> void:
+	if is_instance_valid(GameState) and Songbook.count() > 0:
+		var bgm_path := Songbook.get_bgm_path(GameState.page_index)
+		if not bgm_path.is_empty() and ResourceLoader.exists(bgm_path):
+			play_songbook_bgm(bgm_path, fade_sec)
+			return
+	play_gameplay_music(fade_sec)
 
 
 ## Chuyển đổi nhạc nền mượt mà với crossfade âm lượng
@@ -448,15 +467,15 @@ func play_note(index: int) -> void:
 		_pool_next = (_pool_next + 1) % POOL_SIZE
 		p.stream = stream
 		p.pitch_scale = pitch
+		p.volume_db = 0.0
 		p.play()
-		p.pitch_scale = 1.0
 
 
 ## Fix UI 7 nhóm (nhóm 5): phím đen chromatic C#/D#/F#/G#/A# chói tai trên nền
 ## pad ngũ cung C-D-E-G-A, vi phạm "chạm đâu cũng hay".
 ## Ánh xạ mỗi slot đen sang nốt ngũ cung lân cận SÁNG nhất (upper neighbor):
 ## slot 0 (C-D) -> D4, 1 (D-E) -> E4, 3 (G-A) -> A4, 4 (A-C5) -> C5, 5 (C5-D5) -> D5.
-const BLACK_KEY_TO_WHITE := {
+const BLACK_KEY_TO_WHITE: Dictionary[int, int] = {
 	0: 1,
 	1: 2,
 	3: 4,
@@ -466,9 +485,7 @@ const BLACK_KEY_TO_WHITE := {
 
 ## Giữ hằng số chromatic cũ để không vỡ test/tools tra cứu, nhưng đường phát
 ## tiếng KHÔNG dùng nó nữa.
-## Cao độ chuẩn cho 5 nốt phím đen (Accidentals) so với G4 (1.0):
-## Slot 0: C#4 (0.707107), Slot 1: D#4 (0.793701), Slot 3: F#4 (0.943874), Slot 4: G#4 (1.059463), Slot 5: A#4 (1.189207)
-const BLACK_KEY_PITCHES: Dictionary = {
+const BLACK_KEY_PITCHES: Dictionary[int, float] = {
 	0: 0.707107,
 	1: 0.793701,
 	3: 0.943874,
@@ -479,42 +496,7 @@ const BLACK_KEY_PITCHES: Dictionary = {
 func play_black_key(slot: int) -> void:
 	# Luôn hòa âm ngũ cung: phát nốt trắng lân cận thay vì nửa cung chromatic.
 	if BLACK_KEY_TO_WHITE.has(slot):
-		play_note(int(BLACK_KEY_TO_WHITE[slot]))
-		return
-	if not BLACK_KEY_PITCHES.has(slot):
-		return
-	var pitch: float = BLACK_KEY_PITCHES[slot]
-
-	if backend == Backend.POLYPHONIC and _poly != null:
-		if _active_inst_streams.size() > 0 and slot < _active_inst_streams.size() and _active_inst_streams[slot] != null:
-			# Dịch nốt của nhạc cụ hiện tại lên nửa cung (x 1.059463)
-			var id := _poly.play_stream(
-				_active_inst_streams[slot], 0.0, INST_NOTE_DB, 1.059463, AudioServer.PLAYBACK_TYPE_DEFAULT, _bus
-			)
-			_recent[_recent_i] = id
-			_recent_i = (_recent_i + 1) % RECENT_IDS
-		elif _base_note != null:
-			var id := _poly.play_stream(
-				_base_note, 0.0, BASE_NOTE_DB, pitch, AudioServer.PLAYBACK_TYPE_DEFAULT, _bus
-			)
-			_recent[_recent_i] = id
-			_recent_i = (_recent_i + 1) % RECENT_IDS
-		elif _streams.size() > 0 and _streams[0] != null:
-			var id := _poly.play_stream(
-				_streams[0], 0.0, 0.0, pitch, AudioServer.PLAYBACK_TYPE_DEFAULT, _bus
-			)
-			_recent[_recent_i] = id
-			_recent_i = (_recent_i + 1) % RECENT_IDS
-	else:
-		var p := _pool[_pool_next]
-		_pool_next = (_pool_next + 1) % POOL_SIZE
-		if _base_note != null:
-			p.stream = _base_note
-		elif _streams.size() > 0 and _streams[0] != null:
-			p.stream = _streams[0]
-		p.pitch_scale = pitch
-		p.play()
-		p.pitch_scale = 1.0
+		play_note(BLACK_KEY_TO_WHITE[slot])
 
 
 ## Phát nốt preview phản hồi khi bé chạm đổi nhạc cụ
@@ -575,8 +557,6 @@ func play_note_pitched(index: int, pitch: float, volume_db: float = 0.0) -> void
 		p.pitch_scale = absolute
 		p.volume_db = volume_db
 		p.play()
-		p.pitch_scale = 1.0
-		p.volume_db = 0.0
 
 
 ## Phát một SFX theo tên. Không có file thì im lặng bỏ qua — Bước 3 thả file

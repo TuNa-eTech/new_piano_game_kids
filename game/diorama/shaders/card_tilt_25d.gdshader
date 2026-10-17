@@ -16,19 +16,20 @@ void vertex() {
 
 void fragment() {
 	vec4 tex = texture(TEXTURE, UV);
-	if (tex.a < 0.02) {
+	vec4 col = tex * COLOR;
+	if (col.a < 0.01) {
 		discard;
 	}
 
-	vec3 final_rgb = tex.rgb;
+	vec3 final_rgb = col.rgb;
 
 	// Vệt sáng vàng kim quét qua thẻ đang mở khóa
 	if (is_unlocked) {
 		float sweep = mod(TIME * sheen_speed, 4.0) - 1.5;
 		float dist = abs((UV.x * 1.2 + UV.y * 0.6) - sweep);
 		float sheen = smoothstep(sheen_width, 0.0, dist);
-		final_rgb += sheen * gold_sheen_color.rgb * gold_sheen_color.a * 0.45;
+		final_rgb += sheen * gold_sheen_color.rgb * gold_sheen_color.a * 0.45 * col.a;
 	}
 
-	COLOR = vec4(final_rgb, tex.a);
+	COLOR = vec4(final_rgb, col.a);
 }

@@ -13,6 +13,7 @@ const PageCurl = preload("res://game/diorama/page_curl.gd")
 const StoryBook = preload("res://game/diorama/story_book.gd")
 
 signal prop_interacted(prop_name: String)
+signal leaf_tapped(note_index: int)
 
 const WIZARD_CHEERS: Array[String] = [
 	"Bé đàn hay quá! ✨",
@@ -90,6 +91,9 @@ func _setup_story_book() -> void:
 	_story_book.chest_opened.connect(func():
 		interact_chest()
 	)
+	_story_book.leaf_tapped.connect(func(note_idx: int):
+		leaf_tapped.emit(note_idx)
+	)
 	add_child(_story_book)
 	move_child(_story_book, _book_spread.get_index() + 1)
 	_book_spread.visible = false
@@ -108,7 +112,7 @@ func _setup_freeplay_elements() -> void:
 	_beanstalk_freeplay.visible = false
 	_book_spread.add_child(_beanstalk_freeplay)
 
-	# 2. Bong bóng xà phòng ngũ sắc chứa nốt nhạc bay lơ lửng
+	# 2. Bong bóng xà phòng ngũ sắc chứa nốt nhạc bay lơ lửng (nằm trực tiếp trên DioramaStage để hiển thị trên StoryBook)
 	_bubble_particles = CPUParticles2D.new()
 	_bubble_particles.name = "BubbleNotesParticles"
 	_bubble_particles.emitting = false
@@ -131,7 +135,7 @@ func _setup_freeplay_elements() -> void:
 	bubble_grad.add_point(0.8, Color(1, 1, 1, 0.9))
 	bubble_grad.set_color(1, Color(1, 1, 1, 0.0))
 	_bubble_particles.color_ramp = bubble_grad
-	_book_spread.add_child(_bubble_particles)
+	add_child(_bubble_particles)
 
 
 func _on_free_play_changed(enabled: bool) -> void:
@@ -261,9 +265,9 @@ func _update_layout() -> void:
 		_beanstalk_freeplay.size = Vector2(bs_w, bs_h)
 		_beanstalk_freeplay.position = Vector2(book_w * 0.53, book_h * 0.12)
 
-	# Vùng bay bong bóng nốt nhạc từ cây đậu thần
+	# Vùng bay bong bóng nốt nhạc từ cây đậu thần trên trang phải của StoryBook
 	if _bubble_particles != null:
-		_bubble_particles.position = Vector2(book_w * 0.70, book_h * 0.80)
+		_bubble_particles.position = Vector2(ref_w * 0.65, 360.0)
 
 	# Vùng phát đom đóm bao quanh cuốn sách
 	if _fireflies != null:
@@ -539,10 +543,18 @@ func _setup_fireflies() -> void:
 
 
 
-## Gọi từ CallResponse khi kết thúc giai điệu để lật sang trang mới
+## Gọi từ CallResponse khi kết thúc giai điệu để lật sang trang mới.
+## Trang cuối mỗi chương (4, 9, 14) cố tình KHÔNG đi qua request_page_turn()
+## để CallResponse hết 1,2 giây PAGE_TURN rồi gọi GameState.advance_page() —
+## đó là đường duy nhất phát tín hiệu chapter_completed cho mọi chương.
 func flip_page(duration: float = 0.95) -> void:
-	if _story_book != null:
-		request_page_turn(_story_book.current_page() + 1, duration)
+	if _story_book == null:
+		return
+	var cur := _story_book.current_page()
+	var is_end_of_chapter := (cur + 1) % Chapters.pages_per_chapter() == 0
+	if is_end_of_chapter or cur >= Songbook.count() - 1:
+		return
+	request_page_turn(cur + 1, duration)
 
 
 ## Lật lui một trang — nút mũi tên trái và công cụ chụp hình dùng đường này.
@@ -634,6 +646,11 @@ func play_flourish() -> void:
 		_story_book.play_leo_flourish()
 
 
+func reset_leaves() -> void:
+	if _story_book != null:
+		_story_book.reset_leaves()
+
+
 func set_speech_text(text: String) -> void:
 	if _speech_label != null:
 		_speech_label.text = text
@@ -644,7 +661,7 @@ func set_speech_text(text: String) -> void:
 func on_note_played(note_idx: int) -> void:
 	if _story_book != null:
 		_story_book.on_note_struck(note_idx)
-	if _wizard != null:
+	if _wizard != null and _wizard.visible:
 		var tw := create_tween().bind_node(self)
 		tw.tween_property(_wizard, "scale", Vector2(1.15, 0.85), 0.06) \
 			.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
@@ -652,10 +669,17 @@ func on_note_played(note_idx: int) -> void:
 			.set_trans(Tween.TRANS_BOUNCE).set_ease(Tween.EASE_OUT)
 
 
-## Chú phù thủy nhỏ nhún nhảy chơi đàn mini theo nhịp
+func on_wrong_note_played(note_idx: int) -> void:
+	if _story_book != null:
+		_story_book.on_wrong_note_struck(note_idx)
+
+
+## Chú phù thủy nhỏ nhún nhảy chơi đàn mini theo nhịp (chỉ chạy nếu node _wizard hiển thị)
 func _start_wizard_animation() -> void:
 	if _wizard_tween != null and _wizard_tween.is_valid():
 		_wizard_tween.kill()
+	if _wizard == null or not _wizard.visible:
+		return
 
 	_wizard_tween = create_tween().bind_node(self).set_loops()
 	_wizard_tween.tween_property(_wizard, "rotation", 0.04, 0.42) \

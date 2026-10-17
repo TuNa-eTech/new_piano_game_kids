@@ -21,14 +21,14 @@ const SLOT_CENTERS: Array[Vector2] = [
 	Vector2(176.4, 36.9),
 	Vector2(223.9, 36.6)
 ]
-const ICON_BASE_SIZE := Vector2(36.0, 36.0)
-const INSTRUMENT_NAMES := ["Violin", "Flute", "Drum", "Trumpet", "Harp"]
+const ICON_BASE_SIZE := Vector2(38.0, 38.0)
+const INSTRUMENT_NAMES := ["Auto", "Animals", "Flute", "Kalimba", "Chimes"]
 const ICON_PATHS := [
-	"res://assets/art/progress_violin.png",
-	"res://assets/art/progress_flute.png",
-	"res://assets/art/progress_drum.png",
-	"res://assets/art/progress_trumpet.png",
-	"res://assets/art/progress_harp.png"
+	"res://assets/art/ui_inst_auto.png",
+	"res://assets/art/ui_inst_animals.png",
+	"res://assets/art/ui_inst_flute.png",
+	"res://assets/art/ui_inst_kalimba.png",
+	"res://assets/art/ui_inst_chimes.png"
 ]
 
 var _glow_aura: Control
@@ -147,21 +147,11 @@ func select_instrument(index: int) -> void:
 		tw.tween_property(icon, "scale", Vector2(1.38, 1.38), 0.10)
 		tw.tween_property(icon, "scale", Vector2(1.20, 1.20), 0.15)
 
-	# Phát âm thanh phản hồi xúc giác + nốt mẫu của nhạc cụ
-	AudioDirector.play_sfx("wood_tap")
-	match index:
-		0: # Violin
-			AudioDirector.play_sfx("violin_pluck")
-		1: # Flute
-			AudioDirector.play_instrument_note(0, 0, 0.0)
-		2: # Drum
-			AudioDirector.play_sfx("soft_boing")
-		3: # Trumpet
-			AudioDirector.play_sfx("accordion_breath")
-		4: # Harp
-			AudioDirector.play_sfx("harp_chime")
-
 	GameState.instrument_mode = index
+
+	# Phát âm thanh phản hồi xúc giác + nốt mẫu đúng với chế độ nhạc cụ vừa chọn
+	AudioDirector.play_sfx("wood_tap")
+	AudioDirector.play_mode_preview(index)
 
 	instrument_selected.emit(index)
 

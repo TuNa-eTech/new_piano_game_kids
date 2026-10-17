@@ -10,6 +10,15 @@ extends Button
 
 var chapter: int = 0
 var _face: Control
+var _shadow: Panel
+var _card_art: TextureRect
+var _dim_overlay: Panel
+var _glow_border: Panel
+var _strap_rect: TextureRect
+var _padlock_rect: TextureRect
+var _cradle_rect: TextureRect
+var _dots_layer: Control
+
 var _shader_mat: ShaderMaterial
 var _tilt_tween: Tween
 var _entry_tween: Tween
@@ -42,34 +51,153 @@ func setup(index: int) -> void:
 	focus_mode = Control.FOCUS_NONE
 	mouse_filter = Control.MOUSE_FILTER_STOP
 
+	# 1. Khung chứa chính để diễn hoạt ảnh nhô lên và trôi nổi (Pop-up Book Face)
 	_face = Control.new()
+	_face.name = "Face"
 	_face.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_face.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(_face)
-	_face.draw.connect(_draw_face)
 
-	# Nạp shader phối cảnh 2.5D cho thẻ
+	# 2. Bóng đổ tiếp xúc 2.5D (Contact Drop Shadow lên trang sách)
+	_shadow = Panel.new()
+	_shadow.name = "DropShadow"
+	_shadow.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var shadow_style := StyleBoxFlat.new()
+	shadow_style.bg_color = Color(0.12, 0.07, 0.03, 0.28)
+	shadow_style.set_corner_radius_all(20)
+	_shadow.add_theme_stylebox_override("panel", shadow_style)
+	_face.add_child(_shadow)
+
+	# 3. Tranh minh họa thế giới 2.5D với Shader nghiêng & vệt sáng
+	_card_art = TextureRect.new()
+	_card_art.name = "CardArt"
+	_card_art.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_card_art.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_card_art.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_card_art.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	if _card_tex != null:
+		_card_art.texture = _card_tex
+
 	if ResourceLoader.exists("res://game/diorama/shaders/card_tilt_25d.gdshader"):
 		var sh := load("res://game/diorama/shaders/card_tilt_25d.gdshader") as Shader
 		if sh != null:
 			_shader_mat = ShaderMaterial.new()
 			_shader_mat.shader = sh
-			_face.material = _shader_mat
+			_card_art.material = _shader_mat
+	_face.add_child(_card_art)
+
+	# 4. Lớp phủ mờ khi bị khóa (Dim Overlay)
+	_dim_overlay = Panel.new()
+	_dim_overlay.name = "DimOverlay"
+	_dim_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_dim_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+	var dim_style := StyleBoxFlat.new()
+	dim_style.bg_color = Color(0.04, 0.06, 0.08, 0.50)
+	dim_style.set_corner_radius_all(18)
+	_dim_overlay.add_theme_stylebox_override("panel", dim_style)
+	_face.add_child(_dim_overlay)
+
+	# 5. Viền hào quang vàng nhấp nháy khi mở khóa (Active Glow Border)
+	_glow_border = Panel.new()
+	_glow_border.name = "GlowBorder"
+	_glow_border.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_glow_border.set_anchors_preset(Control.PRESET_FULL_RECT)
+	var glow_style := StyleBoxFlat.new()
+	glow_style.bg_color = Color.TRANSPARENT
+	glow_style.draw_center = false
+	glow_style.border_color = Color(1.0, 0.88, 0.45, 0.75)
+	glow_style.set_border_width_all(3)
+	glow_style.set_corner_radius_all(18)
+	_glow_border.add_theme_stylebox_override("panel", glow_style)
+	_face.add_child(_glow_border)
+
+	# 6. Đai da thắt ngang cho thẻ khóa (Leather Belt Strap)
+	_strap_rect = TextureRect.new()
+	_strap_rect.name = "LeatherStrap"
+	_strap_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_strap_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_strap_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	if _leather_strap_tex != null:
+		_strap_rect.texture = _leather_strap_tex
+	_face.add_child(_strap_rect)
+
+	# 7. Ổ khóa đồng hoàng gia 3D (Brass Padlock)
+	_padlock_rect = TextureRect.new()
+	_padlock_rect.name = "Padlock"
+	_padlock_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_padlock_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_padlock_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	if _padlock_tex != null:
+		_padlock_rect.texture = _padlock_tex
+	_face.add_child(_padlock_rect)
+
+	# 8. Đạo cụ Lọ sao nôi lá non nổi bật ở chân Thẻ Chương 1
+	_cradle_rect = TextureRect.new()
+	_cradle_rect.name = "StarJarCradle"
+	_cradle_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_cradle_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_cradle_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	if _star_jar_cradle_tex != null:
+		_cradle_rect.texture = _star_jar_cradle_tex
+	_face.add_child(_cradle_rect)
+
+	# 9. Lớp vẽ 5 chấm tròn tiến độ bài hát (Progress Dots)
+	_dots_layer = Control.new()
+	_dots_layer.name = "ProgressDotsLayer"
+	_dots_layer.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_dots_layer.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_dots_layer.draw.connect(_draw_dots)
+	_face.add_child(_dots_layer)
 
 	mouse_entered.connect(_on_mouse_entered)
 	mouse_exited.connect(_on_mouse_exited)
 	item_rect_changed.connect(_on_resized)
 
+	_update_layout_rects()
 	refresh()
 
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_RESIZED:
 		pivot_offset = size * 0.5
+		_update_layout_rects()
 
 
 func _on_resized() -> void:
 	pivot_offset = size * 0.5
+	_update_layout_rects()
+
+
+func _update_layout_rects() -> void:
+	var w := size.x
+	var h := size.y
+	if w <= 0.0 or h <= 0.0:
+		return
+
+	# Bóng đổ hơi lệch xuống dưới và sang phải nhẹ
+	if _shadow != null:
+		_shadow.position = Vector2(w * 0.03, h * 0.03)
+		_shadow.size = Vector2(w * 0.94, h * 0.94)
+
+	# Đai da ở độ cao 48%
+	if _strap_rect != null:
+		var strap_h := h * 0.16
+		_strap_rect.position = Vector2(-w * 0.04, h * 0.48 - strap_h * 0.5)
+		_strap_rect.size = Vector2(w * 1.08, strap_h)
+
+	# Ổ khóa đồng ở tâm đai da
+	if _padlock_rect != null:
+		var lock_w := w * 0.44
+		var lock_h := lock_w * 1.25
+		_padlock_rect.position = Vector2(w * 0.5 - lock_w * 0.5, h * 0.48 - lock_h * 0.48)
+		_padlock_rect.size = Vector2(lock_w, lock_h)
+
+	# Nôi sao nôi lá non ở chân thẻ Chương 1 (đặt ở 68% chiều cao để không đè chấm tiến độ)
+	if _cradle_rect != null:
+		var cradle_w := w * 0.68
+		var cradle_h := cradle_w
+		_cradle_rect.position = Vector2(w * 0.5 - cradle_w * 0.5, h * 0.70 - cradle_h * 0.5)
+		_cradle_rect.size = Vector2(cradle_w, cradle_h)
 
 
 func _process(delta: float) -> void:
@@ -77,7 +205,18 @@ func _process(delta: float) -> void:
 	if _face != null:
 		# Hiệu ứng trôi bồng bềnh 2.5D tự nhiên (Floating wave)
 		_face.position.y = sin(_idle_time * 2.2 + chapter * 1.4) * 3.5
-		_face.queue_redraw()
+
+	# Hoạt ảnh nhịp thở cho viền sáng vàng kim
+	if _glow_border != null and _glow_border.visible:
+		var pulse := 0.5 + 0.5 * sin(_idle_time * 2.8)
+		_glow_border.modulate.a = 0.50 + 0.45 * pulse
+
+	# Hoạt ảnh nhún nhẹ cho Nôi Sao
+	if _cradle_rect != null and _cradle_rect.visible:
+		var jar_float := sin(_idle_time * 2.5) * 2.5
+		var h := size.y
+		var cradle_h := _cradle_rect.size.y
+		_cradle_rect.position.y = (h * 0.70 - cradle_h * 0.5) + jar_float
 
 
 func pop_up_intro(delay: float = 0.0) -> void:
@@ -98,8 +237,21 @@ func refresh() -> void:
 	disabled = false
 	if _shader_mat != null:
 		_shader_mat.set_shader_parameter("is_unlocked", unlocked)
-	if _face != null:
-		_face.queue_redraw()
+
+	if _dim_overlay != null:
+		_dim_overlay.visible = not unlocked
+	if _strap_rect != null:
+		_strap_rect.visible = not unlocked
+	if _padlock_rect != null:
+		_padlock_rect.visible = not unlocked
+
+	if _glow_border != null:
+		_glow_border.visible = unlocked
+	if _cradle_rect != null:
+		_cradle_rect.visible = (unlocked and chapter == 0)
+
+	if _dots_layer != null:
+		_dots_layer.queue_redraw()
 
 
 func play_tap_feedback() -> void:
@@ -156,69 +308,13 @@ func _reset_tilt() -> void:
 		_shader_mat.set_shader_parameter("tilt_offset", Vector2.ZERO)
 
 
-func _draw_face() -> void:
-	var w := _face.size.x
-	var h := _face.size.y
-	var unlocked := GameState.chapter_unlocked(chapter)
-	var r := Rect2(0, 0, w, h)
-	var pulse := 0.5 + 0.5 * sin(_idle_time * 2.8)
-
-	if _card_tex != null:
-		_face.draw_texture_rect(_card_tex, r, false)
-
-	if not unlocked:
-		# Khi bị khóa: vẽ lớp phủ mờ bo tròn theo khung thẻ
-		var style := StyleBoxFlat.new()
-		style.bg_color = Color(0.05, 0.07, 0.10, 0.48)
-		style.set_corner_radius_all(22)
-		_face.draw_style_box(style, r)
-
-		# Đai da thắt ngang
-		if _leather_strap_tex != null:
-			var strap_h := h * 0.16
-			var strap_y := h * 0.48 - strap_h * 0.5
-			var strap_rect := Rect2(-w * 0.04, strap_y, w * 1.08, strap_h)
-			_face.draw_texture_rect(_leather_strap_tex, strap_rect, false)
-		else:
-			_draw_leather_strap(w, h)
-
-		# Ổ khóa đồng hoàng gia 3D
-		if _padlock_tex != null:
-			var lock_w := w * 0.46
-			var lock_h := lock_w * (200.0 / 160.0)
-			var lock_rect := Rect2(w * 0.5 - lock_w * 0.5, h * 0.48 - lock_h * 0.48, lock_w, lock_h)
-			_face.draw_texture_rect(_padlock_tex, lock_rect, false)
-		else:
-			_draw_lock(Vector2(w * 0.5, h * 0.48), minf(w, h) * 0.18)
+func _draw_dots() -> void:
+	if _dots_layer == null:
 		return
-
-	# Khi chương mở: viền hào quang vàng nhịp thở mềm mại
-	var glow_style := StyleBoxFlat.new()
-	glow_style.bg_color = Color.TRANSPARENT
-	glow_style.border_color = Color(1.0, 0.92, 0.50, 0.18 + 0.22 * pulse)
-	glow_style.set_border_width_all(6)
-	glow_style.set_corner_radius_all(26)
-	_face.draw_style_box(glow_style, r.grow(3.0 * pulse))
-
-	var active_style := StyleBoxFlat.new()
-	active_style.bg_color = Color.TRANSPARENT
-	active_style.border_color = Color(1.0, 0.88, 0.45, 0.65 + 0.30 * pulse)
-	active_style.set_border_width_all(4)
-	active_style.set_corner_radius_all(24)
-	_face.draw_style_box(active_style, r)
-
-	# Đạo cụ Lọ sao nôi lá non nổi bật ở chân Thẻ Chương 1
-	if chapter == 0 and _star_jar_cradle_tex != null:
-		var jar_w := w * 0.74
-		var jar_h := jar_w # 1:1
-		var jar_float := sin(_idle_time * 2.5) * 2.5
-		var jar_rect := Rect2(w * 0.5 - jar_w * 0.5, h * 0.76 - jar_h * 0.5 + jar_float, jar_w, jar_h)
-		_face.draw_texture_rect(_star_jar_cradle_tex, jar_rect, false)
-	elif chapter == 0:
-		var star_pos := Vector2(w * 0.5, h * 0.76)
-		var star_pulse := 0.5 + 0.5 * sin(_idle_time * 3.6)
-		_face.draw_circle(star_pos, 4.0 * (1.0 + 0.25 * star_pulse), Color(1.0, 0.96, 0.65, 0.75 + 0.25 * star_pulse))
-		_face.draw_circle(star_pos, 9.0 * (1.0 + 0.25 * star_pulse), Color(1.0, 0.85, 0.35, 0.28 * star_pulse))
+	var w := size.x
+	var h := size.y
+	if w <= 0.0 or h <= 0.0:
+		return
 
 	# 5 chấm tiến độ nhỏ tinh tế ở cạnh dưới thẻ
 	var pages := Chapters.pages_per_chapter()
@@ -235,43 +331,9 @@ func _draw_face() -> void:
 		var page := first + i
 		var centre := Vector2(dot_x + i * dot_gap, dot_y)
 		if max_page > page:
-			_face.draw_circle(centre, dot_r, Color("#F5D77F"))
+			_dots_layer.draw_circle(centre, dot_r, Color("#F5D77F"))
 		elif cur_page == page:
-			_face.draw_circle(centre, dot_r * 1.3, Color("#FFFFFF"))
-			_face.draw_circle(centre, dot_r * 0.8, Color("#F5D77F"))
+			_dots_layer.draw_circle(centre, dot_r * 1.3, Color("#FFFFFF"))
+			_dots_layer.draw_circle(centre, dot_r * 0.8, Color("#F5D77F"))
 		else:
-			_face.draw_circle(centre, dot_r, Color(0.3, 0.35, 0.38, 0.6))
-
-
-func _draw_leather_strap(w: float, h: float) -> void:
-	var strap_h := h * 0.14
-	var strap_y := h * 0.52 - strap_h * 0.5
-	var strap_rect := Rect2(0, strap_y, w, strap_h)
-	var leather_col := Color("#4E2E18")
-	_face.draw_rect(strap_rect, leather_col, true)
-
-	var stitch_col := Color("#C89E58")
-	_face.draw_line(Vector2(0, strap_y + 2), Vector2(w, strap_y + 2), stitch_col, 1.5)
-	_face.draw_line(Vector2(0, strap_y + strap_h - 2), Vector2(w, strap_y + strap_h - 2), stitch_col, 1.5)
-
-
-func _draw_lock(c: Vector2, r: float) -> void:
-	var gold := Color("#F8CE65")
-	var dark_brass := Color("#825A1E")
-	var brass_body := Color("#C2923C")
-
-	var bw := r * 1.5
-	var bh := r * 1.3
-	var shackle_r := bw * 0.38
-	var shackle_c := Vector2(c.x, c.y - bh * 0.28)
-	_face.draw_arc(shackle_c, shackle_r, PI, TAU, 24, gold, 5.0, true)
-
-	var body_rect := Rect2(c.x - bw * 0.5, c.y - bh * 0.25, bw, bh)
-	_face.draw_rect(body_rect, brass_body, true)
-	_face.draw_rect(body_rect, gold, false, 3.5)
-
-	_face.draw_line(Vector2(body_rect.position.x + 2, body_rect.end.y - 2), Vector2(body_rect.end.x - 2, body_rect.end.y - 2), dark_brass, 2.0)
-
-	var hole_y := c.y + bh * 0.15
-	_face.draw_circle(Vector2(c.x, hole_y), r * 0.20, Color(0.12, 0.08, 0.04))
-	_face.draw_rect(Rect2(c.x - r * 0.08, hole_y, r * 0.16, r * 0.28), Color(0.12, 0.08, 0.04), true)
+			_dots_layer.draw_circle(centre, dot_r, Color(0.3, 0.35, 0.38, 0.6))

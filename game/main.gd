@@ -68,8 +68,13 @@ func _ready() -> void:
 			if _diorama != null:
 				_diorama.sing_leaf(n)
 		)
+		_tree.leaf_bloomed.connect(func(n):
+			if _diorama != null:
+				_diorama.on_note_played(n)
+		)
 	if _diorama != null:
 		_diorama.prop_interacted.connect(_on_diorama_prop_interacted)
+		_diorama.leaf_tapped.connect(_on_diorama_leaf_tapped)
 
 	if GameState.show_main_menu_on_launch:
 		_router.open_main_menu()
@@ -101,6 +106,7 @@ func _on_call_response_page_completed(_page_idx: int) -> void:
 func _on_phrase_completed(_phrase_idx: int) -> void:
 	if _diorama != null:
 		_diorama.play_flourish()
+		_diorama.reset_leaves()
 
 
 func _on_prompt_updated(text: String) -> void:
@@ -122,22 +128,43 @@ func _on_key_note_played(key: int) -> void:
 		var to_pos := _diorama.get_leaf_global_position(key) if _diorama != null else (_tree.global_position + _tree.get_leaf_position(key) if _tree != null else Vector2.ZERO)
 		_ribbon.emit_ribbon(from_pos, to_pos, Notes.color_of(key))
 	if _diorama != null:
-		_diorama.on_note_played(key)
+		if GameState.free_play:
+			_diorama.on_note_played(key)
+		else:
+			_diorama.on_wrong_note_played(key)
+
+
+func _on_diorama_leaf_tapped(note_idx: int) -> void:
+	if _ribbon != null and _keyboard != null and _diorama != null:
+		var from_pos := _diorama.get_leaf_global_position(note_idx)
+		var to_pos := _keyboard.get_key_global_position(note_idx)
+		_ribbon.emit_ribbon(from_pos, to_pos, Notes.color_of(note_idx))
+	if _diorama != null:
+		if GameState.free_play:
+			_diorama.on_note_played(note_idx)
+		else:
+			_diorama.on_wrong_note_played(note_idx)
+	if _call_response != null:
+		_call_response.on_external_note_played(note_idx)
 
 
 func _on_black_note_played(slot: int) -> void:
+	var white_note: int = AudioDirector.BLACK_KEY_TO_WHITE.get(slot, clampi(slot, 0, Notes.count() - 1))
 	if _ribbon != null:
 		var from_pos := _keyboard.get_black_key_global_position(slot)
-		var target_pos := Vector2(from_pos.x, from_pos.y - 180.0)
-		_ribbon.emit_ribbon(from_pos, target_pos, Color("#FFD166"))
+		var target_pos := _diorama.get_leaf_global_position(white_note) if _diorama != null else Vector2(from_pos.x, from_pos.y - 180.0)
+		_ribbon.emit_ribbon(from_pos, target_pos, Notes.color_of(white_note))
 	if _diorama != null:
-		_diorama.on_note_played(slot)
+		if GameState.free_play:
+			_diorama.on_note_played(white_note)
+		else:
+			_diorama.on_wrong_note_played(white_note)
 	# Fix UI 7 nhóm: phím đen giờ kêu nốt ngũ cung (AudioDirector remap),
-	# nên cho cây cao thêm + đếm nốt để bé thấy "bấm đâu cũng có phản hồi".
+	# nên cho cây cao thêm + đếm đúng nốt ngũ cung đã ánh xạ để bé thấy "bấm đâu cũng có phản hồi".
 	# KHÔNG cho sao / không tiến chuỗi (CallResponse chỉ nghe note_played trắng).
 	if _tree != null:
 		_tree.grow_free()
-	GameState.note_was_played(slot)
+	GameState.note_was_played(white_note)
 
 
 
@@ -158,13 +185,10 @@ func _on_map_closed() -> void:
 
 
 func _on_diorama_prop_interacted(prop: String) -> void:
-	# Rương chỉ mở overlay khi Chơi Tự Do. Lúc đang học (SINGING/WAITING),
-	# chạm rương chỉ nổ particle + sfx trong diorama, không bung overlay
-	# phá chuỗi — gliss từ sách xuống phím hay quệt trúng rương.
+	# Rương mở overlay phần thưởng ở mọi chế độ chơi.
 	if prop == "chest" and _router != null:
-		if GameState.free_play:
-			_keyboard.release_all()
-			_router.open_chest_reward(GameState.chapter_index())
+		_keyboard.release_all()
+		_router.open_chest_reward(GameState.chapter_index())
 
 
 ## "Buổi Diễn Rừng Xanh" — hết chương thì cả 7 con vật hát lại giai điệu của

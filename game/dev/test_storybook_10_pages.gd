@@ -51,14 +51,14 @@ func _test_storybook_initialization() -> void:
 
 
 func _test_all_10_song_pages() -> void:
-	print("\n② Kiểm tra 10 bài hát và thú cưng từng trang")
+	print("\n② Kiểm tra 15 bài hát và thú cưng từng trang")
 	var book := StoryBook.new()
 	add_child(book)
 	book.size = Vector2(880, 416)
 	await get_tree().process_frame
 
 	var total_songs := Songbook.count()
-	_check("Songbook có đủ 10 bài hát", total_songs == 10, "Hiện có %d bài" % total_songs)
+	_check("Songbook có đủ 15 bài hát (3 chương x 5 bài)", total_songs == 15, "Hiện có %d bài" % total_songs)
 
 	for i in total_songs:
 		book.load_page(i)
@@ -114,9 +114,10 @@ func _test_page_navigation() -> void:
 	_check("Trang 1: Nút Prev ẩn", not book._btn_prev.visible)
 	_check("Trang 1: Nút Next hiện", book._btn_next.visible)
 
-	book.load_page(9)
-	_check("Trang 10: Nút Prev hiện", book._btn_prev.visible)
-	_check("Trang 10: Nút Next ẩn", not book._btn_next.visible)
+	var last_idx := Songbook.count() - 1
+	book.load_page(last_idx)
+	_check("Trang cuối: Nút Prev hiện", book._btn_prev.visible)
+	_check("Trang cuối: Nút Next ẩn", not book._btn_next.visible)
 
 	# Test lật trang
 	var pages_received: Array[int] = []
@@ -141,7 +142,7 @@ func _test_page_navigation() -> void:
 		"nhận %s" % str(pages_received))
 
 	pages_received.clear()
-	book.load_page(9)
+	book.load_page(last_idx)
 	book.next_page()
 	book.load_page(0)
 	book.prev_page()

@@ -394,7 +394,7 @@ func open_for_chapter(chapter: int) -> void:
 		var page := base_page + i
 		var btn := _level_buttons[i]
 		var is_unlocked := page <= max_page
-		var is_completed := page < current_page
+		var is_completed := page < max_page
 		var is_current := (i == active_idx)
 		btn.disabled = not is_unlocked
 

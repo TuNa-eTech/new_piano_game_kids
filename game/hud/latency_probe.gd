@@ -27,6 +27,7 @@ var _memory_baseline: float = 0.0
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_memory_baseline = Performance.get_monitor(Performance.MEMORY_STATIC)
+	set_process(_panel.visible)
 
 
 func bind_keyboard(keyboard: PianoKeyboard) -> void:
@@ -43,6 +44,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	match event.keycode:
 		TOGGLE_KEY:
 			_panel.visible = not _panel.visible
+			set_process(_panel.visible)
 		BACKEND_KEY:
 			AudioDirector.toggle_backend()
 		REBASE_KEY:

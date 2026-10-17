@@ -22,15 +22,15 @@ const BLACK_KEY_SLOTS := [0, 1, 3, 4, 5]
 var _key_rects: Array[Rect2] = []
 var _keys: Array[AnimalKey] = []
 ## ngón (event.index) -> chỉ số phím trắng đang giữ
-var _finger_to_key: Dictionary = {}
+var _finger_to_key: Dictionary[int, int] = {}
 
 ## Hệ thống phím đen tương tác (Accidentals)
-var _black_key_rects: Dictionary = {}
-var _black_key_pressed: Dictionary = {}
-var _black_key_depress: Dictionary = {}
-var _black_key_tweens: Dictionary = {}
+var _black_key_rects: Dictionary[int, Rect2] = {}
+var _black_key_pressed: Dictionary[int, bool] = {}
+var _black_key_depress: Dictionary[int, float] = {}
+var _black_key_tweens: Dictionary[int, Tween] = {}
 ## ngón (event.index) -> slot phím đen đang giữ
-var _black_finger_to_slot: Dictionary = {}
+var _black_finger_to_slot: Dictionary[int, int] = {}
 
 var _black_layer: Control
 var _black_key_tex: Texture2D
@@ -298,9 +298,6 @@ func _draw_black_keys() -> void:
 			_draw_fairy_star(sparkle_pos, 7.0, 1.8, Color.WHITE)
 			# Hào quang điểm nhấn
 			_black_layer.draw_circle(sparkle_pos, 4.0, Color(1.0, 0.85, 0.95, 0.40))
-		elif slot == 0 or slot == 3 or slot == 5:
-			# Idle key chỉ điểm xuyết ánh lấp lánh nhẹ nhàng ở vài phím để tránh rối mắt
-			_draw_fairy_star(sparkle_pos, 3.8, 1.0, Color(1.0, 0.95, 0.98, 0.50))
 
 
 ## Vẽ đốm sao 4 cánh hình kim cương lấp lánh cổ tích (Fairy Sparkle Star ✦)

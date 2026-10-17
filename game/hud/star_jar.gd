@@ -6,6 +6,8 @@ extends Control
 ## tinh đầy dần. Mỗi nốt đúng = một hạt sao bay vào lọ, có tiếng ting."
 ## Con số vẫn hiện nhỏ và mờ bên dưới lọ — dành cho phụ huynh nhìn qua vai,
 ## không dành cho bé. Trẻ 4 tuổi đọc mực nước, không đọc chữ số.
+##
+## Chạm vào lọ cũng cho phản hồi vui tai (lắc lư + tiếng ting) như lắc máy.
 
 signal jar_interacted
 
@@ -28,9 +30,7 @@ var _star_tex: Texture2D
 
 
 func _ready() -> void:
-	# P2: STOP nuốt chạm + spam ting khi bé tưởng lọ là nút. IGNORE để chạm
-	# xuyên qua; wiggle chỉ còn qua lắc máy (accelerometer) và phím S test.
-	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	mouse_filter = Control.MOUSE_FILTER_STOP
 	pivot_offset = Vector2(size.x * 0.5, size.y * 0.85)
 
 	if ResourceLoader.exists("res://assets/art/ui_star_jar.png"):
@@ -52,9 +52,9 @@ func _ready() -> void:
 
 
 func _gui_input(event: InputEvent) -> void:
-	# P2: lọ IGNORE nên không còn nhận gui_input; giữ hàm rỗng để không
-	# vô tình nối lại. Wiggle qua _unhandled_input (phím S) và accelerometer.
-	pass
+	if (event is InputEventScreenTouch and event.pressed) or (event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT):
+		wiggle()
+		accept_event()
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -123,8 +123,8 @@ func _on_stars_changed(total: int) -> void:
 func _draw() -> void:
 	var body := Rect2(Vector2.ZERO, Vector2(size.x, size.y * 0.85))
 
-	# Drop shadow beneath glass jar
-	draw_circle(Vector2(body.size.x * 0.5, body.size.y * 0.92), body.size.x * 0.38, Color(0, 0, 0, 0.28))
+	if _jar_tex == null:
+		draw_circle(Vector2(body.size.x * 0.5, body.size.y * 0.92), body.size.x * 0.38, Color(0, 0, 0, 0.28))
 
 	# Mực sao dâng từ đáy lọ lên
 	var fh := body.size.y * 0.72 * _fill

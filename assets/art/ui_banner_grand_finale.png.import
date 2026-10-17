@@ -2,7 +2,7 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://r6bajjum0mjn"
+uid="uid://3b3hhxfr3hqk"
 path="res://.godot/imported/ui_banner_grand_finale.png-353bdcf232223d60b44b57782762a0b0.ctex"
 metadata={
 "vram_texture": false
@@ -16,14 +16,14 @@ dest_files=["res://.godot/imported/ui_banner_grand_finale.png-353bdcf232223d60b4
 [params]
 
 compress/mode=0
-compress/high_quality=true
+compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0
 compress/hdr_compression=1
 compress/normal_map=0
 compress/channel_pack=0
-mipmaps/generate=false
+mipmaps/generate=true
 mipmaps/limit=-1
 roughness/mode=0
 roughness/src_normal=""

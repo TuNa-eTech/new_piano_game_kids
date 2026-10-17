@@ -148,10 +148,13 @@ func _on_auto_play_changed(enabled: bool) -> void:
 			prompt_updated.emit("Tự động biểu diễn bài hát... ♫")
 	else:
 		_idle = 0.0
-		_refresh_hint()
+		if _state == State.WAITING:
+			_refresh_hint()
 
 
 func _enter(next: State) -> void:
+	if _state == State.FREE and next != State.FREE:
+		AudioDirector.set_music_intensity(false)
 	_state = next
 	_timer = 0.0
 	match next:
@@ -248,7 +251,7 @@ func _tick_singing() -> void:
 
 ## Bước 2 — Cây chờ: không đồng hồ, không thanh thời gian.
 ## Ở chế độ Auto-Play: tự động gõ đúng nốt theo tiết tấu BPM.
-## Ở chế độ bình thường: sau 8 giây im lặng, con vật tương ứng ngân nhẹ nốt nhắc.
+## Ở chế độ bình thường: sau 4 giây im lặng, con vật tương ứng ngân nhẹ nốt nhắc.
 func _tick_waiting(delta: float) -> void:
 	if GameState.auto_play:
 		_auto_play_timer += delta
@@ -272,14 +275,16 @@ func _tick_waiting(delta: float) -> void:
 		_idle = 0.0
 		if _step < _sequence.size():
 			# Lần đầu bé đơ: hát mẫu vocal guide la-la theo câu hát (nếu có),
-			# các lần sau mới nhắc bằng nốt pitched to dần như cũ.
-			if _idle_repeats == 0 and Songbook.is_valid(_page):
+			# các lần sau mới nhắc bằng nốt pitched to dần để không đè 2 tiếng cùng lúc.
+			var played_vg := false
+			if _idle_repeats == 0 and _phrase_index == 0 and Songbook.is_valid(_page):
 				var vg := Songbook.get_voiceguide(_page)
 				if not vg.is_empty():
 					AudioDirector.play_voiceguide(vg)
-			# Lần 1 nhắc nhẹ, lần 2+ to dần + pulse lại hint để bé thấy.
-			var vol_db := -10.0 if _idle_repeats == 0 else -4.0
-			AudioDirector.play_note_pitched(_sequence[_step], 1.0, vol_db)
+					played_vg = true
+			if not played_vg:
+				var vol_db := -10.0 if _idle_repeats == 0 else -4.0
+				AudioDirector.play_note_pitched(_sequence[_step], 1.0, vol_db)
 			_idle_repeats += 1
 			_refresh_hint_forced()
 
@@ -295,6 +300,11 @@ func _tick_fruiting() -> void:
 
 
 # --------------------------------------------------------------------- input --
+
+## Điểm vào công khai cho cả phím đàn trắng, phím đen (đã ánh xạ ngũ cung) và lá cây đậu thần.
+func on_external_note_played(note_index: int) -> void:
+	_on_note_played(note_index)
+
 
 ## Bé chạm phím. Hàm này KHÔNG bao giờ chặn hay phạt — bàn phím đã phát tiếng
 ## trước khi tín hiệu này tới đây.
@@ -324,10 +334,11 @@ func _on_note_played(note_index: int) -> void:
 		phrase_completed.emit(_phrase_index)
 		var total_phrases := Songbook.phrase_count(_page)
 		if Songbook.is_valid(_page) and (_phrase_index + 1) < total_phrases:
-			# Chuyển tiếp sang câu tiếp theo của bài hát
+			# Chuyển tiếp sang câu tiếp theo của bài hát: làm mới trạng thái lá cho câu mới
 			_phrase_index += 1
 			_load_phrase()
 			_step = 0
+			_tree.reset_leaves()
 			_tree.set_sequence(_sequence)
 			AudioDirector.play_sfx("fairy_dust")
 			_enter(State.LEAD_IN)

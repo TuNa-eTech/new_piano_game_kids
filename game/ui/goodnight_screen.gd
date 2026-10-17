@@ -103,19 +103,6 @@ func _build() -> void:
 	_plaque_rect.mouse_filter = Control.MOUSE_FILTER_PASS
 	_stage.add_child(_plaque_rect)
 
-	var plaque_lbl := Label.new()
-	plaque_lbl.name = "PlaqueLabel"
-	plaque_lbl.set_anchors_preset(Control.PRESET_FULL_RECT)
-	plaque_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	plaque_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	plaque_lbl.add_theme_font_size_override("font_size", 20)
-	plaque_lbl.add_theme_color_override("font_color", Color("#FFF5D0"))
-	plaque_lbl.add_theme_color_override("font_shadow_color", Color(0.12, 0.08, 0.03, 0.9))
-	plaque_lbl.add_theme_constant_override("shadow_offset_x", 2)
-	plaque_lbl.add_theme_constant_override("shadow_offset_y", 2)
-	plaque_lbl.text = "Khu rừng đã ngủ say rồi.\nChúc bé ngủ ngon! 🌙✨"
-	plaque_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_plaque_rect.add_child(plaque_lbl)
 
 	# --- 4. CUỐN SÁCH NỔI BÉ PHÙ THỦY SAY GIẤC & CÂY ĐẬU THẦN ---
 	# Tọa độ tương đối: X ~ 24.0% - 76.3%, Y ~ 16.3% - 67.0%
@@ -221,8 +208,8 @@ func _build() -> void:
 	# --- 8. ÂM THANH NHẠC RU NGỦ ---
 	_lullaby_player = AudioStreamPlayer.new()
 	_lullaby_player.name = "GoodnightLullabyPlayer"
-	_lullaby_player.bus = "Master"
-	_lullaby_player.volume_db = -14.0
+	_lullaby_player.bus = &"Music" if AudioServer.get_bus_index(&"Music") != -1 else &"Master"
+	_lullaby_player.volume_db = -6.0
 	if ResourceLoader.exists("res://assets/audio/bgm_forest_loop.ogg"):
 		_lullaby_player.stream = load("res://assets/audio/bgm_forest_loop.ogg")
 	add_child(_lullaby_player)
@@ -281,6 +268,7 @@ func _build_sleeping_keys() -> void:
 
 func open_overlay() -> void:
 	super.open_overlay()
+	AudioDirector.pause_gameplay_bgm()
 	_play_lullaby()
 	_play_entrance_animation()
 
@@ -288,6 +276,7 @@ func open_overlay() -> void:
 func close_overlay() -> void:
 	if _lullaby_player != null and _lullaby_player.playing:
 		_lullaby_player.stop()
+	AudioDirector.resume_current_gameplay_bgm()
 	super.close_overlay()
 
 
@@ -346,8 +335,8 @@ func _on_sleeping_book_tapped() -> void:
 
 
 func _on_key_pressed(btn: Button, key_idx: int, col: Color, _animal: String) -> void:
-	# Nhấn phím thú ngủ say: phát nốt ru dịu êm và nhún nhẹ
-	_play_sfx("star_ting")
+	# Nhấn phím thú ngủ say: phát nốt ngũ cung êm dịu của đúng bạn thú đó và nhún nhẹ
+	AudioDirector.play_note_pitched(key_idx, 1.0, -8.0)
 	var tw := create_tween()
 	tw.tween_property(btn, "scale", Vector2(1.15, 0.90), 0.08).set_trans(Tween.TRANS_QUAD)
 	tw.tween_property(btn, "scale", Vector2.ONE, 0.12).set_trans(Tween.TRANS_BACK)

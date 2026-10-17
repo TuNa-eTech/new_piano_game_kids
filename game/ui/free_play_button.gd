@@ -22,30 +22,17 @@ var _free_play_texture: Texture2D
 func _ready() -> void:
 	toggle_mode = true
 	focus_mode = Control.FOCUS_NONE
-	if ResourceLoader.exists("res://assets/art/ui_free_play.png"):
+	flat = true
+	if ResourceLoader.exists("res://assets/art/ui_btn_freeplay_wood.png"):
+		_free_play_texture = load("res://assets/art/ui_btn_freeplay_wood.png")
+	elif ResourceLoader.exists("res://assets/art/ui_free_play.png"):
 		_free_play_texture = load("res://assets/art/ui_free_play.png")
 	custom_minimum_size = Vector2(MIN_TOUCH_SIZE, MIN_TOUCH_SIZE)
 	pivot_offset = Vector2(MIN_TOUCH_SIZE * 0.5, MIN_TOUCH_SIZE * 0.5)
 
-	var box := StyleBoxFlat.new()
-	box.bg_color = Color("#2D1E16")
-	box.set_corner_radius_all(48)
-	box.set_border_width_all(4)
-	box.border_color = Color("#8C5838")
-	box.shadow_color = Color(0, 0, 0, 0.35)
-	box.shadow_size = 6
-	box.shadow_offset = Vector2(0, 5)
-
-	var on := box.duplicate() as StyleBoxFlat
-	on.bg_color = Color("#3A8848")
-	on.border_color = _accent
-	on.shadow_color = Color(0.95, 0.8, 0.2, 0.45)
-	on.shadow_size = 10
-
-	for state in ["normal", "hover", "focus"]:
-		add_theme_stylebox_override(state, box)
-	for state in ["pressed"]:
-		add_theme_stylebox_override(state, on)
+	var empty := StyleBoxEmpty.new()
+	for state in ["normal", "hover", "focus", "pressed", "disabled"]:
+		add_theme_stylebox_override(state, empty)
 
 	_face = Control.new()
 	_face.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -69,18 +56,15 @@ func _process(delta: float) -> void:
 func _on_button_down() -> void:
 	if _anim_tween != null and _anim_tween.is_valid():
 		_anim_tween.kill()
-	_anim_tween = create_tween().set_parallel(true)
-	# Lún 3D cơ học và nén hình học (Squash)
-	_anim_tween.tween_property(self, "position:y", position.y + 6.0, 0.06).set_trans(Tween.TRANS_QUAD)
-	_anim_tween.tween_property(self, "scale", Vector2(1.08, 0.90), 0.06).set_trans(Tween.TRANS_QUAD)
+	_anim_tween = create_tween()
+	_anim_tween.tween_property(self, "scale", Vector2(0.90, 0.90), 0.06).set_trans(Tween.TRANS_QUAD)
 
 
 func _on_button_up() -> void:
 	if _anim_tween != null and _anim_tween.is_valid():
 		_anim_tween.kill()
-	_anim_tween = create_tween().set_parallel(true)
-	# Nảy lò xo đàn hồi (Elastic Recovery)
-	_anim_tween.tween_property(self, "scale", Vector2.ONE, 0.3).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	_anim_tween = create_tween()
+	_anim_tween.tween_property(self, "scale", Vector2.ONE, 0.26).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
 
 func _on_toggled(pressed_state: bool) -> void:
@@ -105,13 +89,15 @@ func _draw_face() -> void:
 	var c := _face.size * 0.5
 	var r := minf(_face.size.x, _face.size.y) * 0.5
 	var on := GameState.free_play
-	# Fix UI 7 nhóm: ink tắt 0.55 chìm — nâng lên 0.85 để thấy trên gỗ tối.
 	var ink := _accent if on else Color(1, 1, 1, 0.85)
 
 	if _free_play_texture != null:
-		var tex_size := r * 1.15
+		if on:
+			_face.draw_circle(c, r * 0.50, Color(0.25, 0.95, 0.85, 0.30))
+		var tex_size := r * 1.92
 		var tex_rect := Rect2(c.x - tex_size * 0.5, c.y - tex_size * 0.5, tex_size, tex_size)
-		_face.draw_texture_rect(_free_play_texture, tex_rect, false, ink)
+		var mod := Color(1.15, 1.15, 1.05, 1.0) if on else Color(0.95, 0.95, 0.95, 0.96)
+		_face.draw_texture_rect(_free_play_texture, tex_rect, false, mod)
 	else:
 		var head := c + Vector2(-r * 0.16, r * 0.24)
 		var head_r := r * 0.2
@@ -133,7 +119,7 @@ func _draw_face() -> void:
 	if not on:
 		return
 	# Tia sáng: bật rồi thì nhìn từ xa cũng biết đang ở chế độ tự do.
-	for i in 6:
-		var a := TAU * i / 6.0 - PI * 0.5
+	for i in 8:
+		var a := TAU * i / 8.0 + _aura_phase * 0.35
 		var d := Vector2(cos(a), sin(a))
-		_face.draw_line(c + d * (r * 0.76), c + d * (r * 0.92), ink, 3.0, true)
+		_face.draw_line(c + d * (r * 0.82), c + d * (r * 0.96), ink, 3.0, true)

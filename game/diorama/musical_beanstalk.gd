@@ -9,6 +9,7 @@ extends Control
 ## - Cung cấp toạ độ chính xác cho dải lụa ma thuật (Magic Ribbon) bay tới.
 
 signal chest_clicked
+signal leaf_tapped(note_index: int)
 
 enum LeafState { DORMANT, SINGING, HINT, BLOOMED }
 
@@ -106,7 +107,7 @@ func _setup_nodes() -> void:
 		var leaf := Control.new()
 		leaf.name = "Leaf_%s" % NOTE_LETTERS[i]
 		leaf.mouse_filter = Control.MOUSE_FILTER_STOP
-		leaf.custom_minimum_size = Vector2(42, 42)
+		leaf.custom_minimum_size = Vector2(72, 72)
 
 		var glow := TextureRect.new()
 		glow.name = "Glow"
@@ -121,22 +122,24 @@ func _setup_nodes() -> void:
 		var lbl := Label.new()
 		lbl.name = "NoteLabel"
 		lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		lbl.text = "♪\n%s" % NOTE_LETTERS[i]
+		lbl.text = "♪"
 		lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		lbl.add_theme_font_size_override("font_size", 12)
+		lbl.add_theme_font_size_override("font_size", 20)
 		lbl.add_theme_color_override("font_color", Color.WHITE)
 		lbl.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.8))
 		lbl.add_theme_constant_override("shadow_offset_x", 1)
 		lbl.add_theme_constant_override("shadow_offset_y", 1)
 		leaf.add_child(lbl)
 
-		# Bắt sự kiện chạm trực tiếp vào lá nốt nhạc
+		# Bắt sự kiện chạm trực tiếp vào lá nốt nhạc và chuyển tiếp vào CallResponse
 		var leaf_idx := i
 		leaf.gui_input.connect(func(event: InputEvent):
 			if (event is InputEventScreenTouch and event.pressed) or (event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT):
 				AudioDirector.play_note(leaf_idx)
 				bloom_leaf(leaf_idx)
+				leaf_tapped.emit(leaf_idx)
+				accept_event()
 		)
 
 		add_child(leaf)
@@ -184,23 +187,25 @@ func _update_layout() -> void:
 		_trunk_rect.position = Vector2.ZERO
 		_trunk_rect.size = size
 
-	# Căn vị trí 7 lá nốt nhạc theo tỷ lệ
+	# Căn vị trí 7 lá nốt nhạc theo tỷ lệ (vùng chạm 72x72, hình lá 44x44 ở tâm)
+	var l_size := Vector2(72.0, 72.0)
+	var vis_size := Vector2(44.0, 44.0)
+	var vis_offset := (l_size - vis_size) * 0.5
 	for i in _leaf_nodes.size():
 		var l_node := _leaf_nodes[i]
 		var rel := LEAF_POSITIONS[i]
-		var l_size := Vector2(40.0, 40.0)
 		l_node.size = l_size
 		l_node.position = Vector2(size.x * rel.x - l_size.x * 0.5, size.y * rel.y - l_size.y * 0.5)
 		l_node.pivot_offset = l_size * 0.5
 
 		var lbl := _leaf_labels[i]
-		lbl.position = Vector2.ZERO
-		lbl.size = l_size
+		lbl.position = vis_offset
+		lbl.size = vis_size
 
 		if i < _leaf_glows.size():
 			var gl := _leaf_glows[i]
-			gl.position = Vector2.ZERO
-			gl.size = l_size
+			gl.position = vis_offset
+			gl.size = vis_size
 
 	# Rương báu nằm ở đỉnh ngọn cây
 	if _chest_rect != null:
@@ -278,6 +283,14 @@ func open_chest_celebration() -> void:
 	tw.tween_property(_chest_rect, "scale", Vector2(1.1, 1.1), 0.3)
 
 
+## Reset lại trạng thái lá khi chuyển sang câu hát mới trong cùng bài
+func reset_leaves() -> void:
+	for i in 7:
+		_leaf_states[i] = LeafState.DORMANT
+		if i < _leaf_nodes.size():
+			_leaf_nodes[i].scale = Vector2.ONE
+
+
 ## Reset lại trạng thái cây khi sang bài hát mới
 func reset_page() -> void:
 	_is_fruiting = false
@@ -285,8 +298,4 @@ func reset_page() -> void:
 		_chest_rect.texture = _tex_chest_closed
 		_chest_rect.scale = Vector2.ONE
 		_chest_rect.rotation_degrees = 0.0
-
-	for i in 7:
-		_leaf_states[i] = LeafState.DORMANT
-		if i < _leaf_nodes.size():
-			_leaf_nodes[i].scale = Vector2.ONE
+	reset_leaves()
